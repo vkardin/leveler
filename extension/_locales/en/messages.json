@@ -1,0 +1,65 @@
+{
+  "extName": {
+    "message": "Leveler — volume leveler and speed for any video"
+  },
+  "extDescription": {
+    "message": "Evens out loudness in movies: quiet dialogue gets louder, explosions get softer. Playback speed for any HTML5 video."
+  },
+  "actionTitle": {
+    "message": "Leveler"
+  },
+  "p_enabled_title": {
+    "message": "Turn sound processing on / off"
+  },
+  "p_unsupported": {
+    "message": "This site does not support audio processing"
+  },
+  "p_retry": {
+    "message": "Try again on this site"
+  },
+  "p_level": {
+    "message": "Level the sound"
+  },
+  "p_level_hint": {
+    "message": "Quiet dialogue louder, loud scenes softer"
+  },
+  "p_level_none": {
+    "message": "Off: sound is not changed"
+  },
+  "p_level_info": {
+    "message": "Threshold $1 · ratio $2"
+  },
+  "p_speed": {
+    "message": "Speed"
+  },
+  "st_no_access": {
+    "message": "Leveler cannot work on this page"
+  },
+  "st_no_media": {
+    "message": "No video or audio on this page"
+  },
+  "st_off": {
+    "message": "Off: original sound"
+  },
+  "st_processing": {
+    "message": "Processing: $1"
+  },
+  "st_unsupported": {
+    "message": "Original sound"
+  },
+  "st_click": {
+    "message": "Click the page to start processing"
+  },
+  "st_waiting": {
+    "message": "Connecting…"
+  },
+  "st_press_play": {
+    "message": "Press play on the video"
+  },
+  "n_reload": {
+    "message": "Reload the page: the sound will come back unchanged."
+  },
+  "n_original": {
+    "message": "The sound plays unchanged, speed control still works."
+  }
+}
