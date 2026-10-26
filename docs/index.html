@@ -17,7 +17,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="img/icon32.png">
   <link rel="icon" href="img/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <header class="top">
@@ -133,29 +133,34 @@
     <section class="block" id="more">
       <div class="wrap">
         <h2 data-i18n="vg_title"></h2>
-        <div class="more-list">
-        <div class="tile vg-card">
-          <a href="https://vkardin.github.io/video-glow/" target="_blank" rel="noopener"><img src="img/video-glow.svg" alt="Video Glow" width="72" height="72"></a>
-          <div class="vg-text">
-            <b>Video Glow</b>
-            <span data-i18n="vg_desc"></span>
-          </div>
-          <div class="vg-btns">
-            <a class="btn primary" href="https://vkardin.github.io/video-glow/" target="_blank" rel="noopener" data-i18n="vg_site"></a>
-            <a class="btn" href="https://github.com/vkardin/video-glow" target="_blank" rel="noopener">GitHub</a>
-          </div>
-        </div>
-        <div class="tile vg-card">
-          <a href="https://vkardin.github.io/snapt/" data-href="sn_url" target="_blank" rel="noopener"><img src="img/snapt.svg" alt="Snapt" width="72" height="72"></a>
-          <div class="vg-text">
-            <b>Snapt</b>
-            <span data-i18n="sn_desc"></span>
-          </div>
-          <div class="vg-btns">
-            <a class="btn primary" href="https://vkardin.github.io/snapt/" data-href="sn_url" target="_blank" rel="noopener" data-i18n="vg_site"></a>
-            <a class="btn" href="https://github.com/vkardin/snapt" target="_blank" rel="noopener">GitHub</a>
-          </div>
-        </div>
+        <p class="sub" data-i18n="more_sub"></p>
+        <div class="apps">
+          <article class="tile app app-video-glow">
+            <a class="shot" href="https://vkardin.github.io/video-glow/" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img data-shot="more/glow" alt="" width="1280" height="800" loading="lazy"></a>
+            <div class="app-body">
+              <header><img src="img/video-glow.svg" alt="" width="52" height="52"><div><h3>Video Glow</h3><span data-i18n="vg_kind"></span></div></header>
+              <p data-i18n="vg_desc"></p>
+              <ul class="chips"><li data-i18n="vg_c1"></li><li data-i18n="vg_c2"></li><li data-i18n="vg_c3"></li><li data-i18n="vg_c4"></li></ul>
+              <div class="app-links">
+                <a class="btn-app primary" href="https://vkardin.github.io/video-glow/" target="_blank" rel="noopener"><span data-i18n="more_site"></span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                <a class="btn-app" href="https://chromewebstore.google.com/detail/bjgbalkabocifimhnhbcnomeknpbhkea" target="_blank" rel="noopener">Chrome Web Store</a>
+                <a class="btn-app" href="https://addons.mozilla.org/firefox/addon/video-glow/" target="_blank" rel="noopener">Firefox Add-ons</a>
+              </div>
+            </div>
+          </article>
+          <article class="tile app app-snapt">
+            <a class="shot" href="https://vkardin.github.io/snapt/" data-href="sn_url" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true"><img src="img/more/snapt.webp" alt="" width="1280" height="800" loading="lazy"></a>
+            <div class="app-body">
+              <header><img src="img/snapt.svg" alt="" width="52" height="52"><div><h3>Snapt</h3><span data-i18n="sn_kind"></span></div></header>
+              <p data-i18n="sn_desc"></p>
+              <ul class="chips"><li data-i18n="sn_c1"></li><li data-i18n="sn_c2"></li><li data-i18n="sn_c3"></li><li data-i18n="sn_c4"></li></ul>
+              <div class="app-links">
+                <a class="btn-app primary" href="https://vkardin.github.io/snapt/" data-href="sn_url" target="_blank" rel="noopener"><span data-i18n="more_site"></span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                <a class="btn-app" href="https://vkardin.github.io/snapt/#download" data-href="sn_dl" target="_blank" rel="noopener" data-i18n="more_dl"></a>
+                <a class="btn-app" href="https://github.com/vkardin/snapt" target="_blank" rel="noopener">GitHub</a>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -190,6 +195,6 @@
     </div>
   </template>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
