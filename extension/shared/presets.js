@@ -103,8 +103,11 @@
   // «Выкл»: ничего не меняет — такой элемент даже не подключаем к Web Audio
   const isNeutral = (p) => p.ratio <= 1 && !p.makeup && !p.hp && !p.low && !p.mid && !p.high && p.volume === 100;
 
-  const sameParams = (a, b) => KEYS.every((k) => k === 'volume' || (a[k] === null || b[k] === null)
-    ? (k === 'level' || a[k] === b[k]) : Math.abs(a[k] - b[k]) < 1e-4);
+  const sameParams = (a, b) => KEYS.every((k) => {
+    if (k === 'volume') return true;
+    if (a[k] === null || b[k] === null) return k === 'level' || a[k] === b[k];
+    return Math.abs(a[k] - b[k]) < 1e-4;
+  });
 
   // ───────── горячие клавиши ─────────
   // Значения — KeyboardEvent.key. По умолчанию [ и ] — медленнее/быстрее на 0.1, \\ — сброс на 1×.
