@@ -99,7 +99,8 @@
     const p = findPreset(id);
     if (!p) return;
     profile.preset = id;
-    profile.params = PR.normalizeParams(p.params);
+    // усиление громкости не часть пресета: остаётся как было
+    profile.params = PR.normalizeParams(Object.assign({}, p.params, { volume: profile.params.volume }));
     renderAll();
     sendParams();
     saveProfile(true);
@@ -156,6 +157,15 @@
     return minus((s.signed && x > 0 ? '+' : '') + x) + (s.unit || '');
   }
 
+  function renderVolume() {
+    const v = profile.params.volume;
+    const input = $('#volume');
+    input.value = v;
+    fill(input);
+    $('#volumeOut').textContent = Math.round(v) + '%';
+    for (const b of $('#volChips').children) b.classList.toggle('on', +b.dataset.volume === Math.round(v));
+  }
+
   function renderSettings() {
     els.enabled.checked = settings.enabled;
     document.body.classList.toggle('off', !settings.enabled);
@@ -174,6 +184,7 @@
     renderPresets();
     renderParams();
     renderSpeed();
+    renderVolume();
   }
 
   function buildSliders(root, list) {
@@ -280,6 +291,14 @@
     const b = e.target.closest('button[data-speed]');
     if (b) sendSpeed(+b.dataset.speed);
   });
+
+  const setVolume = (v) => { changeParams(Object.assign({}, profile.params, { volume: v })); renderVolume(); };
+  $('#volume').addEventListener('input', (e) => setVolume(+e.target.value));
+  $('#volChips').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-volume]');
+    if (b) setVolume(+b.dataset.volume);
+  });
+  $('#gear').addEventListener('click', () => { chrome.runtime.openOptionsPage(); window.close(); });
 
   els.preset.addEventListener('change', () => selectPreset(els.preset.value));
 

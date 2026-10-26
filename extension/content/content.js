@@ -114,8 +114,8 @@
     const t = e.composedPath ? e.composedPath()[0] : e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     let next = null;
-    if (e.key === keys.slower) next = speed - 0.1;
-    else if (e.key === keys.faster) next = speed + 0.1;
+    if (e.key === keys.slower) next = speed - keys.step;
+    else if (e.key === keys.faster) next = speed + keys.step;
     else if (e.key === keys.reset) next = 1;
     if (next === null) return;
     e.preventDefault();
@@ -258,7 +258,8 @@
     setParam(c.comp.ratio, p.ratio, now);
     setParam(c.comp.attack, p.attack, now);
     setParam(c.comp.release, p.release, now);
-    setParam(c.makeup.gain, dbToGain(p.makeup), now);
+    // усиление громкости — до лимитера, он не даст перегрузить звук
+    setParam(c.makeup.gain, dbToGain(p.makeup) * p.volume / 100, now);
     setParam(c.hp.frequency, Math.max(10, p.hp), now);
     setParam(c.low.gain, p.low, now);
     setParam(c.mid.gain, p.mid, now);

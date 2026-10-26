@@ -92,6 +92,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .meter:first-child i { background: var(--muted); }
 .meters.idle { opacity: .4; }
 
+.hbtns { display: flex; align-items: center; gap: 10px; }
+.hbtns button.icon { width: 28px; height: 28px; font-size: 15px; }
+
 footer { color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; margin: 2px 2px 0; }
 
 /* пресеты */

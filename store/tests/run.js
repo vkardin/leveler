@@ -270,6 +270,17 @@ const MEASURE = (ms) => `(async () => {
     let sync = await iso('chrome.storage.sync.get(null)');
     ok(sync['s:localhost'] && sync['s:localhost'].preset === 'b:night', 'пресет запомнен для сайта', sync['s:localhost']);
 
+    await popup.click('#volChips button[data-volume="200"]');
+    await sleep(400);
+    let g = await iso(`__leveler.chains.get(document.getElementById('v')).makeup.gain.value`);
+    ok(Math.abs(g - 2) < 0.05, 'усиление громкости 200%', g);
+    await popup.selectOption('#preset', 'b:off');
+    await sleep(150);
+    prm = await iso('__leveler.params');
+    ok(prm.volume === 200 && prm.ratio === 1, 'смена пресета не сбрасывает усиление, «Выкл» + 200% всё равно усиливает', prm);
+    await popup.click('#volChips button[data-volume="100"]');
+    await popup.selectOption('#preset', 'b:night');
+    await sleep(150);
     await popup.click('#compCard summary');
     await popup.fill('#sl-ratio', '4');
     await popup.dispatchEvent('#sl-ratio', 'input');

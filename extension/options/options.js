@@ -29,7 +29,34 @@
     return li;
   }
 
+  // ── общие настройки ──
+  function renderGeneral() {
+    $('#optEnabled').checked = all.enabled !== false;
+    const sel = $('#optDefault');
+    sel.textContent = '';
+    for (const p of PR.BUILTIN) sel.appendChild(new Option(t(p.name), p.id));
+    for (const p of PR.normalizePresets(all.presets)) sel.appendChild(new Option(p.name, p.id));
+    const def = PR.normalizeProfile(all.def || PR.DEFAULT_PROFILE);
+    if (!def.preset || ![...sel.options].some((o) => o.value === def.preset)) {
+      sel.insertBefore(new Option(t('p_own_settings'), ''), sel.firstChild);
+      sel.value = '';
+    } else sel.value = def.preset;
+    const step = $('#optStep');
+    if (!step.options.length) for (const s of PR.KEY_STEPS) step.appendChild(new Option(s + '×', s));
+    step.value = PR.normalizeKeys(all.keys).step;
+  }
+  $('#optEnabled').addEventListener('change', (e) => chrome.storage.sync.set({ enabled: e.target.checked }));
+  $('#optDefault').addEventListener('change', (e) => {
+    const id = e.target.value;
+    const p = PR.builtin(id) || PR.normalizePresets(all.presets).find((x) => x.id === id);
+    if (p) chrome.storage.sync.set({ def: { preset: id, params: p.params, speed: 1 } });
+  });
+  $('#optStep').addEventListener('change', (e) => {
+    chrome.storage.sync.set({ keys: Object.assign(PR.normalizeKeys(all.keys), { step: +e.target.value }) });
+  });
+
   function render() {
+    renderGeneral();
     renderKeys();
     const presets = PR.normalizePresets(all.presets);
     const ul = $('#presets');
