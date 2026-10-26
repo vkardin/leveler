@@ -215,6 +215,7 @@
     if (tabId === null || !any) text = t('st_no_access');
     else if (!found) text = t('st_no_media');
     else if (!settings.enabled) text = t('st_off');
+    else if (PR.isNeutral(profile.params)) text = t('st_neutral');
     else if (processed) { cls = 'ok'; text = t('st_processing', processed); }
     else if (reason) { cls = 'warn'; text = t('st_unsupported'); }
     else if (suspended) { cls = 'warn'; text = t('st_click'); }
@@ -413,9 +414,27 @@
     }).then(() => setTimeout(hello, 150), () => {});
   }
 
+  // Индикатор уровня: спрашиваем страницу ~12 раз в секунду, только пока popup открыт.
+  const meters = $('#meters'), mPre = $('#mPre'), mPost = $('#mPost');
+  const shown = { pre: -90, post: -90 };
+  const toScale = (db) => Math.max(0, Math.min(1, (db + 60) / 60));   // −60…0 dB
+  function pollLevels() {
+    if (tabId === null || document.hidden) return;
+    chrome.tabs.sendMessage(tabId, { type: 'lv:levels' }).then((l) => {
+      meters.classList.toggle('idle', !l);
+      for (const k of ['pre', 'post']) {
+        const v = l ? l[k] : -90;
+        shown[k] = v > shown[k] ? v : shown[k] * 0.7 + v * 0.3;   // быстрый подъём, плавный спад
+      }
+      mPre.style.transform = `scaleX(${toScale(shown.pre)})`;
+      mPost.style.transform = `scaleX(${toScale(shown.post)})`;
+    }, () => meters.classList.add('idle'));
+  }
+
   const start = () => {
     hello();
     setInterval(hello, 1000);
+    setInterval(pollLevels, 80);
     setTimeout(injectIfSilent, 700);
   };
   // ?tab=<id> — открыть popup для конкретной вкладки (автотесты и скриншоты)

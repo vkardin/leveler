@@ -232,5 +232,32 @@
   },
   "o_forget": {
     "message": "Try again"
+  },
+  "m_before": {
+    "message": "Before"
+  },
+  "m_after": {
+    "message": "After"
+  },
+  "o_keys": {
+    "message": "Hotkeys"
+  },
+  "o_keys_hint": {
+    "message": "Change the playback speed of the video on the page. Click a field and press a key."
+  },
+  "o_key_slower": {
+    "message": "Slower (−0.1×)"
+  },
+  "o_key_faster": {
+    "message": "Faster (+0.1×)"
+  },
+  "o_key_reset": {
+    "message": "Normal speed (1×)"
+  },
+  "o_keys_reset": {
+    "message": "Default keys"
+  },
+  "st_neutral": {
+    "message": "Preset “Off”: original sound"
   }
 }

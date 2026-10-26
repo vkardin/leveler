@@ -95,6 +95,36 @@
   for (const el of media) if (!el.paused) queueMicrotask(() => onPlay(el));
 
   // Первое действие пользователя на странице разрешает запустить AudioContext.
+  // ───────── горячие клавиши: скорость ─────────
+  let keys = PR.normalizeKeys();
+  let speedSaveTimer = 0;
+
+  function saveSiteSpeed() {
+    profile = Object.assign({}, profile, { speed });
+    clearTimeout(speedSaveTimer);
+    speedSaveTimer = setTimeout(() => {
+      const value = Object.assign({}, PR.normalizeProfile(stored[SITE_KEY] || stored.def || PR.DEFAULT_PROFILE), { speed });
+      stored[SITE_KEY] = value;
+      try { chrome.storage.sync.set({ [SITE_KEY]: value }); } catch (e) { /* расширение обновили */ }
+    }, 600);
+  }
+
+  const onKey = (e) => {
+    if (e.ctrlKey || e.altKey || e.metaKey || e.isComposing || !media.size) return;
+    const t = e.composedPath ? e.composedPath()[0] : e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    let next = null;
+    if (e.key === keys.slower) next = speed - 0.1;
+    else if (e.key === keys.faster) next = speed + 0.1;
+    else if (e.key === keys.reset) next = 1;
+    if (next === null) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setSpeed(next);
+    saveSiteSpeed();
+  };
+  window.addEventListener('keydown', onKey, true);
+
   const wake = () => {
     if (!ctx || ctx.state === 'running') return;
     ctx.resume().then(flushWaiting, () => {});
@@ -136,6 +166,7 @@
     const why = blockReason(el);
     if (why) { markBlocked(el, why); return; }
     if (!settings.enabled) return;         // выключено и ещё не подключали — вообще не трогаем элемент
+    if (PR.isNeutral(params)) return;      // пресет «Выкл»: обрабатывать нечего, звук остаётся как есть
     if (!ensureCtx()) return;
     if (ctx.state === 'running') build(el);
     else {
@@ -232,7 +263,7 @@
     setParam(c.low.gain, p.low, now);
     setParam(c.mid.gain, p.mid, now);
     setParam(c.high.gain, p.high, now);
-    const on = settings.enabled && !c.silent;
+    const on = settings.enabled && !c.silent && !PR.isNeutral(p);
     setParam(c.wet.gain, on ? 1 : 0, now);
     setParam(c.dry.gain, on ? 0 : 1, now);
   }
@@ -397,9 +428,34 @@
     };
   }
 
-  const onMessage = (msg) => {
+  // Уровни для индикатора в popup: popup спрашивает, пока открыт, на странице ничего не крутится.
+  const meterBuf = new Float32Array(2048);
+  function rmsDb(an) {
+    an.getFloatTimeDomainData(meterBuf);
+    let sum = 0;
+    for (let i = 0; i < meterBuf.length; i++) sum += meterBuf[i] * meterBuf[i];
+    return Math.max(-90, 10 * Math.log10(sum / meterBuf.length + 1e-12));
+  }
+  function levels() {
+    for (const el of media) {
+      const c = chains.get(el);
+      if (!c || el.paused || c.silent) continue;
+      if (!c.meter) {
+        c.meter = ctx.createAnalyser();
+        c.meter.fftSize = 2048;
+        c.limiter.connect(c.meter);
+      }
+      return { pre: rmsDb(c.probe), post: settings.enabled ? rmsDb(c.meter) : rmsDb(c.probe) };
+    }
+    return null;
+  }
+
+  const onMessage = (msg, sender, reply) => {
     if (!msg || typeof msg.type !== 'string') return;
-    if (msg.type === 'lv:hello') {
+    if (msg.type === 'lv:levels') {
+      const l = levels();
+      if (l) reply(l);           // фреймы без играющего видео молчат, ответит тот, где звук
+    } else if (msg.type === 'lv:hello') {
       const s = status();
       // каждый фрейм отвечает отдельным сообщением: reply от вкладки доходит только один
       if (s.found || s.top) chrome.runtime.sendMessage(s).catch(() => {});
@@ -426,9 +482,10 @@
     if (first ? profile.speed !== 1 : profile.speed !== prev.speed && profile.speed !== speed) setSpeed(profile.speed);
   }
 
-  chrome.storage.sync.get(['enabled', 'def', SITE_KEY], (all) => {
+  chrome.storage.sync.get(['enabled', 'def', 'keys', SITE_KEY], (all) => {
     all = all || {};
     settings = LV.normalize(all);
+    keys = PR.normalizeKeys(all.keys);
     stored = { def: all.def, [SITE_KEY]: all[SITE_KEY] };
     resolveProfile(true);
   });
@@ -443,6 +500,7 @@
       return;
     }
     if (area !== 'sync') return;
+    if (changes.keys) keys = PR.normalizeKeys(changes.keys.newValue);
     if (changes.enabled) {
       settings = LV.normalize({ enabled: changes.enabled.newValue });
       applyAll();
@@ -462,6 +520,7 @@
     document.removeEventListener('playing', onPlayingEvent, true);
     window.removeEventListener('pointerdown', wake, true);
     window.removeEventListener('keydown', wake, true);
+    window.removeEventListener('keydown', onKey, true);
     mo.disconnect();
     for (const el of media) stopProbe(chains.get(el));
     if (overlay) overlay.host.remove();
