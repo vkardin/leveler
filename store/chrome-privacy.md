@@ -2,6 +2,16 @@
 
 Готовые тексты для вкладки. Разрешения сверены с `extension/manifest.json` (1.0.0): `storage`, `scripting`, `host_permissions: <all_urls>`. Все три действительно используются, лишних нет.
 
+## Куда что вставлять (developer dashboard)
+
+1. https://chrome.google.com/webstore/devconsole → Leveler → слева **«Меры по обеспечению конфиденциальности»** (Privacy).
+2. Поле **«Описание единственной цели»** → текст «Описание единственной цели» ниже.
+3. Блок **«Обоснование разрешений»**: поля появляются отдельно для каждого разрешения из манифеста: `storage`, `scripting`, **«Разрешение на доступ к хостам»**. В каждое свой текст.
+4. **«Используете ли вы удалённый код?»** → выбрать «Нет, я не использую удалённый код» (поле обоснования тогда не нужно).
+5. **«Использование данных»** → ни одной галочки в списке типов данных; внизу отметить все три подтверждения.
+6. **«Политика конфиденциальности»** → URL ниже.
+7. Наверху **«Сохранить черновик»**, затем **«Отправить на проверку»**.
+
 ## Русский (как в панели разработчика)
 
 **Описание единственной цели**
@@ -48,4 +58,4 @@ Do not tick any data type: the extension does not collect or transmit any user d
 Tick all three certifications: not sold to third parties; not used or transferred for purposes unrelated to the item's single purpose; not used to determine creditworthiness.
 
 ## Opera Add-ons
-Promotional image 300×188: `store/promo/opera_300x188.png`.
+См. `store/opera.md`.
