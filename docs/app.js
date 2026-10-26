@@ -54,8 +54,11 @@ const T = {
     d_warn: 'Отправляйте монеты только в той сети, что указана на карточке. Перевод в другой сети может потеряться.',
     d_thanks: 'Спасибо, что вы с нами.',
     copy: 'Скопировать адрес', copied: 'Скопировано',
-    vg_title: 'Ещё от автора', vg_desc: 'Подсветка в цвет картинки вокруг любого видео, как лента за телевизором. Бесплатно для Chrome и Firefox.', vg_site: 'Открыть сайт',
-    sn_desc: 'Быстрая и лёгкая программа для скриншотов с открытым кодом для Windows, macOS и Linux: выделите область, добавьте стрелку или подпись и скопируйте. Без аккаунтов и облака.', sn_url: 'https://vkardin.github.io/snapt/ru/',
+    vg_title: 'Ещё от автора', more_sub: 'Leveler делает один разработчик. Вот ещё два бесплатных инструмента: для видео в браузере и для скриншотов.', more_site: 'Сайт', more_dl: 'Скачать',
+    vg_kind: 'Расширение для Chrome, Edge и Firefox', vg_desc: 'Мягкая подсветка в цвет картинки вокруг любого видео, как лента за телевизором. Работает на YouTube, Twitch и любом другом сайте, и в полноэкранном режиме.',
+    vg_c1: 'Размытие или LED-лента', vg_c2: 'Цвет комнаты', vg_c3: 'Полный экран', vg_c4: 'Пресеты',
+    sn_kind: 'Программа для Windows, macOS и Linux', sn_desc: 'Быстрая и лёгкая программа для скриншотов с открытым кодом: нажмите PrtSc, выделите область, добавьте стрелку или подпись и скопируйте. Без аккаунтов и облака.',
+    sn_c1: 'Одна клавиша PrtSc', sn_c2: 'Пометки', sn_c3: 'Без облака', sn_c4: 'Несколько мегабайт', sn_url: 'https://vkardin.github.io/snapt/ru/', sn_dl: 'https://vkardin.github.io/snapt/ru/#download',
     privacy: 'Конфиденциальность', by_vg: 'От автора Video Glow'
   },
   uk: {
@@ -95,8 +98,11 @@ const T = {
     d_warn: 'Надсилайте монети лише в тій мережі, що вказана на картці. Переказ в іншій мережі може загубитися.',
     d_thanks: 'Дякуємо, що ви з нами.',
     copy: 'Скопіювати адресу', copied: 'Скопійовано',
-    vg_title: 'Ще від автора', vg_desc: 'Підсвітка в колір картинки навколо будь-якого відео, як стрічка за телевізором. Безкоштовно для Chrome і Firefox.', vg_site: 'Відкрити сайт',
-    sn_desc: 'Швидка й легка програма для скриншотів з відкритим кодом для Windows, macOS і Linux: виділіть область, додайте стрілку чи підпис і скопіюйте. Без акаунтів і хмари.', sn_url: 'https://vkardin.github.io/snapt/uk/',
+    vg_title: 'Ще від автора', more_sub: 'Leveler робить один розробник. Ось ще два безкоштовні інструменти: для відео в браузері та для скриншотів.', more_site: 'Сайт', more_dl: 'Завантажити',
+    vg_kind: 'Розширення для Chrome, Edge і Firefox', vg_desc: 'М’яка підсвітка в колір картинки навколо будь-якого відео, як стрічка за телевізором. Працює на YouTube, Twitch і будь-якому іншому сайті, і в повноекранному режимі.',
+    vg_c1: 'Розмиття або LED-стрічка', vg_c2: 'Колір кімнати', vg_c3: 'Повний екран', vg_c4: 'Пресети',
+    sn_kind: 'Програма для Windows, macOS і Linux', sn_desc: 'Швидка й легка програма для скриншотів з відкритим кодом: натисніть PrtSc, виділіть область, додайте стрілку чи підпис і скопіюйте. Без акаунтів і хмари.',
+    sn_c1: 'Одна клавіша PrtSc', sn_c2: 'Позначки', sn_c3: 'Без хмари', sn_c4: 'Кілька мегабайт', sn_url: 'https://vkardin.github.io/snapt/uk/', sn_dl: 'https://vkardin.github.io/snapt/uk/#download',
     privacy: 'Конфіденційність', by_vg: 'Від автора Video Glow'
   },
   en: {
@@ -136,8 +142,11 @@ const T = {
     d_warn: 'Send coins only on the network shown on the card. A transfer on another network may be lost.',
     d_thanks: 'Thank you for being here.',
     copy: 'Copy address', copied: 'Copied',
-    vg_title: 'Also by the author', vg_desc: 'Ambient light around any video in the colours of the picture, like a strip behind a TV. Free for Chrome and Firefox.', vg_site: 'Open website',
-    sn_desc: 'A fast, lightweight, open-source screenshot tool for Windows, macOS and Linux: select an area, add an arrow or a caption, copy. No accounts, no cloud.', sn_url: 'https://vkardin.github.io/snapt/',
+    vg_title: 'Also by the author', more_sub: 'Leveler is made by one developer. Here are two more free tools: one for video in the browser and one for screenshots.', more_site: 'Website', more_dl: 'Download',
+    vg_kind: 'Extension for Chrome, Edge and Firefox', vg_desc: 'A soft light in the colours of the picture around any video, like a strip behind a TV. Works on YouTube, Twitch and any other site, and in fullscreen.',
+    vg_c1: 'Blur or LED strip', vg_c2: 'Room colour', vg_c3: 'Fullscreen', vg_c4: 'Presets',
+    sn_kind: 'App for Windows, macOS and Linux', sn_desc: 'A fast, lightweight, open-source screenshot tool: press PrtSc, select an area, add an arrow or a caption and copy it. No accounts, no cloud.',
+    sn_c1: 'One PrtSc key', sn_c2: 'Annotations', sn_c3: 'No cloud', sn_c4: 'A few megabytes', sn_url: 'https://vkardin.github.io/snapt/', sn_dl: 'https://vkardin.github.io/snapt/#download',
     privacy: 'Privacy', by_vg: 'From the author of Video Glow'
   }
 };
