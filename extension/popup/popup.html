@@ -10,9 +10,12 @@
 <body>
   <header>
     <div class="brand"><span class="logo"></span><b>Leveler</b></div>
+    <div class="hbtns">
+    <button type="button" class="icon" id="gear" data-i18n-title="p_options">&#9881;</button>
     <label class="switch" data-i18n-title="p_enabled_title">
       <input type="checkbox" id="enabled"><span></span>
     </label>
+    </div>
   </header>
 
   <div class="status" id="status"><i></i><span id="statusText"></span></div>
@@ -22,6 +25,36 @@
     <span id="noticeText"></span>
     <button type="button" id="retry" class="link" data-i18n="p_retry" hidden></button>
   </div>
+
+  <section class="card" id="speedCard">
+    <div class="row">
+      <label for="speed" data-i18n="p_speed"></label>
+      <output id="speedOut"></output>
+    </div>
+    <input type="range" id="speed">
+    <div class="chips" id="chips">
+      <button type="button" data-speed="0.75">0.75</button>
+      <button type="button" data-speed="1">1×</button>
+      <button type="button" data-speed="1.25">1.25</button>
+      <button type="button" data-speed="1.5">1.5</button>
+      <button type="button" data-speed="2">2</button>
+    </div>
+  </section>
+
+  <section class="card" id="volumeCard">
+    <div class="row">
+      <label for="volume" data-i18n="p_volume"></label>
+      <output id="volumeOut"></output>
+    </div>
+    <input type="range" id="volume" min="0" max="400" step="5">
+    <div class="chips" id="volChips">
+      <button type="button" data-volume="100">100%</button>
+      <button type="button" data-volume="150">150%</button>
+      <button type="button" data-volume="200">200%</button>
+      <button type="button" data-volume="300">300%</button>
+      <button type="button" data-volume="400">400%</button>
+    </div>
+  </section>
 
   <section class="card" id="presetCard">
     <div class="row">
@@ -74,20 +107,6 @@
     <div class="sliders" id="eqSliders"></div>
   </details>
 
-  <section class="card" id="speedCard">
-    <div class="row">
-      <label for="speed" data-i18n="p_speed"></label>
-      <output id="speedOut"></output>
-    </div>
-    <input type="range" id="speed">
-    <div class="chips" id="chips">
-      <button type="button" data-speed="0.75">0.75</button>
-      <button type="button" data-speed="1">1×</button>
-      <button type="button" data-speed="1.25">1.25</button>
-      <button type="button" data-speed="1.5">1.5</button>
-      <button type="button" data-speed="2">2</button>
-    </div>
-  </section>
 
   <footer>
     <button type="button" class="link" id="openOptions" data-i18n="p_options"></button>

@@ -20,6 +20,12 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .msg { margin: 10px 0 0; font-size: 13px; min-height: 1.5em; }
 .msg.err { color: #e5534b; }
+.fields { display: grid; gap: 10px; }
+.fields label { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.fields label > span { display: grid; }
+.fields small { margin: 0; font-size: 12px; }
+.fields select { height: 32px; min-width: 180px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; padding: 0 8px; }
+.fields input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 .keys { display: grid; gap: 8px; margin-bottom: 12px; }
 .keys label { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .keys input {

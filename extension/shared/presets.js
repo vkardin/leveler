@@ -25,7 +25,8 @@
     hp:        { min: 0, max: 300, def: 0 },       // Гц, 0 — выключен
     low:       { min: -12, max: 12, def: 0 },      // dB, полка 120 Гц
     mid:       { min: -12, max: 12, def: 0 },      // dB, колокол 1.5 кГц
-    high:      { min: -12, max: 12, def: 0 }       // dB, полка 8 кГц
+    high:      { min: -12, max: 12, def: 0 },      // dB, полка 8 кГц
+    volume:    { min: 0, max: 400, def: 100 }      // %, усиление громкости; не часть пресета
   };
   const KEYS = Object.keys(SPEC);
   const COMP_KEYS = ['threshold', 'knee', 'ratio', 'attack', 'release'];
@@ -100,19 +101,21 @@
   const newId = () => 'u:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   // «Выкл»: ничего не меняет — такой элемент даже не подключаем к Web Audio
-  const isNeutral = (p) => p.ratio <= 1 && !p.makeup && !p.hp && !p.low && !p.mid && !p.high;
+  const isNeutral = (p) => p.ratio <= 1 && !p.makeup && !p.hp && !p.low && !p.mid && !p.high && p.volume === 100;
 
-  const sameParams = (a, b) => KEYS.every((k) => (a[k] === null || b[k] === null)
+  const sameParams = (a, b) => KEYS.every((k) => k === 'volume' || (a[k] === null || b[k] === null)
     ? (k === 'level' || a[k] === b[k]) : Math.abs(a[k] - b[k]) < 1e-4);
 
   // ───────── горячие клавиши ─────────
   // Значения — KeyboardEvent.key. По умолчанию [ и ] — медленнее/быстрее на 0.1, \\ — сброс на 1×.
-  const DEFAULT_KEYS = Object.freeze({ slower: '[', faster: ']', reset: '\\' });
+  const DEFAULT_KEYS = Object.freeze({ slower: '[', faster: ']', reset: '\\', step: 0.1 });
+  const KEY_STEPS = [0.05, 0.1, 0.25];
   function normalizeKeys(k) {
     k = k && typeof k === 'object' ? k : {};
     const out = {};
     for (const name in DEFAULT_KEYS) {
       const v = k[name];
+      if (name === 'step') { out.step = KEY_STEPS.includes(v) ? v : DEFAULT_KEYS.step; continue; }
       out[name] = typeof v === 'string' && v.length > 0 && v.length <= 12 ? v : DEFAULT_KEYS[name];
     }
     return out;
@@ -172,6 +175,6 @@
   self.LV_PRESETS = Object.freeze({
     SPEC, KEYS, COMP_KEYS, BUILTIN, DEFAULT_PRESET, DEFAULT_PROFILE, MAX_PRESETS, MAX_NAME,
     normalizeParams, withLevel, isNeutral, normalizeProfile, normalizePresets, builtin, newId, sameParams,
-    DEFAULT_KEYS, normalizeKeys, siteKey, isHost, topHost, exportData, importData
+    DEFAULT_KEYS, KEY_STEPS, normalizeKeys, siteKey, isHost, topHost, exportData, importData
   });
 })();

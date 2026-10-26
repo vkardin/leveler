@@ -246,10 +246,10 @@
     "message": "Change the playback speed of the video on the page. Click a field and press a key."
   },
   "o_key_slower": {
-    "message": "Slower (−0.1×)"
+    "message": "Slower"
   },
   "o_key_faster": {
-    "message": "Faster (+0.1×)"
+    "message": "Faster"
   },
   "o_key_reset": {
     "message": "Normal speed (1×)"
@@ -259,5 +259,23 @@
   },
   "st_neutral": {
     "message": "Preset “Off”: original sound"
+  },
+  "p_volume": {
+    "message": "Volume boost"
+  },
+  "o_general": {
+    "message": "General"
+  },
+  "o_enabled": {
+    "message": "Sound processing on"
+  },
+  "o_default_preset": {
+    "message": "Default preset"
+  },
+  "o_default_preset_hint": {
+    "message": "For sites without their own settings"
+  },
+  "o_key_step": {
+    "message": "Speed step for hotkeys"
   }
 }
