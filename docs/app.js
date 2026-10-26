@@ -59,7 +59,7 @@ const T = {
     vg_c1: 'Размытие или LED-лента', vg_c2: 'Цвет комнаты', vg_c3: 'Полный экран', vg_c4: 'Пресеты',
     sn_kind: 'Программа для Windows, macOS и Linux', sn_desc: 'Быстрая и лёгкая программа для скриншотов с открытым кодом: нажмите PrtSc, выделите область, добавьте стрелку или подпись и скопируйте. Без аккаунтов и облака.',
     sn_c1: 'Одна клавиша PrtSc', sn_c2: 'Пометки', sn_c3: 'Без облака', sn_c4: 'Несколько мегабайт', sn_url: 'https://vkardin.github.io/snapt/ru/', sn_dl: 'https://vkardin.github.io/snapt/ru/#download',
-    privacy: 'Конфиденциальность', by_vg: 'От автора Video Glow'
+    privacy: 'Конфиденциальность'
   },
   uk: {
     title: 'Leveler — рівна гучність у будь-якому відео',
@@ -103,7 +103,7 @@ const T = {
     vg_c1: 'Розмиття або LED-стрічка', vg_c2: 'Колір кімнати', vg_c3: 'Повний екран', vg_c4: 'Пресети',
     sn_kind: 'Програма для Windows, macOS і Linux', sn_desc: 'Швидка й легка програма для скриншотів з відкритим кодом: натисніть PrtSc, виділіть область, додайте стрілку чи підпис і скопіюйте. Без акаунтів і хмари.',
     sn_c1: 'Одна клавіша PrtSc', sn_c2: 'Позначки', sn_c3: 'Без хмари', sn_c4: 'Кілька мегабайт', sn_url: 'https://vkardin.github.io/snapt/uk/', sn_dl: 'https://vkardin.github.io/snapt/uk/#download',
-    privacy: 'Конфіденційність', by_vg: 'Від автора Video Glow'
+    privacy: 'Конфіденційність'
   },
   en: {
     title: 'Leveler — even loudness for any video',
@@ -147,7 +147,7 @@ const T = {
     vg_c1: 'Blur or LED strip', vg_c2: 'Room colour', vg_c3: 'Fullscreen', vg_c4: 'Presets',
     sn_kind: 'App for Windows, macOS and Linux', sn_desc: 'A fast, lightweight, open-source screenshot tool: press PrtSc, select an area, add an arrow or a caption and copy it. No accounts, no cloud.',
     sn_c1: 'One PrtSc key', sn_c2: 'Annotations', sn_c3: 'No cloud', sn_c4: 'A few megabytes', sn_url: 'https://vkardin.github.io/snapt/', sn_dl: 'https://vkardin.github.io/snapt/#download',
-    privacy: 'Privacy', by_vg: 'From the author of Video Glow'
+    privacy: 'Privacy'
   }
 };
 

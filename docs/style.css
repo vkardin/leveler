@@ -172,10 +172,8 @@ section.block.first { border-top: 0; padding-top: 32px; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; counter-reset: step; }
 .steps .tile::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 700; margin-bottom: 14px; }
 .store-badge { font-size: 12px; color: var(--muted); }
-.by { margin-left: auto; }
 @media (max-width: 680px) {
   .demo, .steps { grid-template-columns: 1fr; }
-  .by { margin-left: 0; }
 }
 
 /* Ещё от автора (как на сайте Snapt) */
