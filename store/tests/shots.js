@@ -4,7 +4,7 @@
 //
 // Снимает настоящий popup и страницу настроек расширения в Chromium с нужным языком
 // интерфейса и собирает из них кадры: store/screenshots/<lang>/*.png, docs/img/*-<lang>.png,
-// store/promo/tile_440x280.png.
+// store/promo/tile_440x280.png и store/promo/opera_300x188.png.
 const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
@@ -205,6 +205,13 @@ function frame({ title, text, popup, offset = 0, sceneHtml = '', wide = null, ke
         <div><img src="${logo}"><h1>Leveler</h1><p>${L.tile}</p></div>`);
       fs.mkdirSync(path.join(ROOT, 'store/promo'), { recursive: true });
       await tile.screenshot({ path: path.join(ROOT, 'store/promo/tile_440x280.png') });
+      const opera = await b.newPage({ viewport: { width: 300, height: 188 } });
+      await opera.setContent(`<!doctype html><meta charset="utf-8"><style>
+        body{margin:0;width:300px;height:188px;display:grid;place-items:center;font-family:Inter,"Segoe UI",system-ui,sans-serif;
+        background:radial-gradient(280px 180px at 80% 10%,#12382a,#0b0d10 70%) #0b0d10;color:#eef1f4;text-align:center}
+        img{width:60px;height:60px} h1{font-size:26px;margin:8px 0 3px} p{margin:0;color:#9fe8c6;font-size:13.5px}</style>
+        <div><img src="${logo}"><h1>Leveler</h1><p>${L.tile}</p></div>`);
+      await opera.screenshot({ path: path.join(ROOT, 'store/promo/opera_300x188.png') });
     }
     await b.close();
     console.log('готово:', lang);
