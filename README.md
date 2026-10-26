@@ -3,113 +3,67 @@
 <h1 align="center">Leveler</h1>
 
 <p align="center"><b>Even out the loudness of any video in your browser</b><br>
-English · <a href="README.ru.md">Русский</a></p>
+English · <a href="README.ru.md">Русский</a> · <a href="README.uk.md">Українська</a></p>
 
 <p align="center">
+<a href="https://chromewebstore.google.com/"><img alt="Chrome Web Store" src="https://img.shields.io/badge/Chrome-soon-lightgrey?logo=googlechrome&logoColor=white"></a>
+<a href="https://addons.mozilla.org/"><img alt="Firefox Add-ons" src="https://img.shields.io/badge/Firefox-soon-lightgrey?logo=firefoxbrowser&logoColor=white"></a>
+<a href="https://vkardin.github.io/leveler/"><img alt="Website" src="https://img.shields.io/badge/site-vkardin.github.io%2Fleveler-222"></a>
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
-Leveler is a volume leveler for any HTML5 video or audio: quiet dialogue gets louder, explosions get softer, so you stop reaching for the volume during a movie. It also controls playback speed from 0.25× to 4× without changing the pitch. Everything runs locally in your browser.
+Leveler evens out the sound of any HTML5 video or audio: quiet dialogue gets louder, explosions get softer, so you can watch a movie at night without reaching for the volume. It also boosts the volume up to 400 % and changes playback speed from 0.25× to 4× without changing the pitch. Free, no account, everything runs on your device.
 
-> **Status: early version (steps 1–2 of 6).** Compressor and equalizer, presets, per-site settings, speed control. Level meters, hotkeys and the website come in the next steps.
-
-<p align="center"><img src="docs/img/popup-en.png" width="320" alt="Leveler popup"></p>
+<p align="center"><img src="docs/img/presets-en.png" width="720" alt="Leveler popup"></p>
 
 ## Install
 
-Not in the stores yet. To try the prototype:
-
-1. Download or clone this repository.
-2. Open `chrome://extensions` (Edge: `edge://extensions`, Brave: `brave://extensions`).
-3. Turn on **Developer mode** (top right).
-4. Click **Load unpacked** and choose the `extension` folder.
-5. Pin Leveler on the toolbar, open a page with a video and press play.
-
-Firefox: open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** and choose `manifest.json` from `dist/leveler-firefox-<version>.zip` after unpacking it (see [Build](#build)). In Firefox, allow the extension to access all sites in its permissions, otherwise the content script does not run.
+- **Chrome, Edge, Brave, Opera:** Chrome Web Store (coming soon)
+- **Firefox:** Firefox Add-ons (coming soon)
+- **Manual install:** download `leveler-chrome-<version>.zip` from [Releases](../../releases), unzip it, open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked** → choose the unzipped folder. Firefox: `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → `manifest.json` from `leveler-firefox-<version>.zip`.
 
 ## Features
 
-- Web Audio chain for every `<video>` and `<audio>`: high-pass → 3-band EQ → compressor → makeup gain → safety limiter
-- One "Level the sound" slider (0–100 %) drives threshold, ratio, knee and attack of the compressor
-- On / off switch without reloading the page: a smooth crossfade between the processed and the original sound
-- Smooth parameter changes (`setTargetAtTime`), no clicks
-- The audio context starts only after a user action on the page, so a video never loses its sound waiting for it
-- Videos added later (MutationObserver and a capturing `play` listener), iframes (`all_frames`), fullscreen
-- One chain per element (WeakMap), never connected twice
-- Playback speed 0.25–4× with `preservesPitch` and a short speed overlay on the video
-- DRM and cross-origin media are detected and left untouched, with the message "This site does not support audio processing" in the popup
-- Built-in presets: Night mode (strong compression), Louder dialogue (default), Headphones, Bass+, Off
-- Compressor (threshold, ratio, knee, attack, release, makeup) and equalizer (low cut, low / mid / high) sliders in the popup
-- Your own presets: save as preset, rename, delete
-- Preset and speed are remembered for each site; iframes use the settings of the tab's site. "Use on all sites" makes the current sound the default for sites without their own settings
-- Backup: export and import all presets and site settings as a JSON file on the settings page
-- Light and dark theme from system settings, English / Русский / Українська
+- Presets: Night mode (strong compression), Louder dialogue, Headphones, Bass+, Off. After install the preset is Off and nothing is processed until you pick one
+- One “Level the sound” slider or full control: threshold, ratio, knee, attack, release, makeup gain; low cut and 3-band equalizer
+- Volume boost up to 400 % with a safety limiter, level meter before / after compression
+- Your own presets: save, rename, delete; preset, volume and speed are remembered for each site
+- Playback speed 0.25–4× without the chipmunk voice, hotkeys `[` `]` `\` (configurable), short speed overlay
+- Works in iframes and fullscreen, picks up videos added later, starts in open tabs right after install
+- Smooth on / off without reloading the page; backup of all settings to a JSON file
+- Light and dark theme, English, Русский, Українська
 
-## How the DRM and CORS fallback works
+| Presets and level meter | Compressor and equalizer | Speed and volume boost |
+|---|---|---|
+| ![Presets and level meter](docs/img/presets-en.png) | ![Compressor and equalizer](docs/img/compressor-en.png) | ![Speed and volume boost](docs/img/speed-en.png) |
 
-Browsers give Web Audio only silence for DRM-protected media and for media from another origin without CORS. Once an element is connected to Web Audio, this cannot be undone until the page reloads, so Leveler checks before connecting:
+## Sites with DRM
 
-- `video.mediaKeys` is set, or the `encrypted` event fired → DRM, not connected;
-- the media URL is on another origin and the element has no `crossorigin` attribute → not connected;
-- well-known DRM-only sites (Netflix, Disney+, Prime Video, Max, Hulu and others) are never connected.
+Netflix, Disney+, Prime Video and other services with DRM protection do not let extensions process their sound: the browser gives Web Audio only silence. Leveler detects this before connecting, leaves the sound untouched and shows “This site does not support audio processing”. Speed control still works there.
 
-If silence still comes after connecting (for example, a same-origin URL redirects to another origin), the input analyser sees exact digital zeros for 5 seconds of playback while the browser is decoding audio. Leveler then switches to the dry path, remembers the site in `chrome.storage.local`, and the popup asks to reload the page. After the reload the site plays with the original sound; the popup has a "Try again on this site" button that forgets it.
+## Tested
 
-## Test results
-
-The cloud environment where this prototype was built has no access to YouTube, Twitch or Netflix, so **real sites are not verified yet**. What was checked is listed honestly below.
-
-| Where | Result |
-|---|---|
-| Local test page, Chrome for Testing 153, headless (`store/tests/run.js`) | ✅ all checks pass, see below |
-| YouTube | ⏳ not verified yet |
-| Twitch | ⏳ not verified yet |
-| Third-party player (Video.js / JW Player on a news site) | ⏳ not verified yet |
-| Netflix | ⏳ not verified yet (expected: detected as DRM, original sound, message in popup) |
-| Firefox | ⏳ not verified yet (the build script makes the Firefox zip) |
-
-The automated test plays a generated 12-second tone that alternates between −36 dBFS ("dialogue") and −3 dBFS ("explosion") and checks:
-
-- the chain connects only after a click and `play`;
-- at 50 % the gap between quiet and loud shrinks from 33 dB to about 11 dB, at 100 % to about 3 dB; loud parts stay well below 0 dBFS;
-- switching off sends the original sound through and silences the processed path, switching on brings it back, both without reload;
-- a video added to the page later is connected, replaying the same element does not connect it twice, an `<audio>` in an iframe is connected too;
-- speed 1.5× is applied in all frames with `preservesPitch`, the speed overlay appears, speed is limited to 4×;
-- a cross-origin file without CORS is not connected;
-- a same-origin URL that redirects to another origin is detected as silent, the site is remembered, and after reload it is not touched;
-- choosing a preset in the popup applies it at once in the page and in a cross-origin iframe, and remembers it for the site;
-- a compressor slider changes the sound and marks the preset as changed; save as preset, rename, choose again, delete (the site keeps the sound as "Custom settings");
-- the site's speed and sound settings come back after reloading the page; another site uses the default profile;
-- export makes `leveler-backup-<date>.json`; import replaces the settings, clamps wrong values (speed 9 → 4), drops broken entries and rejects files that are not Leveler backups.
-
-Not covered by the automated test: autoplay without any user action (the headless browser allowed the audio context right away), real DRM.
-
-To run it yourself: `npm i playwright`, then `node store/tests/run.js [folder-for-screenshots]`.
-
-## Build
-
-```
-python3 tools/build.py
-```
-
-Makes `dist/leveler-chrome-<version>.zip` and `dist/leveler-firefox-<version>.zip`. The version comes from `extension/manifest.json`. Before packing, the script checks that the manifest files exist, that all `_locales` have the same keys, and the JS syntax (if `node` is installed).
+- Automated test in Chromium on a local page: `node store/tests/run.js` (sound chain, presets, per-site settings, hotkeys, backup, DRM/CORS fallback)
+- YouTube in Google Chrome: works (checked by the author after reloading the tab)
+- Twitch, other players, Firefox: not verified yet. Please [report](../../issues/new/choose) what you find
 
 ## Privacy
 
-Leveler collects no data and sends nothing anywhere: the sound is processed on your device. Settings are stored in your browser (`chrome.storage`).
+Leveler collects no data and sends nothing anywhere: the sound is processed on your device. [Privacy policy](store/PRIVACY.md).
+
+## Feedback and support
+
+- Ideas and bug reports: [GitHub Issues](../../issues/new/choose) or the [support page](https://vkardin.github.io/leveler/support.html)
+- Support the project: [vkardin.github.io/leveler/#donate](https://vkardin.github.io/leveler/#donate)
 
 ## Repository
 
 | Folder | What is inside |
 |---|---|
 | [`extension/`](extension) | Extension source (load via `chrome://extensions` → Developer mode → Load unpacked) |
-| [`extension/content/`](extension/content) | Content script: audio chain, speed, DRM/CORS detection |
-| [`extension/popup/`](extension/popup) | Popup |
-| [`extension/options/`](extension/options) | Settings page: backup, presets, sites |
-| [`extension/shared/`](extension/shared) | Defaults, presets and site profiles, backup format, theme, i18n helper |
-| [`docs/`](docs) | Images for the README (the website comes later) |
-| [`store/tests/`](store/tests) | Automated test in Chromium |
-| [`tools/`](tools) | `build.py` packs the Chrome and Firefox zips |
+| [`docs/`](docs) | Website, served by GitHub Pages |
+| [`store/`](store) | Store texts, screenshots, privacy policy, test and screenshot scripts |
+| [`tools/`](tools) | `build.py` packs `leveler-chrome-<version>.zip` and `leveler-firefox-<version>.zip` |
 
 ## License
 

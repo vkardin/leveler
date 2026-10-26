@@ -9,9 +9,9 @@
 
   // Ползунки компрессора и эквалайзера. scale — множитель для показа (с → мс).
   const COMP = [
-    { key: 'threshold', label: 's_threshold', step: 1, unit: ' dB' },
+    { key: 'threshold', label: 's_threshold', step: 1, unit: ' dB', digits: 0 },
     { key: 'ratio', label: 's_ratio', step: 0.5, fmt: (v) => v + ':1' },
-    { key: 'knee', label: 's_knee', step: 1, unit: ' dB' },
+    { key: 'knee', label: 's_knee', step: 1, unit: ' dB', digits: 0 },
     { key: 'attack', label: 's_attack', step: 0.001, scale: 1000, unit: ' ms' },
     { key: 'release', label: 's_release', step: 0.01, scale: 1000, unit: ' ms' },
     { key: 'makeup', label: 's_makeup', step: 0.5, unit: ' dB', signed: true }
@@ -153,7 +153,7 @@
   function fmtValue(s, v) {
     if (s.zero && v === 0) return t(s.zero);
     if (s.fmt) return s.fmt(r2(v));
-    const x = r2(v * (s.scale || 1));
+    const x = s.digits === 0 ? Math.round(v * (s.scale || 1)) : r2(v * (s.scale || 1));
     return minus((s.signed && x > 0 ? '+' : '') + x) + (s.unit || '');
   }
 
