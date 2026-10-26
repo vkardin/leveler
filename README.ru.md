@@ -73,6 +73,12 @@ Leveler не собирает данные и ничего никуда не о�
 
 <br clear="left">
 
+<a href="https://vkardin.github.io/snapt/ru/"><img src="docs/img/snapt.svg" width="56" align="left" alt="Snapt"></a>
+
+**[Snapt](https://vkardin.github.io/snapt/ru/)**: быстрая и лёгкая программа для скриншотов с открытым кодом для Windows, macOS и Linux. Выделите область, добавьте стрелку или подпись и скопируйте. Без аккаунтов и облака. [Сайт](https://vkardin.github.io/snapt/ru/) · [GitHub](https://github.com/vkardin/snapt)
+
+<br clear="left">
+
 ## Лицензия
 
 [MIT](LICENSE) © vkardin

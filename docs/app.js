@@ -55,6 +55,7 @@ const T = {
     d_thanks: 'Спасибо, что вы с нами.',
     copy: 'Скопировать адрес', copied: 'Скопировано',
     vg_title: 'Ещё от автора', vg_desc: 'Подсветка в цвет картинки вокруг любого видео, как лента за телевизором. Бесплатно для Chrome и Firefox.', vg_site: 'Открыть сайт',
+    sn_desc: 'Быстрая и лёгкая программа для скриншотов с открытым кодом для Windows, macOS и Linux: выделите область, добавьте стрелку или подпись и скопируйте. Без аккаунтов и облака.', sn_url: 'https://vkardin.github.io/snapt/ru/',
     privacy: 'Конфиденциальность', by_vg: 'От автора Video Glow'
   },
   uk: {
@@ -95,6 +96,7 @@ const T = {
     d_thanks: 'Дякуємо, що ви з нами.',
     copy: 'Скопіювати адресу', copied: 'Скопійовано',
     vg_title: 'Ще від автора', vg_desc: 'Підсвітка в колір картинки навколо будь-якого відео, як стрічка за телевізором. Безкоштовно для Chrome і Firefox.', vg_site: 'Відкрити сайт',
+    sn_desc: 'Швидка й легка програма для скриншотів з відкритим кодом для Windows, macOS і Linux: виділіть область, додайте стрілку чи підпис і скопіюйте. Без акаунтів і хмари.', sn_url: 'https://vkardin.github.io/snapt/uk/',
     privacy: 'Конфіденційність', by_vg: 'Від автора Video Glow'
   },
   en: {
@@ -135,6 +137,7 @@ const T = {
     d_thanks: 'Thank you for being here.',
     copy: 'Copy address', copied: 'Copied',
     vg_title: 'Also by the author', vg_desc: 'Ambient light around any video in the colours of the picture, like a strip behind a TV. Free for Chrome and Firefox.', vg_site: 'Open website',
+    sn_desc: 'A fast, lightweight, open-source screenshot tool for Windows, macOS and Linux: select an area, add an arrow or a caption, copy. No accounts, no cloud.', sn_url: 'https://vkardin.github.io/snapt/',
     privacy: 'Privacy', by_vg: 'From the author of Video Glow'
   }
 };
@@ -167,6 +170,7 @@ function apply() {
     const v = (window.PAGE_T && PAGE_T[lang][el.dataset.ph]) || t[el.dataset.ph];
     if (v != null) el.placeholder = v;
   });
+  document.querySelectorAll('[data-href]').forEach(el => { if (t[el.dataset.href]) el.href = t[el.dataset.href]; });
   document.querySelectorAll('.copy').forEach(b => { if (!b.classList.contains('done')) b.textContent = t.copy; });
 }
 
