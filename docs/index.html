@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leveler — ровная громкость в любом видео</title>
+  <meta name="description" content="Выравнивает громкость фильмов в браузере: тихие диалоги громче, взрывы тише. Компрессор, эквалайзер, пресеты и скорость. Бесплатное расширение для Chrome и Firefox.">
+  <meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Leveler — even out the loudness of any video">
+  <meta property="og:description" content="Quiet dialogue louder, explosions softer. A free audio leveler and speed control for Chrome and Firefox.">
+  <meta property="og:url" content="https://vkardin.github.io/leveler/">
+  <meta property="og:image" content="https://vkardin.github.io/leveler/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/icon32.png">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#"><img src="img/logo.svg" alt="">Leveler</a>
+      <nav class="nav">
+        <a href="#features" data-i18n="nav_features"></a>
+        <a href="#install" data-i18n="nav_install"></a>
+        <a href="#donate" data-i18n="nav_donate"></a>
+        <a href="support.html" data-i18n="nav_support"></a>
+      </nav>
+      <div class="langs" role="group" aria-label="Language">
+        <button type="button" data-lang="ru">RU</button>
+        <button type="button" data-lang="uk">UK</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <h1 data-i18n="hero_title"></h1>
+        <p class="lead" data-i18n="hero_lead"></p>
+        <div class="cta">
+          <a class="btn primary store-chrome" href="#install"><span data-i18n="btn_chrome"></span></a>
+          <a class="btn store-firefox" href="#install"><span data-i18n="btn_firefox"></span></a>
+        </div>
+        <p class="free" data-i18n="hero_free"></p>
+        <div class="demo" aria-hidden="true">
+          <div class="tile before">
+            <div class="demo-h"><b data-i18n="demo_before"></b><small data-i18n="demo_before_d"></small></div>
+            <canvas id="demoBefore"></canvas>
+          </div>
+          <div class="tile after">
+            <div class="demo-h"><b data-i18n="demo_after"></b><small data-i18n="demo_after_d"></small></div>
+            <canvas id="demoAfter"></canvas>
+          </div>
+          <div class="demo-legend"><span><i style="background:#f2c66d"></i><span data-i18n="demo_talk"></span></span><span><i style="background:#ff6b6b"></i><span data-i18n="demo_boom"></span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="features">
+      <div class="wrap">
+        <h2 data-i18n="f_title"></h2>
+        <p class="sub" data-i18n="f_sub"></p>
+        <div class="grid">
+          <div class="tile"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h3l2-6 3 12 2-8 2 4h6"/></svg></div><b data-i18n="m1_t"></b><span data-i18n="m1_d"></span></div>
+          <div class="tile"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="7" cy="17" r="2" fill="currentColor"/></svg></div><b data-i18n="m2_t"></b><span data-i18n="m2_d"></span></div>
+          <div class="tile"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg></div><b data-i18n="m3_t"></b><span data-i18n="m3_d"></span></div>
+          <div class="tile"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l7 7-7 7M12 5l7 7-7 7"/></svg></div><b data-i18n="m4_t"></b><span data-i18n="m4_d"></span></div>
+          <div class="tile"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></div><b data-i18n="m5_t"></b><span data-i18n="m5_d"></span></div>
+          <div class="tile"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></div><b data-i18n="m6_t"></b><span data-i18n="m6_d"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="how">
+      <div class="wrap">
+        <h2 data-i18n="h_title"></h2>
+        <p class="sub" data-i18n="h_sub"></p>
+        <div class="steps">
+          <div class="tile"><b data-i18n="h1_t"></b><span data-i18n="h1_d"></span></div>
+          <div class="tile"><b data-i18n="h2_t"></b><span data-i18n="h2_d"></span></div>
+          <div class="tile"><b data-i18n="h3_t"></b><span data-i18n="h3_d"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="install">
+      <div class="wrap">
+        <h2 data-i18n="i_title"></h2>
+        <p class="sub" data-i18n="i_sub"></p>
+        <div class="install">
+          <a class="tile store store-chrome" target="_blank" rel="noopener">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" style="fill:var(--text)"/><circle cx="24" cy="24" r="9" style="fill:var(--card)"/><circle cx="24" cy="24" r="6" style="fill:var(--text)"/><path d="M24 15h19M16.2 28.5 6.7 12M31.8 28.5 22.3 45" style="stroke:var(--card)" stroke-width="2.4"/></svg>
+            <div><b>Chrome Web Store</b><span data-i18n="i_chrome"></span></div>
+          </a>
+          <a class="tile store store-firefox" target="_blank" rel="noopener">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" style="fill:var(--text)"/><path d="M24 9a15 15 0 1 0 14.6 11.6c-1.4 3-4 4.4-6.4 4.4 1.2-5.5-2.2-10-7-11.5 1.4 3-1.2 5.3-3.4 5.6-2.3.4-4 2.3-4 4.6 0 3.3 2.8 5.8 6.2 5.8" fill="none" style="stroke:var(--card)" stroke-width="2.6" stroke-linecap="round"/></svg>
+            <div><b>Firefox Add-ons</b><span data-i18n="i_firefox"></span></div>
+          </a>
+        </div>
+        <p class="note"><span data-i18n="i_manual"></span> <a href="https://github.com/vkardin/leveler/releases" target="_blank" rel="noopener">GitHub Releases</a></p>
+      </div>
+    </section>
+
+    <section class="block" id="faq">
+      <div class="wrap">
+        <h2 data-i18n="q_title"></h2>
+        <div class="faq">
+          <details><summary data-i18n="q1"></summary><p data-i18n="a1"></p></details>
+          <details><summary data-i18n="q2"></summary><p data-i18n="a2"></p></details>
+          <details><summary data-i18n="q3"></summary><p data-i18n="a3"></p></details>
+          <details><summary data-i18n="q4"></summary><p data-i18n="a4"></p></details>
+          <details><summary data-i18n="q5"></summary><p data-i18n="a5"></p></details>
+          <details><summary data-i18n="q6"></summary><p data-i18n="a6"></p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="feedback">
+      <div class="wrap fb-cta">
+        <div>
+          <h2 data-i18n="fb_title"></h2>
+          <p class="sub" data-i18n="fb_sub"></p>
+        </div>
+        <a class="btn primary" href="support.html" data-i18n="fb_btn"></a>
+      </div>
+    </section>
+
+    <section class="block donate" id="donate">
+      <div class="wrap">
+        <h2 data-i18n="d_title"></h2>
+        <p class="sub" data-i18n="d_sub"></p>
+        <div class="wallets" id="wallets"></div>
+        <p class="warn" data-i18n="d_warn"></p>
+        <p class="thanks" data-i18n="d_thanks"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span>© <span id="year"></span> Leveler</span>
+      <a href="support.html" data-i18n="nav_support"></a>
+      <a href="privacy.html" data-i18n="privacy"></a>
+      <a href="#donate" data-i18n="nav_donate"></a>
+      <a class="by" href="https://vkardin.github.io/video-glow/" data-i18n="by_vg"></a>
+    </div>
+  </footer>
+
+  <template id="wallet">
+    <div class="tile">
+      <div class="coin"><i></i><div><b></b><small></small></div></div>
+      <div class="qr"><img alt="QR" width="300" height="300"></div>
+      <div class="addr"></div>
+      <button type="button" class="btn copy"></button>
+    </div>
+  </template>
+
+  <script src="app.js?v=1"></script>
+</body>
+</html>

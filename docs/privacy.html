@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leveler — Privacy Policy</title>
+  <link rel="icon" href="img/icon32.png">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="./"><img src="img/logo.svg" alt="">Leveler</a>
+      <div class="langs" role="group" aria-label="Language">
+        <button type="button" data-lang="ru">RU</button>
+        <button type="button" data-lang="uk">UK</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+  <main class="wrap doc">
+    <h1 data-i18n="p_h"></h1>
+    <p class="muted-date" data-i18n="p_date"></p>
+    <p><b data-i18n="p_sum"></b></p>
+    <h2 data-i18n="p_h1"></h2>
+    <ul>
+      <li data-i18n="p_l1"></li>
+      <li data-i18n="p_l2"></li>
+      <li data-i18n="p_l3"></li>
+      <li data-i18n="p_l4"></li>
+    </ul>
+    <h2 data-i18n="p_h2"></h2>
+    <p data-i18n="p_sync"></p>
+    <h2 data-i18n="p_h3"></h2>
+    <p data-i18n="p_site"></p>
+    <h2 data-i18n="p_h4"></h2>
+    <p data-i18n="p_changes"></p>
+    <h2 data-i18n="p_h5"></h2>
+    <p><span data-i18n="p_contact"></span> <a href="https://github.com/vkardin/leveler/issues">github.com/vkardin/leveler/issues</a></p>
+  </main>
+  <footer class="foot"><div class="wrap"><a href="./" data-i18n="p_back"></a></div></footer>
+  <script>
+    window.PAGE_T = {
+      en: { title: 'Leveler — Privacy Policy', p_h: 'Privacy Policy', p_date: 'Last updated: 2026-10-26', p_back: '← Leveler',
+        p_sum: 'Leveler processes everything locally on your device. It does not collect, store on a server, transmit, sell or share any personal data.',
+        p_h1: 'What the extension does with your data',
+        p_l1: 'It processes the sound of videos on the page you are watching (compressor, equalizer, gain) with the browser’s built-in Web Audio, entirely on your device. Audio is never recorded, saved, uploaded or sent anywhere.',
+        p_l2: 'Your settings (presets, per-site preset and speed, list of sites where audio processing is not supported) are stored in your browser with chrome.storage. They are not sent to us.',
+        p_l3: 'There is no analytics, telemetry, advertising or remote code.',
+        p_l4: 'The "access to all sites" permission is used only to find <video> and <audio> elements on pages, process their sound and change playback speed. No other page content is read.',
+        p_h2: 'Browser sync',
+        p_sync: 'Presets and per-site settings are kept in chrome.storage.sync. If sync is on in your browser, the browser itself (Google or Mozilla) copies them between your devices under its own privacy policy. Leveler has no server and never sees this data.',
+        p_h3: 'This website', p_site: 'This site uses no cookies, trackers or ads. Your chosen language is remembered only in your browser. If you send a message with the feedback form, it is delivered by FormSubmit.co to the developer’s email.',
+        p_h4: 'Changes', p_changes: 'If this policy changes, the new version will be published on this page with an updated date.',
+        p_h5: 'Contact', p_contact: 'Questions: open an issue on GitHub:' },
+      ru: { title: 'Leveler — политика конфиденциальности', p_h: 'Политика конфиденциальности', p_date: 'Обновлено: 26.10.2026', p_back: '← Leveler',
+        p_sum: 'Leveler обрабатывает всё локально на вашем устройстве. Он не собирает, не хранит на сервере, не передаёт, не продаёт и никому не отдаёт персональные данные.',
+        p_h1: 'Что расширение делает с данными',
+        p_l1: 'Обрабатывает звук видео на странице, которую вы смотрите (компрессор, эквалайзер, усиление), встроенным в браузер Web Audio, полностью на вашем устройстве. Звук не записывается, не сохраняется и никуда не отправляется.',
+        p_l2: 'Настройки (пресеты, пресет и скорость для сайтов, список сайтов, где обработка звука не поддерживается) хранятся в вашем браузере через chrome.storage. Нам они не передаются.',
+        p_l3: 'Нет аналитики, телеметрии, рекламы и загружаемого кода.',
+        p_l4: 'Доступ «ко всем сайтам» нужен только чтобы найти на странице элементы <video> и <audio>, обработать их звук и менять скорость. Другое содержимое страниц не читается.',
+        p_h2: 'Синхронизация браузера',
+        p_sync: 'Пресеты и настройки сайтов хранятся в chrome.storage.sync. Если в браузере включена синхронизация, сам браузер (Google или Mozilla) переносит их между вашими устройствами по своей политике конфиденциальности. У Leveler нет сервера, и эти данные он не видит.',
+        p_h3: 'Этот сайт', p_site: 'Сайт не использует cookies, счётчики и рекламу. Выбранный язык запоминается только в вашем браузере. Если вы отправите сообщение через форму обратной связи, его доставит сервис FormSubmit.co на почту разработчика.',
+        p_h4: 'Изменения', p_changes: 'Если политика изменится, новая версия появится на этой странице с новой датой.',
+        p_h5: 'Связь', p_contact: 'Вопросы можно задать в разделе Issues на GitHub:' },
+      uk: { title: 'Leveler — політика конфіденційності', p_h: 'Політика конфіденційності', p_date: 'Оновлено: 26.10.2026', p_back: '← Leveler',
+        p_sum: 'Leveler обробляє все локально на вашому пристрої. Він не збирає, не зберігає на сервері, не передає, не продає й нікому не віддає персональні дані.',
+        p_h1: 'Що розширення робить із даними',
+        p_l1: 'Обробляє звук відео на сторінці, яку ви дивитеся (компресор, еквалайзер, підсилення), вбудованим у браузер Web Audio, повністю на вашому пристрої. Звук не записується, не зберігається й нікуди не надсилається.',
+        p_l2: 'Налаштування (пресети, пресет і швидкість для сайтів, список сайтів, де обробка звуку не підтримується) зберігаються у вашому браузері через chrome.storage. Нам вони не передаються.',
+        p_l3: 'Немає аналітики, телеметрії, реклами й завантажуваного коду.',
+        p_l4: 'Доступ «до всіх сайтів» потрібен лише щоб знайти на сторінці елементи <video> і <audio>, обробити їхній звук і змінювати швидкість. Інший вміст сторінок не читається.',
+        p_h2: 'Синхронізація браузера',
+        p_sync: 'Пресети й налаштування сайтів зберігаються в chrome.storage.sync. Якщо в браузері ввімкнена синхронізація, сам браузер (Google або Mozilla) переносить їх між вашими пристроями за своєю політикою конфіденційності. Leveler не має сервера й цих даних не бачить.',
+        p_h3: 'Цей сайт', p_site: 'Сайт не використовує cookies, лічильники й рекламу. Вибрана мова запам’ятовується лише у вашому браузері. Якщо ви надішлете повідомлення через форму зворотного зв’язку, його доставить сервіс FormSubmit.co на пошту розробника.',
+        p_h4: 'Зміни', p_changes: 'Якщо політика зміниться, нова версія з’явиться на цій сторінці з новою датою.',
+        p_h5: 'Зв’язок', p_contact: 'Питання можна поставити в розділі Issues на GitHub:' }
+    };
+  </script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
