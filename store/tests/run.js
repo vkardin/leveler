@@ -210,6 +210,23 @@ const MEASURE = (ms) => `(async () => {
     // ── 4. popup и скорость ──
     const extId = await iso('chrome.runtime.id');
     const tabId = await tabIdOf(ctx, extId, iso);
+    // ── 4-. повторное внедрение (как после обновления расширения): новый экземпляр забирает работу ──
+    const probePage = await ctx.newPage();
+    await probePage.goto(`chrome-extension://${extId}/options/options.html`);
+    await probePage.evaluate((id) => chrome.scripting.executeScript({ target: { tabId: id, allFrames: true },
+      files: ['shared/defaults.js', 'shared/presets.js', 'content/content.js'] }), tabId);
+    await sleep(500);
+    st = await iso('__leveler.status()');
+    ok(st.processed === 2 && !st.reason, 'после повторного внедрения цепочки на месте, ничего не подключено второй раз', st);
+    const replies = await probePage.evaluate((id) => new Promise((res) => {
+      const got = [];
+      chrome.runtime.onMessage.addListener((m, s) => { if (m.type === 'lv:status' && s.frameId === 0) got.push(m); });
+      chrome.tabs.sendMessage(id, { type: 'lv:hello' }).catch(() => {});
+      setTimeout(() => res(got.length), 500);
+    }), tabId);
+    await probePage.close();
+    ok(replies === 1, 'отвечает только новый экземпляр', replies);
+
     const popup = await ctx.newPage();
     await popup.setViewportSize({ width: 320, height: 420 });
     await popup.goto(`chrome-extension://${extId}/popup/popup.html?tab=${tabId}`);
