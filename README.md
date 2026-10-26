@@ -11,7 +11,7 @@ English · <a href="README.ru.md">Русский</a></p>
 
 Leveler is a volume leveler for any HTML5 video or audio: quiet dialogue gets louder, explosions get softer, so you stop reaching for the volume during a movie. It also controls playback speed from 0.25× to 4× without changing the pitch. Everything runs locally in your browser.
 
-> **Status: prototype (step 1).** One compressor chain, a "Level the sound" slider and speed control. Presets, per-site settings, level meters, hotkeys and the website come in the next steps.
+> **Status: early version (steps 1–2 of 6).** Compressor and equalizer, presets, per-site settings, speed control. Level meters, hotkeys and the website come in the next steps.
 
 <p align="center"><img src="docs/img/popup-en.png" width="320" alt="Leveler popup"></p>
 
@@ -27,7 +27,7 @@ Not in the stores yet. To try the prototype:
 
 Firefox: open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** and choose `manifest.json` from `dist/leveler-firefox-<version>.zip` after unpacking it (see [Build](#build)). In Firefox, allow the extension to access all sites in its permissions, otherwise the content script does not run.
 
-## Features (prototype)
+## Features
 
 - Web Audio chain for every `<video>` and `<audio>`: high-pass → 3-band EQ → compressor → makeup gain → safety limiter
 - One "Level the sound" slider (0–100 %) drives threshold, ratio, knee and attack of the compressor
@@ -38,6 +38,11 @@ Firefox: open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-o
 - One chain per element (WeakMap), never connected twice
 - Playback speed 0.25–4× with `preservesPitch` and a short speed overlay on the video
 - DRM and cross-origin media are detected and left untouched, with the message "This site does not support audio processing" in the popup
+- Built-in presets: Night mode (strong compression), Louder dialogue (default), Headphones, Bass+, Off
+- Compressor (threshold, ratio, knee, attack, release, makeup) and equalizer (low cut, low / mid / high) sliders in the popup
+- Your own presets: save as preset, rename, delete
+- Preset and speed are remembered for each site; iframes use the settings of the tab's site. "Use on all sites" makes the current sound the default for sites without their own settings
+- Backup: export and import all presets and site settings as a JSON file on the settings page
 - Light and dark theme from system settings, English / Русский / Українська
 
 ## How the DRM and CORS fallback works
@@ -71,7 +76,11 @@ The automated test plays a generated 12-second tone that alternates between −3
 - a video added to the page later is connected, replaying the same element does not connect it twice, an `<audio>` in an iframe is connected too;
 - speed 1.5× is applied in all frames with `preservesPitch`, the speed overlay appears, speed is limited to 4×;
 - a cross-origin file without CORS is not connected;
-- a same-origin URL that redirects to another origin is detected as silent, the site is remembered, and after reload it is not touched.
+- a same-origin URL that redirects to another origin is detected as silent, the site is remembered, and after reload it is not touched;
+- choosing a preset in the popup applies it at once in the page and in a cross-origin iframe, and remembers it for the site;
+- a compressor slider changes the sound and marks the preset as changed; save as preset, rename, choose again, delete (the site keeps the sound as "Custom settings");
+- the site's speed and sound settings come back after reloading the page; another site uses the default profile;
+- export makes `leveler-backup-<date>.json`; import replaces the settings, clamps wrong values (speed 9 → 4), drops broken entries and rejects files that are not Leveler backups.
 
 Not covered by the automated test: autoplay without any user action (the headless browser allowed the audio context right away), real DRM.
 
@@ -96,7 +105,8 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 | [`extension/`](extension) | Extension source (load via `chrome://extensions` → Developer mode → Load unpacked) |
 | [`extension/content/`](extension/content) | Content script: audio chain, speed, DRM/CORS detection |
 | [`extension/popup/`](extension/popup) | Popup |
-| [`extension/shared/`](extension/shared) | Defaults, slider-to-compressor mapping, i18n helper |
+| [`extension/options/`](extension/options) | Settings page: backup, presets, sites |
+| [`extension/shared/`](extension/shared) | Defaults, presets and site profiles, backup format, theme, i18n helper |
 | [`docs/`](docs) | Images for the README (the website comes later) |
 | [`store/tests/`](store/tests) | Automated test in Chromium |
 | [`tools/`](tools) | `build.py` packs the Chrome and Firefox zips |

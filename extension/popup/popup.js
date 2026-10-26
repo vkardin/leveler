@@ -1,14 +1,36 @@
 (() => {
   const LV = self.LV;
+  const PR = self.LV_PRESETS;
   const t = self.lvT;
   const $ = (s) => document.querySelector(s);
   const CACHE_KEY = 'unsupportedHosts';
   const STALE_MS = 2500;                   // ответ фрейма старше этого — фрейма больше нет
+  const SAVE_MS = 400;                     // storage.sync ограничивает частоту записи
+
+  // Ползунки компрессора и эквалайзера. scale — множитель для показа (с → мс).
+  const COMP = [
+    { key: 'threshold', label: 's_threshold', step: 1, unit: ' dB' },
+    { key: 'ratio', label: 's_ratio', step: 0.5, fmt: (v) => v + ':1' },
+    { key: 'knee', label: 's_knee', step: 1, unit: ' dB' },
+    { key: 'attack', label: 's_attack', step: 0.001, scale: 1000, unit: ' ms' },
+    { key: 'release', label: 's_release', step: 0.01, scale: 1000, unit: ' ms' },
+    { key: 'makeup', label: 's_makeup', step: 0.5, unit: ' dB', signed: true }
+  ];
+  const EQ = [
+    { key: 'hp', label: 's_hp', step: 10, unit: ' Hz', zero: 'u_off' },
+    { key: 'low', label: 's_low', step: 0.5, unit: ' dB', signed: true },
+    { key: 'mid', label: 's_mid', step: 0.5, unit: ' dB', signed: true },
+    { key: 'high', label: 's_high', step: 0.5, unit: ' dB', signed: true }
+  ];
 
   let settings = LV.normalize();
+  let all = {};                            // снимок storage.sync
+  let site = null;                         // сайт вкладки (из ответа главного фрейма)
+  let siteKnown = false;
+  let profile = PR.normalizeProfile(PR.DEFAULT_PROFILE);
   let tabId = null;
-  let speed = 1;
   let speedTouched = 0;                    // пока ползунок двигают, не перезаписываем его ответами
+  let editing = 0;                         // то же для параметров звука
   const frames = new Map();                // frameId → { s: статус, at: время }
 
   self.lvApplyI18n();
@@ -18,7 +40,12 @@
     enabled: $('#enabled'), level: $('#level'), levelOut: $('#levelOut'), levelInfo: $('#levelInfo'),
     speed: $('#speed'), speedOut: $('#speedOut'), chips: $('#chips'),
     status: $('#status'), statusText: $('#statusText'),
-    notice: $('#notice'), noticeText: $('#noticeText'), retry: $('#retry')
+    notice: $('#notice'), noticeText: $('#noticeText'), retry: $('#retry'),
+    preset: $('#preset'), scope: $('#scope'), modified: $('#modified'),
+    saveAs: $('#saveAs'), rename: $('#rename'), remove: $('#remove'),
+    nameForm: $('#nameForm'), nameInput: $('#nameInput'), nameCancel: $('#nameCancel'),
+    confirm: $('#confirm'), confirmText: $('#confirmText'), confirmYes: $('#confirmYes'), confirmNo: $('#confirmNo'),
+    makeDefault: $('#makeDefault'), resetSite: $('#resetSite')
   };
 
   els.speed.min = LV.SPEED_MIN;
@@ -30,27 +57,146 @@
     input.style.setProperty('--p', p + '%');
   };
   const fmtSpeed = (v) => (Math.round(v * 100) / 100) + '×';
-  const fmtDb = (v) => (v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' dB';
+  const minus = (s) => String(s).replace('-', '−');
+  const fmtDb = (v) => minus(Math.round(v)) + ' dB';
+  const r2 = (v) => Math.round(v * 100) / 100;
+
+  // ───────────────────────── пресеты и профиль ─────────────────────────
+
+  const customs = () => PR.normalizePresets(all.presets);
+  const findPreset = (id) => PR.builtin(id) || customs().find((p) => p.id === id) || null;
+  const presetName = (p) => (p.id.startsWith('b:') ? t(p.name) : p.name);
+  const storeKey = () => (site ? PR.siteKey(site) : 'def');
+
+  function currentProfile() {
+    return PR.normalizeProfile((site && all[PR.siteKey(site)]) || all.def || PR.DEFAULT_PROFILE);
+  }
+
+  let saveTimer = 0;
+  function saveProfile(now) {
+    clearTimeout(saveTimer);
+    const key = storeKey(), value = JSON.parse(JSON.stringify(profile));
+    all[key] = value;
+    const write = () => chrome.storage.sync.set({ [key]: value });
+    if (now) write(); else saveTimer = setTimeout(write, SAVE_MS);
+  }
+
+  function sendParams() {
+    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:params', params: profile.params }).catch(() => {});
+  }
+
+  // изменение параметров ползунком: сразу на странице, в storage — с задержкой
+  function changeParams(params) {
+    profile.params = PR.normalizeParams(params);
+    editing = Date.now();
+    renderParams();
+    renderPresets();
+    sendParams();
+    saveProfile(false);
+  }
+
+  function selectPreset(id) {
+    const p = findPreset(id);
+    if (!p) return;
+    profile.preset = id;
+    profile.params = PR.normalizeParams(p.params);
+    renderAll();
+    sendParams();
+    saveProfile(true);
+  }
 
   // ───────────────────────── отрисовка ─────────────────────────
+
+  function renderPresets() {
+    const sel = els.preset;
+    sel.textContent = '';
+    const group = (label, list) => {
+      const g = document.createElement('optgroup');
+      g.label = label;
+      for (const p of list) g.appendChild(new Option(presetName(p), p.id));
+      sel.appendChild(g);
+    };
+    group(t('p_builtin'), PR.BUILTIN);
+    const mine = customs();
+    if (mine.length) group(t('p_custom'), mine);
+    const cur = findPreset(profile.preset);
+    if (!cur) {
+      sel.insertBefore(new Option(t('p_own_settings'), ''), sel.firstChild);
+      sel.value = '';
+    } else sel.value = cur.id;
+    const custom = !!cur && cur.id.startsWith('u:');
+    els.rename.disabled = els.remove.disabled = !custom;
+    els.modified.hidden = !cur || PR.sameParams(cur.params, profile.params);
+    els.scope.textContent = site ? site : t('p_scope_default');
+    els.resetSite.hidden = !site || !all[PR.siteKey(site)];
+    els.makeDefault.hidden = !site;
+  }
+
+  function renderParams() {
+    const p = profile.params;
+    const manual = p.level === null;
+    els.level.value = manual ? 50 : p.level;
+    els.level.classList.toggle('manual', manual);
+    els.levelOut.textContent = manual ? t('p_level_manual') : p.level + '%';
+    els.levelInfo.textContent = p.ratio <= 1 ? t('p_level_none')
+      : t('p_level_info', fmtDb(p.threshold), r2(p.ratio) + ':1');
+    fill(els.level);
+    for (const s of COMP.concat(EQ)) {
+      const input = document.getElementById('sl-' + s.key);
+      input.value = p[s.key];
+      fill(input);
+      document.getElementById('out-' + s.key).textContent = fmtValue(s, p[s.key]);
+    }
+  }
+
+  function fmtValue(s, v) {
+    if (s.zero && v === 0) return t(s.zero);
+    if (s.fmt) return s.fmt(r2(v));
+    const x = r2(v * (s.scale || 1));
+    return minus((s.signed && x > 0 ? '+' : '') + x) + (s.unit || '');
+  }
 
   function renderSettings() {
     els.enabled.checked = settings.enabled;
     document.body.classList.toggle('off', !settings.enabled);
-    els.level.value = settings.level;
-    els.levelOut.textContent = settings.level + '%';
-    const p = LV.levelToParams(settings.level);
-    els.levelInfo.textContent = settings.level === 0 ? t('p_level_none')
-      : t('p_level_info', fmtDb(p.threshold), (Math.round(p.ratio * 10) / 10) + ':1');
-    fill(els.level);
   }
 
   function renderSpeed() {
-    els.speed.value = speed;
-    els.speedOut.textContent = fmtSpeed(speed);
+    const v = profile.speed;
+    els.speed.value = v;
+    els.speedOut.textContent = fmtSpeed(v);
     fill(els.speed);
-    for (const b of els.chips.children) b.classList.toggle('on', Math.abs(+b.dataset.speed - speed) < 0.001);
+    for (const b of els.chips.children) b.classList.toggle('on', Math.abs(+b.dataset.speed - v) < 0.001);
   }
+
+  function renderAll() {
+    renderSettings();
+    renderPresets();
+    renderParams();
+    renderSpeed();
+  }
+
+  function buildSliders(root, list) {
+    for (const s of list) {
+      const spec = PR.SPEC[s.key];
+      const wrap = document.createElement('div');
+      wrap.className = 'slider';
+      wrap.innerHTML = '<div class="row"><label></label><output></output></div><input type="range">';
+      const label = wrap.querySelector('label'), out = wrap.querySelector('output'), input = wrap.querySelector('input');
+      label.textContent = t(s.label);
+      label.htmlFor = input.id = 'sl-' + s.key;
+      out.id = 'out-' + s.key;
+      input.min = spec.min; input.max = spec.max; input.step = s.step;
+      input.addEventListener('input', () => {
+        const next = Object.assign({}, profile.params, { [s.key]: +input.value });
+        if (PR.COMP_KEYS.includes(s.key)) next.level = null;   // компрессор настроен вручную
+        changeParams(next);
+      });
+      root.appendChild(wrap);
+    }
+  }
+  buildSliders($('#compSliders'), COMP);
+  buildSliders($('#eqSliders'), EQ);
 
   function renderStatus() {
     const now = Date.now();
@@ -88,8 +234,15 @@
   chrome.runtime.onMessage.addListener((msg, sender) => {
     if (!msg || msg.type !== 'lv:status' || !sender.tab || sender.tab.id !== tabId) return;
     frames.set(sender.frameId, { s: msg, at: Date.now() });
-    if (msg.top || !frames.has(0)) {
-      if (Date.now() - speedTouched > 600 && msg.found) { speed = msg.speed; renderSpeed(); }
+    if (msg.top && site === null && PR.isHost(msg.site)) {
+      site = msg.site;
+      profile = currentProfile();
+      setKnown();
+      renderAll();
+    }
+    if (msg.top && msg.found && Date.now() - speedTouched > 600 && Math.abs(msg.speed - profile.speed) > 0.001) {
+      // сайт мог сменить скорость сам (собственный плеер): показываем фактическую
+      els.speedOut.textContent = fmtSpeed(msg.speed);
     }
     renderStatus();
   });
@@ -103,10 +256,11 @@
   }
 
   function sendSpeed(v) {
-    speed = LV.clampSpeed(v);
+    profile.speed = LV.clampSpeed(v);
     speedTouched = Date.now();
     renderSpeed();
-    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:speed', speed }).catch(() => {});
+    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:speed', speed: profile.speed }).catch(() => {});
+    if (site) saveProfile(false);
   }
 
   // ───────────────────────── обработчики ─────────────────────────
@@ -118,19 +272,89 @@
     setTimeout(hello, 150);
   });
 
-  let levelTimer = 0;
-  els.level.addEventListener('input', () => {
-    settings.level = +els.level.value;
-    renderSettings();
-    // storage.sync ограничивает частоту записи — сохраняем не чаще, чем раз в 150 мс
-    clearTimeout(levelTimer);
-    levelTimer = setTimeout(() => chrome.storage.sync.set({ level: settings.level }), 150);
-  });
+  els.level.addEventListener('input', () => changeParams(PR.withLevel(profile.params, +els.level.value)));
 
   els.speed.addEventListener('input', () => sendSpeed(+els.speed.value));
   els.chips.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-speed]');
     if (b) sendSpeed(+b.dataset.speed);
+  });
+
+  els.preset.addEventListener('change', () => selectPreset(els.preset.value));
+
+  // ── сохранить как / переименовать: одна и та же форма с полем имени ──
+  let nameMode = null;
+  function openName(mode) {
+    nameMode = mode;
+    els.confirm.hidden = true;
+    const cur = findPreset(profile.preset);
+    els.nameInput.value = mode === 'rename' && cur ? cur.name : '';
+    els.nameInput.placeholder = t('p_name_ph');
+    els.nameForm.hidden = false;
+    els.nameInput.focus();
+    els.nameInput.select();
+  }
+  const closeName = () => { els.nameForm.hidden = true; nameMode = null; };
+
+  els.saveAs.addEventListener('click', () => openName('save'));
+  els.rename.addEventListener('click', () => openName('rename'));
+  els.nameCancel.addEventListener('click', closeName);
+  els.nameForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = els.nameInput.value.trim().slice(0, PR.MAX_NAME);
+    if (!name) return;
+    const list = customs();
+    if (nameMode === 'save') {
+      if (list.length >= PR.MAX_PRESETS) { els.nameInput.setCustomValidity(t('p_too_many')); els.nameInput.reportValidity(); return; }
+      const p = { id: PR.newId(), name, params: PR.normalizeParams(profile.params) };
+      list.push(p);
+      profile.preset = p.id;
+    } else {
+      const p = list.find((x) => x.id === profile.preset);
+      if (p) p.name = name;
+    }
+    all.presets = list;
+    chrome.storage.sync.set({ presets: list });
+    saveProfile(true);
+    closeName();
+    renderPresets();
+  });
+  els.nameInput.addEventListener('input', () => els.nameInput.setCustomValidity(''));
+
+  els.remove.addEventListener('click', () => {
+    const cur = findPreset(profile.preset);
+    if (!cur || !cur.id.startsWith('u:')) return;
+    closeName();
+    els.confirmText.textContent = t('p_delete_q', cur.name);
+    els.confirm.hidden = false;
+  });
+  els.confirmNo.addEventListener('click', () => { els.confirm.hidden = true; });
+  els.confirmYes.addEventListener('click', () => {
+    const id = profile.preset;
+    all.presets = customs().filter((p) => p.id !== id);
+    chrome.storage.sync.set({ presets: all.presets });
+    // параметры остаются, просто без пресета («Свои настройки»)
+    profile.preset = null;
+    saveProfile(true);
+    els.confirm.hidden = true;
+    renderPresets();
+  });
+
+  els.makeDefault.addEventListener('click', () => {
+    all.def = { preset: profile.preset, params: profile.params, speed: 1 };
+    chrome.storage.sync.set({ def: all.def });
+    els.makeDefault.textContent = t('p_done');
+    setTimeout(() => { els.makeDefault.textContent = t('p_make_default'); }, 1200);
+  });
+
+  els.resetSite.addEventListener('click', () => {
+    if (!site) return;
+    delete all[PR.siteKey(site)];
+    chrome.storage.sync.remove(PR.siteKey(site));
+    profile = currentProfile();
+    renderAll();
+    sendParams();
+    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:speed', speed: profile.speed }).catch(() => {});
   });
 
   els.retry.addEventListener('click', async () => {
@@ -142,27 +366,52 @@
     window.close();
   });
 
+  $('#openOptions').addEventListener('click', () => { chrome.runtime.openOptionsPage(); window.close(); });
+
+  // изменения из другой вкладки или со страницы настроек
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'sync') return;
+    for (const k in changes) {
+      if (changes[k].newValue === undefined) delete all[k];
+      else all[k] = changes[k].newValue;
+    }
+    if (changes.enabled) settings = LV.normalize(all);
+    if (Date.now() - editing > 1000 && Date.now() - speedTouched > 1000 && (changes.def || (site && changes[PR.siteKey(site)]))) {
+      profile = currentProfile();
+    }
+    renderAll();
+  });
+
   // ───────────────────────── старт ─────────────────────────
 
-  chrome.storage.sync.get(null, (all) => {
+  renderAll();
+  chrome.storage.sync.get(null, (r) => {
+    all = r || {};
     settings = LV.normalize(all);
-    renderSettings();
+    profile = currentProfile();
+    renderAll();
   });
-  renderSettings();
-  renderSpeed();
 
+  // Пока не знаем сайт вкладки, править нечего: без ответа страницы (chrome://, магазин)
+  // через секунду ползунки правят общий профиль по умолчанию.
+  function setKnown() {
+    siteKnown = true;
+    document.body.classList.remove('loading');
+  }
+  document.body.classList.add('loading');
+  setTimeout(() => { if (!siteKnown) { setKnown(); renderAll(); } }, 1200);
+
+  const start = () => { hello(); setInterval(hello, 1000); };
   // ?tab=<id> — открыть popup для конкретной вкладки (автотесты и скриншоты)
   const forced = +new URLSearchParams(location.search).get('tab');
   if (forced) {
     tabId = forced;
-    hello();
-    setInterval(hello, 1000);
+    start();
   } else chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs && tabs[0];
     // на служебных страницах (chrome://, магазин) content script не работает:
     // ответа не будет, и popup покажет «здесь расширение не работает»
     tabId = tab ? tab.id : null;
-    hello();
-    setInterval(hello, 1000);
+    start();
   });
 })();

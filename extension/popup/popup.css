@@ -1,34 +1,4 @@
-/* Popup. Тема — по системной настройке (prefers-color-scheme). */
-:root {
-  --bg: #0b0d10;
-  --card: #13161a;
-  --line: #23272d;
-  --text: #eef1f4;
-  --muted: #8a919a;
-  --track: #2a2f36;
-  --accent: #3ddc97;
-  --accent-ink: #062016;
-  --warn-bg: #2a2214;
-  --warn: #f2c66d;
-  --font: "Inter", "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
-  color-scheme: dark;
-}
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f6f7f8;
-    --card: #ffffff;
-    --line: #e2e5e9;
-    --text: #15181c;
-    --muted: #68707a;
-    --track: #dde1e6;
-    --accent: #12a66a;
-    --accent-ink: #ffffff;
-    --warn-bg: #fff4dc;
-    --warn: #8a5a00;
-    color-scheme: light;
-  }
-}
-
+/* Popup. Цвета — в shared/theme.css. */
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; }
@@ -113,4 +83,45 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .chips button:hover { color: var(--text); }
 .chips button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
-footer { color: var(--muted); font-size: 11px; text-align: right; margin: 2px 2px 0; }
+footer { color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; margin: 2px 2px 0; }
+
+/* пресеты */
+body.loading .card { opacity: .45; pointer-events: none; }
+.scope { color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+.scope span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+.scope em { font-style: normal; color: var(--warn); }
+.preset-row { display: flex; gap: 6px; }
+select, .name-form input {
+  flex: 1; min-width: 0; height: 30px; padding: 0 8px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit;
+}
+button.icon {
+  width: 30px; height: 30px; flex: none; padding: 0; border-radius: 8px;
+  border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 14px; line-height: 1;
+}
+button.icon:hover:not(:disabled) { color: var(--text); }
+button:disabled { opacity: .35; cursor: default; }
+.name-form, .confirm { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+.confirm span { flex: 1; font-size: 12px; color: var(--muted); }
+.btn {
+  height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: transparent; font-size: 12px;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { background: #c0392b; border-color: #c0392b; color: #fff; }
+.site-actions { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.site-actions .link:hover, footer .link:hover { color: var(--text); }
+
+/* свёрнутые блоки ползунков */
+details.fold { padding: 0; }
+details.fold summary {
+  padding: 11px 12px; font-weight: 500; cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between;
+}
+details.fold summary::-webkit-details-marker { display: none; }
+details.fold summary::after { content: "▾"; color: var(--muted); transition: transform .2s; }
+details.fold[open] summary::after { transform: rotate(180deg); }
+.sliders { padding: 0 12px 10px; display: grid; gap: 6px; }
+.slider .row { margin-bottom: 0; font-size: 12px; }
+.slider .row label { font-weight: 400; }
+input[type=range].manual::-webkit-slider-thumb { background: var(--muted); }

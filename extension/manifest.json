@@ -4,7 +4,7 @@
   "name": "__MSG_extName__",
   "short_name": "Leveler",
   "homepage_url": "https://github.com/vkardin/leveler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "__MSG_extDescription__",
   "minimum_chrome_version": "110",
   "permissions": [
@@ -31,11 +31,16 @@
       ],
       "js": [
         "shared/defaults.js",
+        "shared/presets.js",
         "content/content.js"
       ],
       "all_frames": true,
       "match_about_blank": true,
       "run_at": "document_start"
     }
-  ]
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
 }

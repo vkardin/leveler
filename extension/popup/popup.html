@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="color-scheme" content="light dark">
   <title>Leveler</title>
+  <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -22,6 +23,33 @@
     <button type="button" id="retry" class="link" data-i18n="p_retry" hidden></button>
   </div>
 
+  <section class="card" id="presetCard">
+    <div class="row">
+      <label for="preset" data-i18n="p_preset"></label>
+      <span class="scope"><span id="scope"></span><em id="modified" data-i18n="p_modified" hidden></em></span>
+    </div>
+    <div class="preset-row">
+      <select id="preset"></select>
+      <button type="button" class="icon" id="saveAs" data-i18n-title="p_save_as">&#65291;</button>
+      <button type="button" class="icon" id="rename" data-i18n-title="p_rename">&#9998;</button>
+      <button type="button" class="icon" id="remove" data-i18n-title="p_delete">&#10005;</button>
+    </div>
+    <form class="name-form" id="nameForm" hidden>
+      <input type="text" id="nameInput" maxlength="40" autocomplete="off" required>
+      <button type="submit" class="btn primary" data-i18n="p_ok"></button>
+      <button type="button" class="btn" id="nameCancel" data-i18n="p_cancel"></button>
+    </form>
+    <div class="confirm" id="confirm" hidden>
+      <span id="confirmText"></span>
+      <button type="button" class="btn danger" id="confirmYes" data-i18n="p_delete"></button>
+      <button type="button" class="btn" id="confirmNo" data-i18n="p_cancel"></button>
+    </div>
+    <div class="site-actions" id="siteActions">
+      <button type="button" class="link" id="makeDefault" data-i18n="p_make_default"></button>
+      <button type="button" class="link" id="resetSite" data-i18n="p_reset_site"></button>
+    </div>
+  </section>
+
   <section class="card" id="levelCard">
     <div class="row">
       <label for="level" data-i18n="p_level"></label>
@@ -31,6 +59,16 @@
     <div class="hint" data-i18n="p_level_hint"></div>
     <div class="hint mono" id="levelInfo"></div>
   </section>
+
+  <details class="card fold" id="compCard">
+    <summary data-i18n="p_compressor"></summary>
+    <div class="sliders" id="compSliders"></div>
+  </details>
+
+  <details class="card fold" id="eqCard">
+    <summary data-i18n="p_eq"></summary>
+    <div class="sliders" id="eqSliders"></div>
+  </details>
 
   <section class="card" id="speedCard">
     <div class="row">
@@ -47,9 +85,13 @@
     </div>
   </section>
 
-  <footer><span id="version"></span></footer>
+  <footer>
+    <button type="button" class="link" id="openOptions" data-i18n="p_options"></button>
+    <span id="version"></span>
+  </footer>
 
   <script src="../shared/defaults.js"></script>
+  <script src="../shared/presets.js"></script>
   <script src="../shared/i18n.js"></script>
   <script src="popup.js"></script>
 </body>
