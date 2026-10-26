@@ -135,6 +135,9 @@ const MEASURE = (ms) => `(async () => {
     await p.goto(`http://localhost:${A}/`);
     await sleep(500);
     const iso = await isolated(p);
+    // после установки пресет «Выкл»: для проверок обработки включаем «Диалоги громче» по умолчанию
+    await iso(`chrome.storage.sync.set({ def: { preset: 'b:dialog', speed: 1, params: LV_PRESETS.builtin('b:dialog').params } })`);
+    await sleep(200);
 
     let st = await iso('__leveler.status()');
     ok(st.found >= 1 && st.processed === 0 && st.audio === 'none', 'до запуска видео элемент найден, но не подключён', st);
@@ -317,6 +320,38 @@ const MEASURE = (ms) => `(async () => {
     prm = await iso2('__leveler.params');
     ok(prm.ratio === 4, 'и настройки звука сайта тоже', prm.ratio);
 
+    // горячие клавиши и индикатор уровня
+    await p.mouse.click(700, 400);
+    await p.keyboard.press(']');
+    await p.keyboard.press(']');
+    await p.keyboard.press('[');
+    await sleep(800);
+    let r = await p.evaluate(() => document.getElementById('v').playbackRate);
+    sync = await iso2('chrome.storage.sync.get(null)');
+    ok(Math.abs(r - 1.35) < 0.001 && sync['s:localhost'].speed === 1.35 && sync['s:localhost'].params.ratio === 4,
+      'клавиши ] ] [ — 1.35×, сохранено для сайта', [r, sync['s:localhost']]);
+    await p.keyboard.press('Backslash');
+    await sleep(100);
+    ok(await p.evaluate(() => document.getElementById('v').playbackRate) === 1, 'клавиша \\ — обычная скорость');
+    await p.evaluate(() => document.getElementById('v').play());
+    await sleep(600);
+    const lp = await ctx.newPage();
+    await lp.goto(`chrome-extension://${extId}/options/options.html`);
+    await lp.evaluate((id) => chrome.tabs.sendMessage(id, { type: 'lv:levels' }), tabId);
+    await sleep(200);   // анализатор «после» создаётся при первом запросе
+    const lv = await lp.evaluate((id) => chrome.tabs.sendMessage(id, { type: 'lv:levels' }), tabId);
+    ok(lv && lv.pre > -60 && lv.post > -60, 'индикатор уровня получает до/после', lv);
+    await lp.click('#keys input[data-key="faster"]');
+    await lp.keyboard.press('KeyF');
+    await sleep(300);
+    await p.mouse.click(700, 400);
+    await p.keyboard.press('f');
+    await sleep(100);
+    r = await p.evaluate(() => document.getElementById('v').playbackRate);
+    ok(Math.abs(r - 1.1) < 0.001, 'своя клавиша «быстрее» (f) работает', r);
+    if (SHOTS) await lp.screenshot({ path: path.join(SHOTS, 'options-keys.png'), fullPage: true });
+    await lp.close();
+
     // другой сайт использует профиль по умолчанию
     const po = await ctx.newPage();
     await po.goto(`http://127.0.0.1:${A}/frame`);
@@ -333,7 +368,7 @@ const MEASURE = (ms) => `(async () => {
     ok(await opt.locator('#sites li').count() === 1, 'страница настроек показывает сайт со своими настройками');
     const [dl] = await Promise.all([opt.waitForEvent('download'), opt.click('#export')]);
     const backup = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
-    ok(backup.app === 'leveler' && backup.sites.localhost && backup.sites.localhost.speed === 1.25
+    ok(backup.app === 'leveler' && backup.sites.localhost && backup.sites.localhost.speed === 1.1
       && /leveler-backup-\d{4}-\d\d-\d\d\.json/.test(dl.suggestedFilename()), 'экспорт JSON', dl.suggestedFilename());
     backup.presets = [{ id: 'u:test1', name: 'Из файла', params: { ratio: 3, threshold: -20 } }, { id: 'bad', name: 'x' }];
     backup.sites = { 'Example.com': { preset: 'u:test1', speed: 9 }, '<script>': {} };
@@ -359,11 +394,21 @@ const MEASURE = (ms) => `(async () => {
     await sleep(800);
     const isoA = await isolated(pa);
     st = await isoA('__leveler.status()');
+    let prmA = await isoA('__leveler.params');
+    ok(st.processed === 0 && st.audio === 'none' && prmA.ratio === 1, 'после установки (пресет «Выкл») звук не трогается вовсе', st);
+    await isoA(`chrome.storage.sync.set({ def: { preset: 'b:dialog', speed: 1, params: LV_PRESETS.builtin('b:dialog').params } })`);
+    await sleep(300);
+    await pa.reload();
+    await sleep(300);
+    await pa.evaluate(() => { const v = document.getElementById('v'); v.muted = false; return v.play().catch(() => {}); });
+    await sleep(800);
+    const isoA2 = await isolated(pa);
+    st = await isoA2('__leveler.status()');
     if (st.audio === 'suspended') ok(st.processed === 0, 'без действия пользователя элемент не подключается (звук оригинальный)', st);
     else console.log('  skip автозапуск: браузер сразу разрешил AudioContext', JSON.stringify(st));
     await pa.mouse.click(700, 400);
     await sleep(600);
-    st = await isoA('__leveler.status()');
+    st = await isoA2('__leveler.status()');
     ok(st.processed >= 1 && st.audio === 'running', 'после первого клика по странице цепочка подключилась', st);
     await pa.close();
 

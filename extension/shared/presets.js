@@ -63,7 +63,7 @@
     { id: 'b:off', name: 'pr_off',
       params: P(Object.assign(withLevel({}, 0), { hp: 0, low: 0, mid: 0, high: 0 })) }
   ]);
-  const DEFAULT_PRESET = 'b:dialog';
+  const DEFAULT_PRESET = 'b:off';        // после установки звук не трогаем, пока пользователь не выберет пресет
 
   const builtin = (id) => BUILTIN.find((b) => b.id === id) || null;
 
@@ -99,8 +99,24 @@
 
   const newId = () => 'u:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+  // «Выкл»: ничего не меняет — такой элемент даже не подключаем к Web Audio
+  const isNeutral = (p) => p.ratio <= 1 && !p.makeup && !p.hp && !p.low && !p.mid && !p.high;
+
   const sameParams = (a, b) => KEYS.every((k) => (a[k] === null || b[k] === null)
     ? (k === 'level' || a[k] === b[k]) : Math.abs(a[k] - b[k]) < 1e-4);
+
+  // ───────── горячие клавиши ─────────
+  // Значения — KeyboardEvent.key. По умолчанию [ и ] — медленнее/быстрее на 0.1, \\ — сброс на 1×.
+  const DEFAULT_KEYS = Object.freeze({ slower: '[', faster: ']', reset: '\\' });
+  function normalizeKeys(k) {
+    k = k && typeof k === 'object' ? k : {};
+    const out = {};
+    for (const name in DEFAULT_KEYS) {
+      const v = k[name];
+      out[name] = typeof v === 'string' && v.length > 0 && v.length <= 12 ? v : DEFAULT_KEYS[name];
+    }
+    return out;
+  }
 
   // ───────── сайт ─────────
 
@@ -127,6 +143,7 @@
       exported: new Date().toISOString(),
       enabled: all.enabled !== false,
       presets: normalizePresets(all.presets),
+      keys: normalizeKeys(all.keys),
       default: normalizeProfile(all.def || DEFAULT_PROFILE),
       sites
     };
@@ -139,6 +156,7 @@
     const out = {
       enabled: data.enabled !== false,
       presets: normalizePresets(data.presets),
+      keys: normalizeKeys(data.keys),
       def: normalizeProfile(data.default)
     };
     const sites = data.sites && typeof data.sites === 'object' ? data.sites : {};
@@ -153,7 +171,7 @@
 
   self.LV_PRESETS = Object.freeze({
     SPEC, KEYS, COMP_KEYS, BUILTIN, DEFAULT_PRESET, DEFAULT_PROFILE, MAX_PRESETS, MAX_NAME,
-    normalizeParams, withLevel, normalizeProfile, normalizePresets, builtin, newId, sameParams,
-    siteKey, isHost, topHost, exportData, importData
+    normalizeParams, withLevel, isNeutral, normalizeProfile, normalizePresets, builtin, newId, sameParams,
+    DEFAULT_KEYS, normalizeKeys, siteKey, isHost, topHost, exportData, importData
   });
 })();

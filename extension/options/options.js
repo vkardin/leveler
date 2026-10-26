@@ -30,6 +30,7 @@
   }
 
   function render() {
+    renderKeys();
     const presets = PR.normalizePresets(all.presets);
     const ul = $('#presets');
     ul.textContent = '';
@@ -64,6 +65,32 @@
     $('#unsupportedEmpty').hidden = hosts.length > 0;
   }
 
+  // ── горячие клавиши: поле ловит нажатую клавишу ──
+  const KEY_LABELS = { slower: 'o_key_slower', faster: 'o_key_faster', reset: 'o_key_reset' };
+  const keyName = (k) => (k === ' ' ? 'Space' : k);
+  function renderKeys() {
+    const keys = PR.normalizeKeys(all.keys);
+    const box = $('#keys');
+    if (!box.children.length) {
+      for (const name in KEY_LABELS) {
+        const l = document.createElement('label');
+        l.innerHTML = '<span></span><input type="text" readonly>';
+        l.querySelector('span').textContent = t(KEY_LABELS[name]);
+        const input = l.querySelector('input');
+        input.dataset.key = name;
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Tab') return;
+          e.preventDefault();
+          if (['Shift', 'Control', 'Alt', 'Meta', 'Escape'].includes(e.key)) return;
+          chrome.storage.sync.set({ keys: Object.assign(PR.normalizeKeys(all.keys), { [name]: e.key }) });
+        });
+        box.appendChild(l);
+      }
+    }
+    for (const input of box.querySelectorAll('input')) input.value = keyName(keys[input.dataset.key]);
+  }
+  $('#resetKeys').addEventListener('click', () => chrome.storage.sync.remove('keys'));
+
   const msg = (text, err) => {
     const m = $('#backupMsg');
     m.textContent = text;
@@ -91,7 +118,7 @@
       if (file.size > 512 * 1024) throw new Error('too-big');
       const data = PR.importData(JSON.parse(await file.text()));
       // резервная копия заменяет пресеты, профиль по умолчанию и настройки сайтов целиком
-      const old = Object.keys(all).filter((k) => k.startsWith('s:') || k === 'presets' || k === 'def');
+      const old = Object.keys(all).filter((k) => k.startsWith('s:') || k === 'presets' || k === 'def' || k === 'keys');
       await chrome.storage.sync.remove(old);
       await chrome.storage.sync.set(data);
       const sites = Object.keys(data).filter((k) => k.startsWith('s:')).length;

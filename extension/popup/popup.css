@@ -83,6 +83,15 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .chips button:hover { color: var(--text); }
 .chips button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
+/* индикатор уровня до/после компрессии */
+.meters { display: grid; gap: 5px; margin-top: 10px; }
+.meter { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.meter b { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; display: block; }
+.meter i { display: block; height: 100%; width: 100%; border-radius: 3px; background: var(--accent);
+  transform-origin: left; transform: scaleX(0); transition: transform .08s linear; }
+.meter:first-child i { background: var(--muted); }
+.meters.idle { opacity: .4; }
+
 footer { color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; margin: 2px 2px 0; }
 
 /* пресеты */
