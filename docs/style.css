@@ -177,3 +177,10 @@ section.block.first { border-top: 0; padding-top: 32px; }
   .demo, .steps { grid-template-columns: 1fr; }
   .by { margin-left: 0; }
 }
+
+/* Ещё от автора */
+.vg-card { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.vg-card img { width: 72px; height: 72px; border-radius: 18px; }
+.vg-text { flex: 1; min-width: 220px; }
+.vg-text b { font-size: 20px; }
+.vg-btns { display: flex; gap: 10px; flex-wrap: wrap; }
