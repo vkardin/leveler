@@ -73,6 +73,12 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 
 <br clear="left">
 
+<a href="https://vkardin.github.io/snapt/"><img src="docs/img/snapt.svg" width="56" align="left" alt="Snapt"></a>
+
+**[Snapt](https://vkardin.github.io/snapt/)**: a fast, lightweight, open-source screenshot tool for Windows, macOS and Linux. Select an area, add an arrow or a caption, copy it. No accounts, no cloud. [Website](https://vkardin.github.io/snapt/) · [GitHub](https://github.com/vkardin/snapt)
+
+<br clear="left">
+
 ## License
 
 [MIT](LICENSE) © vkardin
