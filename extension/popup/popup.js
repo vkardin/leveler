@@ -401,7 +401,23 @@
   document.body.classList.add('loading');
   setTimeout(() => { if (!siteKnown) { setKnown(); renderAll(); } }, 1200);
 
-  const start = () => { hello(); setInterval(hello, 1000); };
+  // Страница не ответила — скорее всего, вкладка была открыта до установки или обновления
+  // расширения, и content script в ней нет. Внедряем его сами, без перезагрузки страницы.
+  let injected = false;
+  function injectIfSilent() {
+    if (injected || tabId === null || [...frames.values()].some((f) => f.s.top)) return;
+    injected = true;
+    chrome.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      files: ['shared/defaults.js', 'shared/presets.js', 'content/content.js']
+    }).then(() => setTimeout(hello, 150), () => {});
+  }
+
+  const start = () => {
+    hello();
+    setInterval(hello, 1000);
+    setTimeout(injectIfSilent, 700);
+  };
   // ?tab=<id> — открыть popup для конкретной вкладки (автотесты и скриншоты)
   const forced = +new URLSearchParams(location.search).get('tab');
   if (forced) {

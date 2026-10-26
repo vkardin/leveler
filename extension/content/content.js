@@ -25,8 +25,13 @@
 
   const LV = self.LV;
   const PR = self.LV_PRESETS;
-  if (!LV || !PR || window.__lvLoaded) return;
-  window.__lvLoaded = true;
+  if (!LV || !PR) return;
+  // После установки или обновления расширения скрипт заново внедряется в открытые вкладки
+  // (background.js, popup). Старый экземпляр в той же вкладке уступает место новому:
+  // снимает свои обработчики, а AudioContext и цепочки оставляет в window.__lvAudio —
+  // элемент, уже подключённый к Web Audio, второй раз подключить нельзя.
+  window.dispatchEvent(new Event('leveler-takeover'));
+  const shared = window.__lvAudio || (window.__lvAudio = { ctx: null, chains: new WeakMap() });
 
   const HOST = LV.normHost(location.hostname);
   const SITE = PR.topHost();               // настройки берутся по сайту вкладки, и для iframe тоже
@@ -45,11 +50,11 @@
   let profile = PR.normalizeProfile(PR.DEFAULT_PROFILE);
   let params = profile.params;             // текущие параметры звука (popup может менять их вживую)
   let speed = 1;                           // скорость на этой странице
-  let ctx = null;
+  let ctx = shared.ctx;
   let hostUnsupported = DRM_HOSTS.some((h) => HOST === h || HOST.endsWith('.' + h));
   let cachedUnsupported = false;
 
-  const chains = new WeakMap();            // элемент → цепочка; один элемент — одна цепочка
+  const chains = shared.chains;            // элемент → цепочка; один элемент — одна цепочка
   const blocked = new WeakMap();           // элемент → причина, по которой его не трогаем
   const media = new Set();                 // все найденные <video>/<audio> этого фрейма
   const waiting = new Set();               // ждут, пока AudioContext проснётся
@@ -76,13 +81,18 @@
 
   // play не всплывает, но ловится на фазе захвата — так видны и элементы,
   // которые MutationObserver ещё не успел найти.
-  document.addEventListener('play', (e) => { if (isMedia(e.target)) onPlay(e.target); }, true);
-  document.addEventListener('playing', (e) => { if (isMedia(e.target)) startProbe(chains.get(e.target)); }, true);
+  const onPlayEvent = (e) => { if (isMedia(e.target)) onPlay(e.target); };
+  const onPlayingEvent = (e) => { if (isMedia(e.target)) startProbe(chains.get(e.target)); };
+  document.addEventListener('play', onPlayEvent, true);
+  document.addEventListener('playing', onPlayingEvent, true);
 
-  new MutationObserver((list) => {
+  const mo = new MutationObserver((list) => {
     for (const m of list) for (const n of m.addedNodes) if (n.nodeType === 1) scan(n);
-  }).observe(document.documentElement || document, { childList: true, subtree: true });
+  });
+  mo.observe(document.documentElement || document, { childList: true, subtree: true });
   scan(document);
+  // уже играющие (например, после обновления расширения) — подключаем сразу
+  for (const el of media) if (!el.paused) queueMicrotask(() => onPlay(el));
 
   // Первое действие пользователя на странице разрешает запустить AudioContext.
   const wake = () => {
@@ -143,8 +153,8 @@
   function ensureCtx() {
     if (ctx) return true;
     try {
-      ctx = new AudioContext({ latencyHint: 'interactive' });
-      ctx.addEventListener('statechange', flushWaiting);
+      ctx = shared.ctx = new AudioContext({ latencyHint: 'interactive' });
+      ctx.addEventListener('statechange', () => flushWaiting());
       return true;
     } catch (e) {
       ctx = null;
@@ -387,7 +397,7 @@
     };
   }
 
-  chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  const onMessage = (msg) => {
     if (!msg || typeof msg.type !== 'string') return;
     if (msg.type === 'lv:hello') {
       const s = status();
@@ -401,7 +411,8 @@
       params = PR.normalizeParams(msg.params);
       applyAll();
     }
-  });
+  };
+  chrome.runtime.onMessage.addListener(onMessage);
 
   // ───────────────────────── настройки ─────────────────────────
 
@@ -425,7 +436,7 @@
     cachedUnsupported = !!(r && r[CACHE_KEY] && r[CACHE_KEY][HOST]);
   });
 
-  chrome.storage.onChanged.addListener((changes, area) => {
+  const onStorage = (changes, area) => {
     if (area === 'local' && changes[CACHE_KEY]) {
       const map = changes[CACHE_KEY].newValue || {};
       cachedUnsupported = !!map[HOST];
@@ -441,7 +452,25 @@
       if (changes[SITE_KEY]) stored[SITE_KEY] = changes[SITE_KEY].newValue;
       resolveProfile(false);
     }
-  });
+  };
+  chrome.storage.onChanged.addListener(onStorage);
+
+  // новый экземпляр скрипта (после обновления расширения) забирает работу себе
+  function teardown() {
+    window.removeEventListener('leveler-takeover', teardown);
+    document.removeEventListener('play', onPlayEvent, true);
+    document.removeEventListener('playing', onPlayingEvent, true);
+    window.removeEventListener('pointerdown', wake, true);
+    window.removeEventListener('keydown', wake, true);
+    mo.disconnect();
+    for (const el of media) stopProbe(chains.get(el));
+    if (overlay) overlay.host.remove();
+    try {
+      chrome.runtime.onMessage.removeListener(onMessage);
+      chrome.storage.onChanged.removeListener(onStorage);
+    } catch (e) { /* контекст старого расширения уже недоступен */ }
+  }
+  window.addEventListener('leveler-takeover', teardown);
 
   // для автотестов (store/tests): доступно только в изолированном мире расширения
   self.__leveler = { status, chains, media, get ctx() { return ctx; }, get params() { return params; } };
