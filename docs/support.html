@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leveler — Feedback</title>
+  <link rel="icon" href="img/icon32.png">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="./"><img src="img/logo.svg" alt="">Leveler</a>
+      <nav class="nav">
+        <a href="./#features" data-i18n="nav_features"></a>
+        <a href="./#install" data-i18n="nav_install"></a>
+        <a href="./#donate" data-i18n="nav_donate"></a>
+      </nav>
+      <div class="langs" role="group" aria-label="Language">
+        <button type="button" data-lang="ru">RU</button>
+        <button type="button" data-lang="uk">UK</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero small">
+      <div class="wrap">
+        <h1 data-i18n="s_title"></h1>
+        <p class="lead" data-i18n="s_lead"></p>
+      </div>
+    </section>
+
+    <section class="block first">
+      <div class="wrap fb-grid">
+        <form class="tile fb-form" id="fbForm" hidden>
+          <div class="seg" role="radiogroup">
+            <label><input type="radio" name="kind" value="idea" checked><span data-i18n="f_idea"></span></label>
+            <label><input type="radio" name="kind" value="bug"><span data-i18n="f_bug"></span></label>
+            <label><input type="radio" name="kind" value="other"><span data-i18n="f_other"></span></label>
+          </div>
+          <label class="fld"><span data-i18n="f_msg"></span>
+            <textarea name="message" rows="6" required maxlength="5000" data-ph="f_msg_ph"></textarea></label>
+          <label class="fld"><span data-i18n="f_mail"></span>
+            <input type="email" name="email" maxlength="200" data-ph="f_mail_ph"></label>
+          <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off">
+          <button type="submit" class="btn primary" data-i18n="f_send"></button>
+          <p class="fb-status" id="fbStatus" role="status"></p>
+        </form>
+        <aside class="fb-side">
+          <h3 data-i18n="s_gh"></h3>
+          <a class="tile store" href="https://github.com/vkardin/leveler/issues/new?template=idea.yml" target="_blank" rel="noopener">
+            <span class="emoji" aria-hidden="true">💡</span>
+            <div><b data-i18n="s_idea"></b><span data-i18n="s_idea_d"></span></div>
+          </a>
+          <a class="tile store" href="https://github.com/vkardin/leveler/issues/new?template=bug.yml" target="_blank" rel="noopener">
+            <span class="emoji" aria-hidden="true">🐞</span>
+            <div><b data-i18n="s_bug"></b><span data-i18n="s_bug_d"></span></div>
+          </a>
+          <p class="note"><span data-i18n="s_note"></span> <a href="https://github.com/vkardin/leveler/issues" target="_blank" rel="noopener" data-i18n="s_all"></a></p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <h2 data-i18n="q_title"></h2>
+        <div class="faq">
+          <details><summary data-i18n="q1"></summary><p data-i18n="a1"></p></details>
+          <details><summary data-i18n="q2"></summary><p data-i18n="a2"></p></details>
+          <details><summary data-i18n="q3"></summary><p data-i18n="a3"></p></details>
+          <details><summary data-i18n="q4"></summary><p data-i18n="a4"></p></details>
+          <details><summary data-i18n="q5"></summary><p data-i18n="a5"></p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <a href="./">Leveler</a>
+      <a href="privacy.html" data-i18n="privacy"></a>
+      <a href="./#donate" data-i18n="nav_donate"></a>
+      <a class="by" href="https://vkardin.github.io/video-glow/" data-i18n="by_vg"></a>
+    </div>
+  </footer>
+
+  <script>
+    window.PAGE_T = {
+      ru: { title: 'Leveler — обратная связь',
+        f_idea: 'Идея', f_bug: 'Ошибка', f_other: 'Другое', f_msg: 'Сообщение', f_msg_ph: 'Опишите идею или что пошло не так. Для ошибки укажите сайт, браузер и пресет.', f_mail: 'Почта для ответа (необязательно)', f_mail_ph: 'you@example.com', f_send: 'Отправить', f_sending: 'Отправляю…', f_ok: 'Спасибо! Сообщение отправлено.', f_err: 'Не удалось отправить. Попробуйте позже или напишите через GitHub ниже.', s_gh: 'Или через GitHub',
+        s_title: 'Идеи и вопросы', s_lead: 'Расскажите, чего не хватает или что работает не так. Я читаю всё и беру лучшие идеи в следующие версии.',
+        s_idea: 'Предложить идею', s_idea_d: 'Новая функция, пресет или улучшение',
+        s_bug: 'Сообщить об ошибке', s_bug_d: 'Звук пропал, не выравнивается или ведёт себя странно',
+        s_note: 'Здесь нужен бесплатный аккаунт GitHub. Если такая идея уже есть, просто поставьте ей 👍, так я вижу, что важнее.', s_all: 'Все идеи и ошибки',
+        q_title: 'Если что-то не работает',
+        q1: 'Окно расширения пишет «Этот сайт не поддерживает обработку звука»', a1: 'Видео на сайте защищено (DRM) или загружается с другого домена без разрешения CORS. Браузер отдаёт расширению тишину, поэтому Leveler оставляет оригинальный звук. Скорость при этом работает.',
+        q2: 'Громкость не выравнивается', a2: 'Проверьте, что переключатель в окне расширения включён и выбран не пресет «Выкл». Звук начинает обрабатываться после первого клика или запуска видео на странице.',
+        q3: 'После включения пропал звук', a3: 'Перезагрузите страницу и нажмите в окне расширения «Попробовать снова на этом сайте». Если звук пропадает снова, сообщите об ошибке и укажите сайт и браузер.',
+        q4: 'В Firefox расширение не работает на сайте', a4: 'Откройте управление дополнениями, выберите Leveler и во вкладке «Разрешения» разрешите доступ ко всем сайтам.',
+        q5: 'Как вернуть настройки по умолчанию?', a5: 'Выберите пресет «Диалоги громче» и нажмите «Для всех сайтов». Перед этим можно сохранить резервную копию в JSON на странице настроек.' },
+      uk: { title: 'Leveler — зворотний зв’язок',
+        f_idea: 'Ідея', f_bug: 'Помилка', f_other: 'Інше', f_msg: 'Повідомлення', f_msg_ph: 'Опишіть ідею або що пішло не так. Для помилки вкажіть сайт, браузер і пресет.', f_mail: 'Пошта для відповіді (необов’язково)', f_mail_ph: 'you@example.com', f_send: 'Надіслати', f_sending: 'Надсилаю…', f_ok: 'Дякуємо! Повідомлення надіслано.', f_err: 'Не вдалося надіслати. Спробуйте пізніше або напишіть через GitHub нижче.', s_gh: 'Або через GitHub',
+        s_title: 'Ідеї та питання', s_lead: 'Розкажіть, чого бракує або що працює не так. Я читаю все й беру найкращі ідеї в наступні версії.',
+        s_idea: 'Запропонувати ідею', s_idea_d: 'Нова функція, пресет чи покращення',
+        s_bug: 'Повідомити про помилку', s_bug_d: 'Звук зник, не вирівнюється або поводиться дивно',
+        s_note: 'Тут потрібен безкоштовний акаунт GitHub. Якщо така ідея вже є, просто поставте їй 👍, так я бачу, що важливіше.', s_all: 'Усі ідеї та помилки',
+        q_title: 'Якщо щось не працює',
+        q1: 'Вікно розширення пише «Цей сайт не підтримує обробку звуку»', a1: 'Відео на сайті захищене (DRM) або завантажується з іншого домену без дозволу CORS. Браузер віддає розширенню тишу, тому Leveler залишає оригінальний звук. Швидкість при цьому працює.',
+        q2: 'Гучність не вирівнюється', a2: 'Перевірте, що перемикач у вікні розширення ввімкнений і вибрано не пресет «Вимк». Звук починає оброблятися після першого кліку або запуску відео на сторінці.',
+        q3: 'Після ввімкнення зник звук', a3: 'Перезавантажте сторінку й натисніть у вікні розширення «Спробувати знову на цьому сайті». Якщо звук зникає знову, повідомте про помилку й вкажіть сайт і браузер.',
+        q4: 'У Firefox розширення не працює на сайті', a4: 'Відкрийте керування додатками, виберіть Leveler і на вкладці «Дозволи» дозвольте доступ до всіх сайтів.',
+        q5: 'Як повернути налаштування за замовчуванням?', a5: 'Виберіть пресет «Діалоги гучніше» й натисніть «Для всіх сайтів». Перед цим можна зберегти резервну копію в JSON на сторінці налаштувань.' },
+      en: { title: 'Leveler — feedback',
+        f_idea: 'Idea', f_bug: 'Bug', f_other: 'Other', f_msg: 'Message', f_msg_ph: 'Describe your idea or what went wrong. For a bug, mention the site, browser and preset.', f_mail: 'Email for a reply (optional)', f_mail_ph: 'you@example.com', f_send: 'Send', f_sending: 'Sending…', f_ok: 'Thank you! Your message has been sent.', f_err: 'Couldn’t send it. Try again later or write via GitHub below.', s_gh: 'Or via GitHub',
+        s_title: 'Ideas and questions', s_lead: 'Tell me what’s missing or what doesn’t work right. I read everything and take the best ideas into the next versions.',
+        s_idea: 'Suggest an idea', s_idea_d: 'A new feature, preset or improvement',
+        s_bug: 'Report a bug', s_bug_d: 'Sound is gone, not levelled or behaves oddly',
+        s_note: 'This needs a free GitHub account. If the idea is already there, just give it a 👍 so I can see what matters most.', s_all: 'All ideas and bugs',
+        q_title: 'If something doesn’t work',
+        q1: 'The popup says “This site does not support audio processing”', a1: 'The video on this site is protected (DRM) or loaded from another domain without CORS. The browser gives the extension silence, so Leveler keeps the original sound. Speed control still works.',
+        q2: 'The loudness is not levelled', a2: 'Check that the switch in the popup is on and the preset is not “Off”. Processing starts after your first click or when the video starts playing.',
+        q3: 'The sound disappeared after turning it on', a3: 'Reload the page and press “Try again on this site” in the popup. If the sound disappears again, report a bug with the site and browser.',
+        q4: 'In Firefox the extension does nothing on a site', a4: 'Open the add-ons manager, choose Leveler and allow access to all sites on the Permissions tab.',
+        q5: 'How do I restore the default settings?', a5: 'Choose the “Louder dialogue” preset and press “Use on all sites”. You can save a JSON backup on the settings page first.' }
+    };
+  </script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>

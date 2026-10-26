@@ -1,0 +1,281 @@
+{
+  "extName": {
+    "message": "Leveler — выравнивание громкости и скорость для любого видео"
+  },
+  "extDescription": {
+    "message": "Выравнивает громкость в фильмах: тихие диалоги громче, взрывы тише. Скорость воспроизведения для любого HTML5-видео."
+  },
+  "actionTitle": {
+    "message": "Leveler"
+  },
+  "p_enabled_title": {
+    "message": "Включить / выключить обработку звука"
+  },
+  "p_unsupported": {
+    "message": "Этот сайт не поддерживает обработку звука"
+  },
+  "p_retry": {
+    "message": "Попробовать снова на этом сайте"
+  },
+  "p_level": {
+    "message": "Выровнять звук"
+  },
+  "p_level_hint": {
+    "message": "Тихие диалоги громче, громкие сцены тише"
+  },
+  "p_level_none": {
+    "message": "Выключено: звук не меняется"
+  },
+  "p_level_info": {
+    "message": "Порог $1 · сжатие $2"
+  },
+  "p_speed": {
+    "message": "Скорость"
+  },
+  "st_no_access": {
+    "message": "На этой странице расширение не работает"
+  },
+  "st_no_media": {
+    "message": "На странице нет видео или аудио"
+  },
+  "st_off": {
+    "message": "Выключено: оригинальный звук"
+  },
+  "st_processing": {
+    "message": "Обрабатывается: $1"
+  },
+  "st_unsupported": {
+    "message": "Оригинальный звук"
+  },
+  "st_click": {
+    "message": "Нажмите на страницу, чтобы включить обработку"
+  },
+  "st_waiting": {
+    "message": "Подключение…"
+  },
+  "st_press_play": {
+    "message": "Запустите видео"
+  },
+  "n_reload": {
+    "message": "Перезагрузите страницу: звук вернётся без изменений."
+  },
+  "n_original": {
+    "message": "Звук играет без изменений, скорость работает."
+  },
+  "p_preset": {
+    "message": "Пресет"
+  },
+  "p_modified": {
+    "message": "изменён"
+  },
+  "p_save_as": {
+    "message": "Сохранить как пресет"
+  },
+  "p_rename": {
+    "message": "Переименовать пресет"
+  },
+  "p_delete": {
+    "message": "Удалить"
+  },
+  "p_ok": {
+    "message": "Сохранить"
+  },
+  "p_cancel": {
+    "message": "Отмена"
+  },
+  "p_make_default": {
+    "message": "Использовать на всех сайтах"
+  },
+  "p_reset_site": {
+    "message": "Сбросить для сайта"
+  },
+  "p_done": {
+    "message": "Готово"
+  },
+  "p_builtin": {
+    "message": "Встроенные"
+  },
+  "p_custom": {
+    "message": "Мои пресеты"
+  },
+  "p_own_settings": {
+    "message": "Свои настройки"
+  },
+  "p_scope_default": {
+    "message": "все сайты"
+  },
+  "p_level_manual": {
+    "message": "вручную"
+  },
+  "p_compressor": {
+    "message": "Компрессор"
+  },
+  "p_eq": {
+    "message": "Эквалайзер"
+  },
+  "s_threshold": {
+    "message": "Порог"
+  },
+  "s_ratio": {
+    "message": "Степень сжатия"
+  },
+  "s_knee": {
+    "message": "Мягкость (knee)"
+  },
+  "s_attack": {
+    "message": "Атака"
+  },
+  "s_release": {
+    "message": "Восстановление"
+  },
+  "s_makeup": {
+    "message": "Усиление (makeup)"
+  },
+  "s_hp": {
+    "message": "Срез низов"
+  },
+  "s_low": {
+    "message": "Низкие"
+  },
+  "s_mid": {
+    "message": "Средние (голос)"
+  },
+  "s_high": {
+    "message": "Высокие"
+  },
+  "u_off": {
+    "message": "выкл"
+  },
+  "p_name_ph": {
+    "message": "Название пресета"
+  },
+  "p_too_many": {
+    "message": "Слишком много пресетов, сначала удалите лишние"
+  },
+  "p_delete_q": {
+    "message": "Удалить «$1»?"
+  },
+  "p_options": {
+    "message": "Настройки и резервная копия"
+  },
+  "pr_night": {
+    "message": "Ночной режим"
+  },
+  "pr_dialog": {
+    "message": "Диалоги громче"
+  },
+  "pr_headphones": {
+    "message": "Наушники"
+  },
+  "pr_bass": {
+    "message": "Бас+"
+  },
+  "pr_off": {
+    "message": "Выкл"
+  },
+  "o_title": {
+    "message": "Настройки Leveler"
+  },
+  "o_backup": {
+    "message": "Резервная копия"
+  },
+  "o_backup_hint": {
+    "message": "Пресеты, профиль по умолчанию и настройки сайтов в одном JSON-файле. Импорт заменяет их."
+  },
+  "o_export": {
+    "message": "Экспорт"
+  },
+  "o_import": {
+    "message": "Импорт…"
+  },
+  "o_exported": {
+    "message": "Резервная копия сохранена"
+  },
+  "o_imported": {
+    "message": "Импортировано: пресетов $1, сайтов $2"
+  },
+  "o_import_new": {
+    "message": "Файл из более новой версии Leveler"
+  },
+  "o_import_bad": {
+    "message": "Это не файл резервной копии Leveler"
+  },
+  "o_presets": {
+    "message": "Мои пресеты"
+  },
+  "o_presets_empty": {
+    "message": "Пока нет. Сохраните пресет в окне расширения."
+  },
+  "o_sites": {
+    "message": "Сайты"
+  },
+  "o_sites_hint": {
+    "message": "Сайты со своим пресетом или скоростью. Остальные используют профиль по умолчанию."
+  },
+  "o_sites_empty": {
+    "message": "Пока нет настроек для отдельных сайтов"
+  },
+  "o_reset_sites": {
+    "message": "Сбросить все сайты"
+  },
+  "o_reset": {
+    "message": "Сбросить"
+  },
+  "o_unsupported": {
+    "message": "Сайты без обработки звука"
+  },
+  "o_unsupported_hint": {
+    "message": "Leveler определил, что звук на этих сайтах обработать нельзя, и играет его без изменений."
+  },
+  "o_unsupported_empty": {
+    "message": "Нет"
+  },
+  "o_forget": {
+    "message": "Попробовать снова"
+  },
+  "m_before": {
+    "message": "До"
+  },
+  "m_after": {
+    "message": "После"
+  },
+  "o_keys": {
+    "message": "Горячие клавиши"
+  },
+  "o_keys_hint": {
+    "message": "Меняют скорость видео на странице. Нажмите на поле и затем на нужную клавишу."
+  },
+  "o_key_slower": {
+    "message": "Медленнее"
+  },
+  "o_key_faster": {
+    "message": "Быстрее"
+  },
+  "o_key_reset": {
+    "message": "Обычная скорость (1×)"
+  },
+  "o_keys_reset": {
+    "message": "Клавиши по умолчанию"
+  },
+  "st_neutral": {
+    "message": "Пресет «Выкл»: оригинальный звук"
+  },
+  "p_volume": {
+    "message": "Усиление громкости"
+  },
+  "o_general": {
+    "message": "Общие"
+  },
+  "o_enabled": {
+    "message": "Обработка звука включена"
+  },
+  "o_default_preset": {
+    "message": "Пресет по умолчанию"
+  },
+  "o_default_preset_hint": {
+    "message": "Для сайтов без своих настроек"
+  },
+  "o_key_step": {
+    "message": "Шаг скорости для клавиш"
+  }
+}

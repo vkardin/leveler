@@ -1,0 +1,42 @@
+/* Страница настроек. Цвета — в shared/theme.css. */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main { max-width: 640px; margin: 0 auto; padding: 32px 16px 48px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+.logo { width: 32px; height: 32px; background: url(../icons/logo.svg) center / contain no-repeat; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.muted { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 9px;
+  border: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-size: 13px; cursor: pointer;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.msg { margin: 10px 0 0; font-size: 13px; min-height: 1.5em; }
+.msg.err { color: #e5534b; }
+.fields { display: grid; gap: 10px; }
+.fields label { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.fields label > span { display: grid; }
+.fields small { margin: 0; font-size: 12px; }
+.fields select { height: 32px; min-width: 180px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; padding: 0 8px; }
+.fields input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+.keys { display: grid; gap: 8px; margin-bottom: 12px; }
+.keys label { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.keys input {
+  width: 90px; height: 32px; text-align: center; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); font: inherit; cursor: pointer; caret-color: transparent;
+}
+.keys input:focus { border-color: var(--accent); }
+.list { list-style: none; margin: 0 0 10px; padding: 0; }
+.list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); }
+.list li:first-child { border-top: 0; }
+.list .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list .meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.list button { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; padding: 2px 4px; }
+.list button:hover { color: #e5534b; }

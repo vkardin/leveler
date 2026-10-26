@@ -1,0 +1,30 @@
+/* Цветовые токены: тёмная и светлая тема по системной настройке. Подключается перед стилями страницы. */
+:root {
+  --bg: #0b0d10;
+  --card: #13161a;
+  --line: #23272d;
+  --text: #eef1f4;
+  --muted: #8a919a;
+  --track: #2a2f36;
+  --accent: #3ddc97;
+  --accent-ink: #062016;
+  --warn-bg: #2a2214;
+  --warn: #f2c66d;
+  --font: "Inter", "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f7f8;
+    --card: #ffffff;
+    --line: #e2e5e9;
+    --text: #15181c;
+    --muted: #68707a;
+    --track: #dde1e6;
+    --accent: #12a66a;
+    --accent-ink: #ffffff;
+    --warn-bg: #fff4dc;
+    --warn: #8a5a00;
+    color-scheme: light;
+  }
+}

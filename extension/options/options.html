@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leveler</title>
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header><span class="logo"></span><h1 data-i18n="o_title"></h1></header>
+
+    <section class="card">
+      <h2 data-i18n="o_general"></h2>
+      <div class="fields">
+        <label><span data-i18n="o_enabled"></span><input type="checkbox" id="optEnabled"></label>
+        <label><span><span data-i18n="o_default_preset"></span><small class="muted" data-i18n="o_default_preset_hint"></small></span><select id="optDefault"></select></label>
+        <label><span data-i18n="o_key_step"></span><select id="optStep"></select></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="o_backup"></h2>
+      <p class="muted" data-i18n="o_backup_hint"></p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="export" data-i18n="o_export"></button>
+        <label class="btn" for="importFile"><span data-i18n="o_import"></span></label>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+      <p class="msg" id="backupMsg" role="status"></p>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="o_keys"></h2>
+      <p class="muted" data-i18n="o_keys_hint"></p>
+      <div class="keys" id="keys"></div>
+      <div class="actions"><button type="button" class="btn" id="resetKeys" data-i18n="o_keys_reset"></button></div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="o_presets"></h2>
+      <ul class="list" id="presets"></ul>
+      <p class="muted" id="presetsEmpty" data-i18n="o_presets_empty"></p>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="o_sites"></h2>
+      <p class="muted" data-i18n="o_sites_hint"></p>
+      <ul class="list" id="sites"></ul>
+      <p class="muted" id="sitesEmpty" data-i18n="o_sites_empty"></p>
+      <div class="actions"><button type="button" class="btn" id="resetSites" data-i18n="o_reset_sites"></button></div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="o_unsupported"></h2>
+      <p class="muted" data-i18n="o_unsupported_hint"></p>
+      <ul class="list" id="unsupported"></ul>
+      <p class="muted" id="unsupportedEmpty" data-i18n="o_unsupported_empty"></p>
+    </section>
+  </main>
+
+  <script src="../shared/defaults.js"></script>
+  <script src="../shared/presets.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

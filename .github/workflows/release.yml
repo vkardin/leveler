@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version, for example 1.0.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Chrome and Firefox zips
+        run: python3 tools/build.py extension dist --version "${VERSION#v}"
+      - name: Release notes from CHANGELOG.md
+        run: |
+          V="${VERSION#v}"
+          # раздел «## <версия>» до следующего «## »
+          awk -v v="$V" '$0 ~ "^## " { p = ($2 == v) ; next } p' CHANGELOG.md > notes.md
+          test -s notes.md || echo "Leveler $V" > notes.md
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="${VERSION#v}"
+          # повторная сборка той же версии заменяет релиз и переносит метку на текущий коммит
+          if gh release view "v$V" >/dev/null 2>&1; then gh release delete "v$V" --cleanup-tag -y; fi
+          gh release create "v$V" dist/*.zip --target "$GITHUB_SHA" --title "Leveler $V" --notes-file notes.md
