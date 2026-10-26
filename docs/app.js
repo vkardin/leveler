@@ -54,6 +54,7 @@ const T = {
     d_warn: 'Отправляйте монеты только в той сети, что указана на карточке. Перевод в другой сети может потеряться.',
     d_thanks: 'Спасибо, что вы с нами.',
     copy: 'Скопировать адрес', copied: 'Скопировано',
+    vg_title: 'Ещё от автора', vg_desc: 'Подсветка в цвет картинки вокруг любого видео, как лента за телевизором. Бесплатно для Chrome и Firefox.', vg_site: 'Открыть сайт',
     privacy: 'Конфиденциальность', by_vg: 'От автора Video Glow'
   },
   uk: {
@@ -93,6 +94,7 @@ const T = {
     d_warn: 'Надсилайте монети лише в тій мережі, що вказана на картці. Переказ в іншій мережі може загубитися.',
     d_thanks: 'Дякуємо, що ви з нами.',
     copy: 'Скопіювати адресу', copied: 'Скопійовано',
+    vg_title: 'Ще від автора', vg_desc: 'Підсвітка в колір картинки навколо будь-якого відео, як стрічка за телевізором. Безкоштовно для Chrome і Firefox.', vg_site: 'Відкрити сайт',
     privacy: 'Конфіденційність', by_vg: 'Від автора Video Glow'
   },
   en: {
@@ -132,6 +134,7 @@ const T = {
     d_warn: 'Send coins only on the network shown on the card. A transfer on another network may be lost.',
     d_thanks: 'Thank you for being here.',
     copy: 'Copy address', copied: 'Copied',
+    vg_title: 'Also by the author', vg_desc: 'Ambient light around any video in the colours of the picture, like a strip behind a TV. Free for Chrome and Firefox.', vg_site: 'Open website',
     privacy: 'Privacy', by_vg: 'From the author of Video Glow'
   }
 };

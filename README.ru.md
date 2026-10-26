@@ -65,6 +65,14 @@ Leveler не собирает данные и ничего никуда не о�
 | [`store/`](store) | Тексты для магазинов, скриншоты, политика конфиденциальности, скрипты тестов и скриншотов |
 | [`tools/`](tools) | `build.py` собирает `leveler-chrome-<версия>.zip` и `leveler-firefox-<версия>.zip` |
 
+## Ещё от автора
+
+<a href="https://vkardin.github.io/video-glow/"><img src="docs/img/video-glow.svg" width="56" align="left" alt="Video Glow"></a>
+
+**[Video Glow](https://vkardin.github.io/video-glow/)**: подсветка в цвет картинки вокруг любого видео в браузере, как лента за телевизором. Бесплатно для Chrome и Firefox. [Сайт](https://vkardin.github.io/video-glow/) · [GitHub](https://github.com/vkardin/video-glow)
+
+<br clear="left">
+
 ## Лицензия
 
 [MIT](LICENSE) © vkardin

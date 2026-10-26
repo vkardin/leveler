@@ -65,6 +65,14 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 | [`store/`](store) | Store texts, screenshots, privacy policy, test and screenshot scripts |
 | [`tools/`](tools) | `build.py` packs `leveler-chrome-<version>.zip` and `leveler-firefox-<version>.zip` |
 
+## Also by the author
+
+<a href="https://vkardin.github.io/video-glow/"><img src="docs/img/video-glow.svg" width="56" align="left" alt="Video Glow"></a>
+
+**[Video Glow](https://vkardin.github.io/video-glow/)**: ambient light around any video in the browser, in the colours of the picture, like a TV backlight. Free for Chrome and Firefox. [Website](https://vkardin.github.io/video-glow/) · [GitHub](https://github.com/vkardin/video-glow)
+
+<br clear="left">
+
 ## License
 
 [MIT](LICENSE) © vkardin
