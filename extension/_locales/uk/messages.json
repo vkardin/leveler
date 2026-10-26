@@ -61,5 +61,176 @@
   },
   "n_original": {
     "message": "Звук грає без змін, швидкість працює."
+  },
+  "p_preset": {
+    "message": "Пресет"
+  },
+  "p_modified": {
+    "message": "змінено"
+  },
+  "p_save_as": {
+    "message": "Зберегти як пресет"
+  },
+  "p_rename": {
+    "message": "Перейменувати пресет"
+  },
+  "p_delete": {
+    "message": "Видалити"
+  },
+  "p_ok": {
+    "message": "Зберегти"
+  },
+  "p_cancel": {
+    "message": "Скасувати"
+  },
+  "p_make_default": {
+    "message": "Використовувати на всіх сайтах"
+  },
+  "p_reset_site": {
+    "message": "Скинути для сайту"
+  },
+  "p_done": {
+    "message": "Готово"
+  },
+  "p_builtin": {
+    "message": "Вбудовані"
+  },
+  "p_custom": {
+    "message": "Мої пресети"
+  },
+  "p_own_settings": {
+    "message": "Власні налаштування"
+  },
+  "p_scope_default": {
+    "message": "усі сайти"
+  },
+  "p_level_manual": {
+    "message": "вручну"
+  },
+  "p_compressor": {
+    "message": "Компресор"
+  },
+  "p_eq": {
+    "message": "Еквалайзер"
+  },
+  "s_threshold": {
+    "message": "Поріг"
+  },
+  "s_ratio": {
+    "message": "Ступінь стиснення"
+  },
+  "s_knee": {
+    "message": "М’якість (knee)"
+  },
+  "s_attack": {
+    "message": "Атака"
+  },
+  "s_release": {
+    "message": "Відновлення"
+  },
+  "s_makeup": {
+    "message": "Підсилення (makeup)"
+  },
+  "s_hp": {
+    "message": "Зріз низів"
+  },
+  "s_low": {
+    "message": "Низькі"
+  },
+  "s_mid": {
+    "message": "Середні (голос)"
+  },
+  "s_high": {
+    "message": "Високі"
+  },
+  "u_off": {
+    "message": "вимк"
+  },
+  "p_name_ph": {
+    "message": "Назва пресету"
+  },
+  "p_too_many": {
+    "message": "Забагато пресетів, спершу видаліть зайві"
+  },
+  "p_delete_q": {
+    "message": "Видалити «$1»?"
+  },
+  "p_options": {
+    "message": "Налаштування та резервна копія"
+  },
+  "pr_night": {
+    "message": "Нічний режим"
+  },
+  "pr_dialog": {
+    "message": "Діалоги гучніше"
+  },
+  "pr_headphones": {
+    "message": "Навушники"
+  },
+  "pr_bass": {
+    "message": "Бас+"
+  },
+  "pr_off": {
+    "message": "Вимк"
+  },
+  "o_title": {
+    "message": "Налаштування Leveler"
+  },
+  "o_backup": {
+    "message": "Резервна копія"
+  },
+  "o_backup_hint": {
+    "message": "Пресети, профіль за замовчуванням і налаштування сайтів в одному JSON-файлі. Імпорт замінює їх."
+  },
+  "o_export": {
+    "message": "Експорт"
+  },
+  "o_import": {
+    "message": "Імпорт…"
+  },
+  "o_exported": {
+    "message": "Резервну копію збережено"
+  },
+  "o_imported": {
+    "message": "Імпортовано: пресетів $1, сайтів $2"
+  },
+  "o_import_new": {
+    "message": "Файл з новішої версії Leveler"
+  },
+  "o_import_bad": {
+    "message": "Це не файл резервної копії Leveler"
+  },
+  "o_presets": {
+    "message": "Мої пресети"
+  },
+  "o_presets_empty": {
+    "message": "Поки немає. Збережіть пресет у вікні розширення."
+  },
+  "o_sites": {
+    "message": "Сайти"
+  },
+  "o_sites_hint": {
+    "message": "Сайти з власним пресетом чи швидкістю. Решта використовують профіль за замовчуванням."
+  },
+  "o_sites_empty": {
+    "message": "Поки немає налаштувань для окремих сайтів"
+  },
+  "o_reset_sites": {
+    "message": "Скинути всі сайти"
+  },
+  "o_reset": {
+    "message": "Скинути"
+  },
+  "o_unsupported": {
+    "message": "Сайти без обробки звуку"
+  },
+  "o_unsupported_hint": {
+    "message": "Leveler визначив, що звук на цих сайтах обробити не можна, і відтворює його без змін."
+  },
+  "o_unsupported_empty": {
+    "message": "Немає"
+  },
+  "o_forget": {
+    "message": "Спробувати знову"
   }
 }

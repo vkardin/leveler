@@ -24,10 +24,13 @@
   'use strict';
 
   const LV = self.LV;
-  if (!LV || window.__lvLoaded) return;
+  const PR = self.LV_PRESETS;
+  if (!LV || !PR || window.__lvLoaded) return;
   window.__lvLoaded = true;
 
   const HOST = LV.normHost(location.hostname);
+  const SITE = PR.topHost();               // настройки берутся по сайту вкладки, и для iframe тоже
+  const SITE_KEY = PR.siteKey(SITE);
   const TAU = 0.04;                        // постоянная времени setTargetAtTime, с
   const SILENT_MS = 5000;                  // столько воспроизведения ровной тишины → не поддерживается
   const PROBE_EVERY = 250;
@@ -38,7 +41,10 @@
     'peacocktv.com', 'kinopoisk.ru', 'ivi.ru', 'okko.tv', 'megogo.net'];
 
   let settings = LV.normalize();
-  let speed = settings.speed;              // скорость на этой странице
+  let stored = {};                         // def и профиль сайта из storage.sync
+  let profile = PR.normalizeProfile(PR.DEFAULT_PROFILE);
+  let params = profile.params;             // текущие параметры звука (popup может менять их вживую)
+  let speed = 1;                           // скорость на этой странице
   let ctx = null;
   let hostUnsupported = DRM_HOSTS.some((h) => HOST === h || HOST.endsWith('.' + h));
   let cachedUnsupported = false;
@@ -168,9 +174,9 @@
     };
     const c = {
       el, src,
-      hp: biquad('highpass', 10, 0.707),     // 10 Гц — фактически выключен
+      hp: biquad('highpass', 10, 0.707),     // 10 Гц — фактически выключен (hp = 0)
       low: biquad('lowshelf', 120),
-      mid: biquad('peaking', 1000, 0.8),
+      mid: biquad('peaking', 1500, 0.8),
       high: biquad('highshelf', 8000),
       comp: ctx.createDynamicsCompressor(),
       makeup: ctx.createGain(),
@@ -205,13 +211,17 @@
   }
 
   function applyParams(c, now) {
-    const p = LV.levelToParams(settings.level);
+    const p = params;
     setParam(c.comp.threshold, p.threshold, now);
     setParam(c.comp.knee, p.knee, now);
     setParam(c.comp.ratio, p.ratio, now);
     setParam(c.comp.attack, p.attack, now);
     setParam(c.comp.release, p.release, now);
-    setParam(c.makeup.gain, dbToGain(p.makeupDb), now);
+    setParam(c.makeup.gain, dbToGain(p.makeup), now);
+    setParam(c.hp.frequency, Math.max(10, p.hp), now);
+    setParam(c.low.gain, p.low, now);
+    setParam(c.mid.gain, p.mid, now);
+    setParam(c.high.gain, p.high, now);
     const on = settings.enabled && !c.silent;
     setParam(c.wet.gain, on ? 1 : 0, now);
     setParam(c.dry.gain, on ? 0 : 1, now);
@@ -371,7 +381,7 @@
     }
     if (!reason && (hostUnsupported || cachedUnsupported) && found) reason = hostUnsupported ? 'drm' : 'cached';
     return {
-      type: 'lv:status', host: HOST, top: window === window.top,
+      type: 'lv:status', host: HOST, site: SITE, top: window === window.top,
       found, playing, processed, reason, reload, speed,
       audio: ctx ? ctx.state : 'none'
     };
@@ -386,15 +396,30 @@
     } else if (msg.type === 'lv:speed') {
       setSpeed(msg.speed);
       chrome.runtime.sendMessage(status()).catch(() => {});
+    } else if (msg.type === 'lv:params') {
+      // пока двигают ползунок: применяем сразу, в storage popup пишет реже
+      params = PR.normalizeParams(msg.params);
+      applyAll();
     }
   });
 
   // ───────────────────────── настройки ─────────────────────────
 
-  chrome.storage.sync.get(null, (all) => {
-    settings = LV.normalize(all);
-    if (speed !== settings.speed) setSpeed(settings.speed);
+  // Профиль: свой у сайта, иначе общий по умолчанию. Скорость профиля применяется
+  // при загрузке и когда её меняют (в том числе из другой вкладки того же сайта).
+  function resolveProfile(first) {
+    const prev = profile;
+    profile = PR.normalizeProfile(stored[SITE_KEY] || stored.def || PR.DEFAULT_PROFILE);
+    params = profile.params;
     applyAll();
+    if (first ? profile.speed !== 1 : profile.speed !== prev.speed && profile.speed !== speed) setSpeed(profile.speed);
+  }
+
+  chrome.storage.sync.get(['enabled', 'def', SITE_KEY], (all) => {
+    all = all || {};
+    settings = LV.normalize(all);
+    stored = { def: all.def, [SITE_KEY]: all[SITE_KEY] };
+    resolveProfile(true);
   });
   chrome.storage.local.get(CACHE_KEY, (r) => {
     cachedUnsupported = !!(r && r[CACHE_KEY] && r[CACHE_KEY][HOST]);
@@ -407,13 +432,17 @@
       return;
     }
     if (area !== 'sync') return;
-    const next = {};
-    for (const k in changes) next[k] = changes[k].newValue;
-    // скорость из storage — значение по умолчанию для новых страниц, текущую не трогаем
-    settings = LV.normalize(Object.assign({}, settings, next, { speed: settings.speed }));
-    applyAll();
+    if (changes.enabled) {
+      settings = LV.normalize({ enabled: changes.enabled.newValue });
+      applyAll();
+    }
+    if (changes.def || changes[SITE_KEY]) {
+      if (changes.def) stored.def = changes.def.newValue;
+      if (changes[SITE_KEY]) stored[SITE_KEY] = changes[SITE_KEY].newValue;
+      resolveProfile(false);
+    }
   });
 
   // для автотестов (store/tests): доступно только в изолированном мире расширения
-  self.__leveler = { status, chains, media, get ctx() { return ctx; } };
+  self.__leveler = { status, chains, media, get ctx() { return ctx; }, get params() { return params; } };
 })();

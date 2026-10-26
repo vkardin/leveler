@@ -61,5 +61,176 @@
   },
   "n_original": {
     "message": "The sound plays unchanged, speed control still works."
+  },
+  "p_preset": {
+    "message": "Preset"
+  },
+  "p_modified": {
+    "message": "changed"
+  },
+  "p_save_as": {
+    "message": "Save as preset"
+  },
+  "p_rename": {
+    "message": "Rename preset"
+  },
+  "p_delete": {
+    "message": "Delete"
+  },
+  "p_ok": {
+    "message": "Save"
+  },
+  "p_cancel": {
+    "message": "Cancel"
+  },
+  "p_make_default": {
+    "message": "Use on all sites"
+  },
+  "p_reset_site": {
+    "message": "Reset this site"
+  },
+  "p_done": {
+    "message": "Done"
+  },
+  "p_builtin": {
+    "message": "Built-in"
+  },
+  "p_custom": {
+    "message": "My presets"
+  },
+  "p_own_settings": {
+    "message": "Custom settings"
+  },
+  "p_scope_default": {
+    "message": "all sites"
+  },
+  "p_level_manual": {
+    "message": "manual"
+  },
+  "p_compressor": {
+    "message": "Compressor"
+  },
+  "p_eq": {
+    "message": "Equalizer"
+  },
+  "s_threshold": {
+    "message": "Threshold"
+  },
+  "s_ratio": {
+    "message": "Ratio"
+  },
+  "s_knee": {
+    "message": "Knee"
+  },
+  "s_attack": {
+    "message": "Attack"
+  },
+  "s_release": {
+    "message": "Release"
+  },
+  "s_makeup": {
+    "message": "Makeup gain"
+  },
+  "s_hp": {
+    "message": "Low cut"
+  },
+  "s_low": {
+    "message": "Low"
+  },
+  "s_mid": {
+    "message": "Mid (voice)"
+  },
+  "s_high": {
+    "message": "High"
+  },
+  "u_off": {
+    "message": "off"
+  },
+  "p_name_ph": {
+    "message": "Preset name"
+  },
+  "p_too_many": {
+    "message": "Too many presets, delete some first"
+  },
+  "p_delete_q": {
+    "message": "Delete “$1”?"
+  },
+  "p_options": {
+    "message": "Settings and backup"
+  },
+  "pr_night": {
+    "message": "Night mode"
+  },
+  "pr_dialog": {
+    "message": "Louder dialogue"
+  },
+  "pr_headphones": {
+    "message": "Headphones"
+  },
+  "pr_bass": {
+    "message": "Bass+"
+  },
+  "pr_off": {
+    "message": "Off"
+  },
+  "o_title": {
+    "message": "Leveler settings"
+  },
+  "o_backup": {
+    "message": "Backup"
+  },
+  "o_backup_hint": {
+    "message": "Presets, the default profile and per-site settings in one JSON file. Importing replaces them."
+  },
+  "o_export": {
+    "message": "Export"
+  },
+  "o_import": {
+    "message": "Import…"
+  },
+  "o_exported": {
+    "message": "Backup saved"
+  },
+  "o_imported": {
+    "message": "Imported: $1 presets, $2 sites"
+  },
+  "o_import_new": {
+    "message": "This file is from a newer version of Leveler"
+  },
+  "o_import_bad": {
+    "message": "This is not a Leveler backup file"
+  },
+  "o_presets": {
+    "message": "My presets"
+  },
+  "o_presets_empty": {
+    "message": "No presets yet. Save one from the popup."
+  },
+  "o_sites": {
+    "message": "Sites"
+  },
+  "o_sites_hint": {
+    "message": "Sites with their own preset or speed. Others use the default profile."
+  },
+  "o_sites_empty": {
+    "message": "No per-site settings yet"
+  },
+  "o_reset_sites": {
+    "message": "Reset all sites"
+  },
+  "o_reset": {
+    "message": "Reset"
+  },
+  "o_unsupported": {
+    "message": "Sites without audio processing"
+  },
+  "o_unsupported_hint": {
+    "message": "Leveler found that the sound on these sites cannot be processed and plays it unchanged."
+  },
+  "o_unsupported_empty": {
+    "message": "None"
+  },
+  "o_forget": {
+    "message": "Try again"
   }
 }

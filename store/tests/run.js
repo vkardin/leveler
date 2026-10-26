@@ -28,7 +28,7 @@ const A = 8711, B = 8712;            // localhost:A — «сайт», 127.0.0.1:
 const page = (body) => `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#111;color:#eee;font:14px sans-serif">${body}</body>`;
 const ROUTES = {
   '/': page(`<video id="v" src="/t.wav" width="480" height="270" style="background:#000"></video>
-    <iframe id="f" src="http://localhost:${A}/frame" width="300" height="60" style="border:0"></iframe>`),
+    <iframe id="f" src="http://127.0.0.1:${A}/frame" width="300" height="60" style="border:0"></iframe>`),
   '/frame': page('<audio id="a" src="/t.wav" controls></audio>'),
   '/cors': page(`<video id="v" src="http://127.0.0.1:${B}/t.wav" width="480" height="270"></video>`),
   '/redirect': page('<video id="v" src="/redir.wav" width="480" height="270"></video>')
@@ -61,15 +61,21 @@ const ok = (cond, msg, extra) => {
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Выполнить код в изолированном мире content script главного фрейма (там, где self.__leveler).
-async function isolated(p) {
-  const cdp = await p.context().newCDPSession(p);
+// Выполнить код в изолированном мире content script (там, где self.__leveler):
+// главного фрейма или iframe, в адресе которого есть frameUrlPart.
+async function isolated(p, frameUrlPart) {
+  // iframe с другого сайта живёт в своём процессе: ему нужна своя CDP-сессия
+  const fr = frameUrlPart && p.frames().find((f) => f.url().includes(frameUrlPart));
+  let cdp;
+  try { cdp = await p.context().newCDPSession(fr || p); } catch (e) { cdp = await p.context().newCDPSession(p); }
   const ctxs = [];
   cdp.on('Runtime.executionContextCreated', (e) => ctxs.push(e.context));
   await cdp.send('Runtime.enable');
   const { frameTree } = await cdp.send('Page.getFrameTree');
   await sleep(200);
-  const c = ctxs.find((x) => x.auxData && x.auxData.type === 'isolated' && x.auxData.frameId === frameTree.frame.id);
+  const walk = (n) => [n.frame].concat((n.childFrames || []).flatMap(walk));
+  const target = frameUrlPart ? walk(frameTree).find((f) => f.url.includes(frameUrlPart)) : frameTree.frame;
+  const c = target && ctxs.find((x) => x.auxData && x.auxData.type === 'isolated' && x.auxData.frameId === target.id);
   if (!c) throw new Error('нет изолированного мира расширения');
   return async (expr) => {
     const r = await cdp.send('Runtime.evaluate', { expression: expr, contextId: c.id, awaitPromise: true, returnByValue: true });
@@ -153,7 +159,8 @@ const MEASURE = (ms) => `(async () => {
     ok(quiet.post > quiet.pre + 6, 'тихий участок стал громче', [quiet.pre, quiet.post]);
 
     // сильнее «выровнять» → разница ещё меньше
-    await iso('chrome.storage.sync.set({ level: 100 })');
+    await iso(`chrome.storage.sync.set({ 's:localhost': { preset: null, speed: 1,
+      params: LV_PRESETS.withLevel(LV_PRESETS.DEFAULT_PROFILE.params, 100) } })`);
     await sleep(400);
     await p.evaluate(() => { document.getElementById('v').currentTime = 1; });
     await sleep(500);
@@ -163,7 +170,7 @@ const MEASURE = (ms) => `(async () => {
     const l100 = await iso(MEASURE(1000));
     const after100 = l100.post - q100.post;
     ok(after100 < after, `уровень 100%: разница ${after100.toFixed(1)} dB (меньше, чем на 50%)`, [q100, l100]);
-    await iso('chrome.storage.sync.set({ level: 50 })');
+    await iso('chrome.storage.sync.remove("s:localhost")');
 
     // ── 2. bypass ──
     await iso('chrome.storage.sync.set({ enabled: false })');
@@ -223,17 +230,113 @@ const MEASURE = (ms) => `(async () => {
       .some((n) => n.tagName === 'DIV' && n.style.zIndex === '2147483647'));
     ok(overlay, 'показан оверлей скорости');
     if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'overlay.png') });
+    await sleep(600);   // popup сохраняет скорость сайта с задержкой
     await popup.evaluate((id) => chrome.tabs.sendMessage(id, { type: 'lv:speed', speed: 8 }), tabId);
     await sleep(200);
     ok(await p.evaluate(() => document.getElementById('v').playbackRate) === 4, 'скорость ограничена 4×');
     await popup.click('#chips button[data-speed="1"]');
+    await sleep(300);
+
+    // ── 4а. пресеты и настройки сайта ──
+    const isoF = await isolated(p, '/frame');
+    st = await isoF('__leveler.status()');
+    ok(st.site === 'localhost' && st.host === '127.0.0.1', 'iframe с другого домена берёт настройки сайта вкладки', st);
+    await popup.selectOption('#preset', 'b:night');
+    await sleep(150);
+    let prm = await iso('__leveler.params');
+    ok(prm.ratio === 12 && prm.threshold === -50, 'пресет «Ночной режим» применён сразу', prm);
+    prm = await isoF('__leveler.params');
+    ok(prm.ratio === 12, 'и во iframe', prm.ratio);
+    let sync = await iso('chrome.storage.sync.get(null)');
+    ok(sync['s:localhost'] && sync['s:localhost'].preset === 'b:night', 'пресет запомнен для сайта', sync['s:localhost']);
+
+    await popup.click('#compCard summary');
+    await popup.fill('#sl-ratio', '4');
+    await popup.dispatchEvent('#sl-ratio', 'input');
+    await sleep(150);
+    prm = await iso('__leveler.params');
+    ok(prm.ratio === 4 && prm.level === null && await popup.isVisible('#modified'), 'ползунок компрессора меняет звук, пресет помечен «изменён»', prm);
+
+    await popup.click('#saveAs');
+    await popup.fill('#nameInput', 'Мой фильм');
+    await popup.click('#nameForm button[type=submit]');
+    await sleep(300);
+    sync = await iso('chrome.storage.sync.get(null)');
+    const mine = (sync.presets || [])[0];
+    ok(mine && mine.name === 'Мой фильм' && mine.params.ratio === 4 && sync['s:localhost'].preset === mine.id
+      && await popup.inputValue('#preset') === mine.id, 'сохранить как пресет', [sync.presets, sync['s:localhost']]);
+    if (SHOTS) await popup.screenshot({ path: path.join(SHOTS, 'popup-presets.png'), fullPage: true });
+
+    await popup.click('#rename');
+    await popup.fill('#nameInput', 'Кино');
+    await popup.click('#nameForm button[type=submit]');
+    await sleep(300);
+    sync = await iso('chrome.storage.sync.get(null)');
+    ok(sync.presets.length === 1 && sync.presets[0].name === 'Кино', 'переименовать', sync.presets);
+
+    await popup.selectOption('#preset', 'b:off');
+    await sleep(150);
+    await popup.selectOption('#preset', mine.id);
+    await sleep(150);
+    prm = await iso('__leveler.params');
+    ok(prm.ratio === 4, 'свой пресет выбирается из списка', prm.ratio);
+
+    await popup.click('#remove');
+    await popup.click('#confirmYes');
+    await sleep(300);
+    sync = await iso('chrome.storage.sync.get(null)');
+    ok(sync.presets.length === 0 && await popup.inputValue('#preset') === '' && sync['s:localhost'].params.ratio === 4,
+      'удалить: пресета нет, параметры сайта остались как «Свои настройки»', sync);
+
+    // скорость запоминается для сайта и восстанавливается после перезагрузки
+    await popup.click('#chips button[data-speed="1.25"]');
+    await sleep(700);
     await popup.close();
+    await p.reload();
+    await sleep(600);
+    const rateAfter = await p.evaluate(() => document.getElementById('v').playbackRate);
+    ok(rateAfter === 1.25, 'скорость сайта восстановлена после перезагрузки', rateAfter);
+    const iso2 = await isolated(p);
+    prm = await iso2('__leveler.params');
+    ok(prm.ratio === 4, 'и настройки звука сайта тоже', prm.ratio);
+
+    // другой сайт использует профиль по умолчанию
+    const po = await ctx.newPage();
+    await po.goto(`http://127.0.0.1:${A}/frame`);
+    await sleep(400);
+    const isoO = await isolated(po);
+    prm = await isoO('__leveler.params');
+    ok(prm.ratio === 6.5 && prm.mid === 4, 'другой сайт: профиль по умолчанию («Диалоги громче»)', prm);
+    await po.close();
+
+    // ── 4б. резервная копия ──
+    const opt = await ctx.newPage();
+    await opt.goto(`chrome-extension://${extId}/options/options.html`);
+    await sleep(300);
+    ok(await opt.locator('#sites li').count() === 1, 'страница настроек показывает сайт со своими настройками');
+    const [dl] = await Promise.all([opt.waitForEvent('download'), opt.click('#export')]);
+    const backup = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
+    ok(backup.app === 'leveler' && backup.sites.localhost && backup.sites.localhost.speed === 1.25
+      && /leveler-backup-\d{4}-\d\d-\d\d\.json/.test(dl.suggestedFilename()), 'экспорт JSON', dl.suggestedFilename());
+    backup.presets = [{ id: 'u:test1', name: 'Из файла', params: { ratio: 3, threshold: -20 } }, { id: 'bad', name: 'x' }];
+    backup.sites = { 'Example.com': { preset: 'u:test1', speed: 9 }, '<script>': {} };
+    await opt.setInputFiles('#importFile', { name: 'b.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
+    await sleep(400);
+    sync = await opt.evaluate(() => chrome.storage.sync.get(null));
+    ok(sync.presets.length === 1 && sync['s:example.com'] && sync['s:example.com'].speed === 4 && !sync['s:localhost'],
+      'импорт заменяет настройки и проверяет значения', sync);
+    await opt.setInputFiles('#importFile', { name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":1}') });
+    await sleep(300);
+    ok(await opt.evaluate(() => document.getElementById('backupMsg').classList.contains('err')), 'чужой файл не импортируется');
+    if (SHOTS) await opt.screenshot({ path: path.join(SHOTS, 'options.png'), fullPage: true });
+    await opt.evaluate(() => chrome.storage.sync.clear());
+    await opt.close();
     await p.close();
 
-    // ── 4б. автозапуск без действия пользователя ──
+    // ── 4в. автозапуск без действия пользователя ──
     // Браузер не даёт запустить AudioContext: элемент не должен остаться без звука.
     const pa = await ctx.newPage();
-    await pa.goto(`http://127.0.0.1:${A}/`);   // origin, где ещё не было кликов
+    await pa.goto(`http://127.0.0.1:${B}/`);   // origin, где ещё не было кликов
     await sleep(300);
     await pa.evaluate(() => { const v = document.getElementById('v'); v.muted = false; return v.play().catch(() => {}); });
     await sleep(800);
