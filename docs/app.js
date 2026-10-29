@@ -1,6 +1,6 @@
-// Ссылки на магазины. Пока расширения нет в магазинах — пусто, кнопки ведут к #install.
+// Ссылки на магазины. Пустая ссылка — расширения ещё нет в магазине, кнопка ведёт к #install.
 const STORES = {
-  chrome: '',
+  chrome: 'https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko',
   firefox: ''
 };
 
@@ -41,7 +41,7 @@ const T = {
     h3_t: 'Выберите пресет', h3_d: 'Или подвиньте ползунок «Выровнять звук». Сайт запомнит ваш выбор.',
     i_title: 'Установить', i_sub: 'Расширение одинаково работает в Chrome, Edge, Opera, Brave и Firefox.',
     i_chrome: 'Chrome, Edge, Opera, Brave, Яндекс Браузер', i_firefox: 'Firefox для компьютера',
-    i_manual: 'Пока расширение проходит проверку в магазинах, его можно установить вручную: скачайте zip из',
+    i_manual: 'Версия для Firefox ещё проходит проверку, пока её можно установить вручную: скачайте zip из',
     q_title: 'Частые вопросы',
     q1: 'Почему на Netflix и похожих сервисах звук не обрабатывается?', a1: 'Там видео защищено (DRM), и браузер отдаёт расширениям вместо звука тишину. Leveler это распознаёт, оставляет оригинальный звук и пишет в окне расширения: «Этот сайт не поддерживает обработку звука». Скорость при этом работает.',
     q2: 'Это не испортит звук?', a2: 'Нет. Параметры меняются плавно, без щелчков, а на выходе стоит ограничитель, который не даёт звуку перегружаться. Выключатель в окне расширения мгновенно возвращает оригинал.',
@@ -85,7 +85,7 @@ const T = {
     h3_t: 'Виберіть пресет', h3_d: 'Або посуньте повзунок «Вирівняти звук». Сайт запам’ятає ваш вибір.',
     i_title: 'Встановити', i_sub: 'Розширення однаково працює в Chrome, Edge, Opera, Brave і Firefox.',
     i_chrome: 'Chrome, Edge, Opera, Brave', i_firefox: 'Firefox для комп’ютера',
-    i_manual: 'Поки розширення проходить перевірку в магазинах, його можна встановити вручну: завантажте zip із',
+    i_manual: 'Версія для Firefox ще проходить перевірку, поки її можна встановити вручну: завантажте zip із',
     q_title: 'Часті питання',
     q1: 'Чому на Netflix і схожих сервісах звук не обробляється?', a1: 'Там відео захищене (DRM), і браузер віддає розширенням замість звуку тишу. Leveler це розпізнає, залишає оригінальний звук і пише у вікні розширення: «Цей сайт не підтримує обробку звуку». Швидкість при цьому працює.',
     q2: 'Це не зіпсує звук?', a2: 'Ні. Параметри змінюються плавно, без клацань, а на виході стоїть обмежувач, який не дає звуку перевантажуватися. Вимикач у вікні розширення миттєво повертає оригінал.',
@@ -129,7 +129,7 @@ const T = {
     h3_t: 'Pick a preset', h3_d: 'Or move the “Level the sound” slider. The site remembers your choice.',
     i_title: 'Install', i_sub: 'Works the same in Chrome, Edge, Opera, Brave and Firefox.',
     i_chrome: 'Chrome, Edge, Opera, Brave', i_firefox: 'Firefox for desktop',
-    i_manual: 'While the extension is in store review, you can install it manually: download the zip from',
+    i_manual: 'The Firefox version is still in review; meanwhile you can install it manually: download the zip from',
     q_title: 'FAQ',
     q1: 'Why is sound not processed on Netflix and similar services?', a1: 'Their video is protected (DRM), and the browser gives extensions silence instead of sound. Leveler detects this, keeps the original sound and says “This site does not support audio processing” in the popup. Speed control still works.',
     q2: 'Will it ruin the sound?', a2: 'No. Settings change smoothly without clicks, and a limiter at the output keeps the sound from clipping. The switch in the popup brings back the original instantly.',

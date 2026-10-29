@@ -6,7 +6,7 @@
 <a href="README.md">English</a> · <a href="README.ru.md">Русский</a> · Українська</p>
 
 <p align="center">
-<a href="https://chromewebstore.google.com/"><img alt="Chrome Web Store" src="https://img.shields.io/badge/Chrome-soon-lightgrey?logo=googlechrome&logoColor=white"></a>
+<a href="https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko"><img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/v/phbjpipnbhffcegccfbbfabbhmgaelko?label=Chrome&logo=googlechrome&logoColor=white"></a>
 <a href="https://addons.mozilla.org/"><img alt="Firefox Add-ons" src="https://img.shields.io/badge/Firefox-soon-lightgrey?logo=firefoxbrowser&logoColor=white"></a>
 <a href="https://vkardin.github.io/leveler/"><img alt="Website" src="https://img.shields.io/badge/site-vkardin.github.io%2Fleveler-222"></a>
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
@@ -18,7 +18,7 @@ Leveler вирівнює звук будь-якого HTML5-відео та ау
 
 ## Встановлення
 
-- **Chrome, Edge, Brave, Opera:** Chrome Web Store (незабаром)
+- **Chrome, Edge, Brave, Opera:** [Chrome Web Store](https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko)
 - **Firefox:** Firefox Add-ons (незабаром)
 - **Вручну:** завантажте `leveler-chrome-<версія>.zip` на сторінці [Releases](../../releases), розпакуйте, відкрийте `chrome://extensions`, увімкніть **Режим розробника** і натисніть **Завантажити розпаковане** → виберіть розпаковану папку. Firefox: `about:debugging#/runtime/this-firefox` → **Завантажити тимчасовий додаток…** → `manifest.json` з `leveler-firefox-<версія>.zip`.
 
