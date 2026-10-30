@@ -20,7 +20,7 @@ Quiet dialogue louder, explosions softer: evens out movie loudness on any site. 
 
 Tired of turning the volume up for every whisper and down for every explosion? Leveler evens out the sound of any HTML5 video or audio right in your browser, so you can watch a movie at night without reaching for the volume.
 
-• Presets: Night mode (strong compression), Louder dialogue, Headphones, Bass+, Off
+• Presets: Night mode (strong compression), Louder dialogue, Podcasts, Headphones, Bass+, Music, Off
 • One "Level the sound" slider, or full control: threshold, ratio, knee, attack, release, makeup gain
 • 3-band equalizer and low cut to make voices clearer
 • Level meter before and after compression
@@ -51,7 +51,7 @@ Free and open source: https://github.com/vkardin/leveler
 
 Надоело прибавлять звук на каждом шёпоте и убавлять на каждом взрыве? Leveler выравнивает громкость любого HTML5-видео и аудио прямо в браузере, и фильм можно смотреть ночью, не держа руку на регуляторе.
 
-• Пресеты: «Ночной режим» (сильное сжатие), «Диалоги громче», «Наушники», «Бас+», «Выкл»
+• Пресеты: «Ночной режим» (сильное сжатие), «Диалоги громче», «Подкасты», «Наушники», «Бас+», «Музыка», «Выкл»
 • Один ползунок «Выровнять звук» или полная настройка: порог, степень сжатия, мягкость, атака, восстановление, усиление
 • Эквалайзер на 3 полосы и срез низов, чтобы голоса звучали разборчивее
 • Индикатор уровня до и после компрессии
@@ -82,7 +82,7 @@ Free and open source: https://github.com/vkardin/leveler
 
 Набридло додавати звук на кожному шепоті й зменшувати на кожному вибуху? Leveler вирівнює гучність будь-якого HTML5-відео та аудіо просто в браузері, і фільм можна дивитися вночі, не тримаючи руку на регуляторі.
 
-• Пресети: «Нічний режим» (сильне стиснення), «Діалоги гучніше», «Навушники», «Бас+», «Вимк»
+• Пресети: «Нічний режим» (сильне стиснення), «Діалоги гучніше», «Подкасти», «Навушники», «Бас+», «Музика», «Вимк»
 • Один повзунок «Вирівняти звук» або повне налаштування: поріг, ступінь стиснення, м’якість, атака, відновлення, підсилення
 • Еквалайзер на 3 смуги та зріз низів, щоб голоси звучали розбірливіше
 • Індикатор рівня до і після компресії

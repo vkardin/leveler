@@ -63,10 +63,14 @@
       params: P({ level: null, threshold: -50, knee: 8, ratio: 12, attack: 0.003, release: 0.3, makeup: 0, hp: 60, low: -3, mid: 2, high: 0 }) },
     { id: 'b:dialog', name: 'pr_dialog',
       params: P(Object.assign(withLevel({}, 50), { hp: 80, low: -2, mid: 4, high: 1 })) },
+    { id: 'b:podcast', name: 'pr_podcast',
+      params: P({ level: null, threshold: -42, knee: 10, ratio: 8, attack: 0.005, release: 0.2, makeup: 0, hp: 100, low: -4, mid: 3, high: 1 }) },
     { id: 'b:headphones', name: 'pr_headphones',
       params: P({ level: null, threshold: -30, knee: 20, ratio: 3, attack: 0.01, release: 0.3, makeup: -1, hp: 0, low: 1, mid: 0, high: -2 }) },
     { id: 'b:bass', name: 'pr_bass',
       params: P({ level: null, threshold: -24, knee: 20, ratio: 2.5, attack: 0.01, release: 0.25, makeup: -3, hp: 0, low: 6, mid: 0, high: 1 }) },
+    { id: 'b:music', name: 'pr_music',
+      params: P({ level: null, threshold: -20, knee: 30, ratio: 2, attack: 0.03, release: 0.3, makeup: 0, hp: 0, low: 1, mid: 0, high: 1 }) },
     { id: 'b:off', name: 'pr_off',
       params: P(Object.assign(withLevel({}, 0), { hp: 0, low: 0, mid: 0, high: 0 })) }
   ]);

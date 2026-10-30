@@ -62,6 +62,12 @@
   "n_original": {
     "message": "The sound plays unchanged, speed control still works."
   },
+  "n_drm": {
+    "message": "The video is DRM-protected, so the browser does not let extensions touch its sound. It plays unchanged; speed control still works."
+  },
+  "n_cors": {
+    "message": "The sound comes from another server that does not allow processing. It plays unchanged; speed control still works."
+  },
   "p_preset": {
     "message": "Preset"
   },
@@ -169,6 +175,12 @@
   },
   "pr_bass": {
     "message": "Bass+"
+  },
+  "pr_podcast": {
+    "message": "Podcasts"
+  },
+  "pr_music": {
+    "message": "Music"
   },
   "pr_off": {
     "message": "Off"
