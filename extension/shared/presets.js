@@ -26,10 +26,15 @@
     low:       { min: -12, max: 12, def: 0 },      // dB, полка 120 Гц
     mid:       { min: -12, max: 12, def: 0 },      // dB, колокол 1.5 кГц
     high:      { min: -12, max: 12, def: 0 },      // dB, полка 8 кГц
-    volume:    { min: 0, max: 400, def: 100 }      // %, усиление громкости; не часть пресета
+    volume:    { min: 0, max: 400, def: 100 },     // %, усиление громкости; не часть пресета
+    pan:       { min: -100, max: 100, def: 0 },    // панорама: −100 — всё влево, 100 — всё вправо
+    balance:   { min: -100, max: 100, def: 0 },    // баланс: приглушает противоположный канал
+    mono:      { bool: true, def: false }          // принудительное моно (L+R в оба канала)
   };
   const KEYS = Object.keys(SPEC);
   const COMP_KEYS = ['threshold', 'knee', 'ratio', 'attack', 'release'];
+  // Настройки сайта, а не звука фильма: при выборе пресета остаются как были.
+  const SITE_PARAMS = ['volume', 'pan', 'balance', 'mono'];
 
   function normalizeParams(p) {
     p = p && typeof p === 'object' ? p : {};
@@ -37,6 +42,7 @@
     for (const k of KEYS) {
       const s = SPEC[k];
       if (s.nullable && p[k] === null) { out[k] = null; continue; }
+      if (s.bool) { out[k] = typeof p[k] === 'boolean' ? p[k] : s.def; continue; }
       out[k] = Math.round(clamp(num(p[k], s.def), s.min, s.max) * 10000) / 10000;
     }
     return out;
@@ -57,10 +63,14 @@
       params: P({ level: null, threshold: -50, knee: 8, ratio: 12, attack: 0.003, release: 0.3, makeup: 0, hp: 60, low: -3, mid: 2, high: 0 }) },
     { id: 'b:dialog', name: 'pr_dialog',
       params: P(Object.assign(withLevel({}, 50), { hp: 80, low: -2, mid: 4, high: 1 })) },
+    { id: 'b:podcast', name: 'pr_podcast',
+      params: P({ level: null, threshold: -42, knee: 10, ratio: 8, attack: 0.005, release: 0.2, makeup: 0, hp: 100, low: -4, mid: 3, high: 1 }) },
     { id: 'b:headphones', name: 'pr_headphones',
       params: P({ level: null, threshold: -30, knee: 20, ratio: 3, attack: 0.01, release: 0.3, makeup: -1, hp: 0, low: 1, mid: 0, high: -2 }) },
     { id: 'b:bass', name: 'pr_bass',
       params: P({ level: null, threshold: -24, knee: 20, ratio: 2.5, attack: 0.01, release: 0.25, makeup: -3, hp: 0, low: 6, mid: 0, high: 1 }) },
+    { id: 'b:music', name: 'pr_music',
+      params: P({ level: null, threshold: -20, knee: 30, ratio: 2, attack: 0.03, release: 0.3, makeup: 0, hp: 0, low: 1, mid: 0, high: 1 }) },
     { id: 'b:off', name: 'pr_off',
       params: P(Object.assign(withLevel({}, 0), { hp: 0, low: 0, mid: 0, high: 0 })) }
   ]);
@@ -101,10 +111,18 @@
   const newId = () => 'u:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   // «Выкл»: ничего не меняет — такой элемент даже не подключаем к Web Audio
-  const isNeutral = (p) => p.ratio <= 1 && !p.makeup && !p.hp && !p.low && !p.mid && !p.high && p.volume === 100;
+  const isNeutral = (p) => p.ratio <= 1 && !p.makeup && !p.hp && !p.low && !p.mid && !p.high && p.volume === 100
+    && !p.pan && !p.balance && !p.mono;
+
+  // параметры пресета без настроек сайта (SITE_PARAMS) — те остаются от текущего профиля
+  const presetParams = (preset, cur) => {
+    const out = Object.assign({}, preset);
+    for (const k of SITE_PARAMS) out[k] = cur[k];
+    return normalizeParams(out);
+  };
 
   const sameParams = (a, b) => KEYS.every((k) => {
-    if (k === 'volume') return true;
+    if (SITE_PARAMS.includes(k)) return true;
     if (a[k] === null || b[k] === null) return k === 'level' || a[k] === b[k];
     return Math.abs(a[k] - b[k]) < 1e-4;
   });
@@ -178,8 +196,8 @@
   }
 
   self.LV_PRESETS = Object.freeze({
-    SPEC, KEYS, COMP_KEYS, BUILTIN, DEFAULT_PRESET, DEFAULT_PROFILE, MAX_PRESETS, MAX_NAME,
-    normalizeParams, withLevel, isNeutral, normalizeProfile, normalizePresets, builtin, newId, sameParams,
+    SPEC, KEYS, COMP_KEYS, SITE_PARAMS, BUILTIN, DEFAULT_PRESET, DEFAULT_PROFILE, MAX_PRESETS, MAX_NAME,
+    normalizeParams, withLevel, isNeutral, presetParams, normalizeProfile, normalizePresets, builtin, newId, sameParams,
     DEFAULT_KEYS, KEY_STEPS, normalizeKeys, siteKey, isHost, topHost, exportData, importData
   });
 })();

@@ -62,6 +62,12 @@
   "n_original": {
     "message": "The sound plays unchanged, speed control still works."
   },
+  "n_drm": {
+    "message": "The video is DRM-protected, so the browser does not let extensions touch its sound. It plays unchanged; speed control still works."
+  },
+  "n_cors": {
+    "message": "The sound comes from another server that does not allow processing. It plays unchanged; speed control still works."
+  },
   "p_preset": {
     "message": "Preset"
   },
@@ -169,6 +175,12 @@
   },
   "pr_bass": {
     "message": "Bass+"
+  },
+  "pr_podcast": {
+    "message": "Podcasts"
+  },
+  "pr_music": {
+    "message": "Music"
   },
   "pr_off": {
     "message": "Off"
@@ -278,19 +290,28 @@
   "o_key_step": {
     "message": "Speed step for hotkeys"
   },
-  "p_live": {
-    "message": "Catch up on live streams"
+  "p_stereo": {
+    "message": "Stereo"
   },
-  "p_live_title": {
-    "message": "Gently speed up a live stream that fell behind, without skipping"
+  "p_stereo_hint": {
+    "message": "Saved for this site, presets do not change it. Double-click a slider to center it."
   },
-  "p_live_catching": {
-    "message": "Catching up with the live stream: $1"
+  "s_pan": {
+    "message": "Pan"
   },
-  "p_live_on_edge": {
-    "message": "Live stream: keeping up"
+  "s_balance": {
+    "message": "Balance L/R"
   },
-  "o_live_hint": {
-    "message": "If a live stream on Twitch, YouTube or Kick falls behind, the speed rises a little (up to 1.2×, pitch preserved) until the buffer is back to a safe margin. No jumps, so no extra buffering."
+  "s_mono": {
+    "message": "Mono"
+  },
+  "u_center": {
+    "message": "center"
+  },
+  "u_left": {
+    "message": "L $1"
+  },
+  "u_right": {
+    "message": "R $1"
   }
 }
