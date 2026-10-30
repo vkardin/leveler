@@ -19,6 +19,11 @@
  * и не подключаем. Если тишина всё же пришла после подключения, это видно по probe:
  * звук декодируется, а на выходе ровно 0 несколько секунд. Тогда сайт запоминается
  * в chrome.storage.local, и после перезагрузки страницы звук идёт без обработки.
+ *
+ * AudioFocus (если включён в настройках): фрейм сообщает фоновому скрипту, когда у него
+ * появился или пропал звук, и по его команде ставит свои элементы на паузу или приглушает.
+ * Приглушение — через отдельный GainNode перед destination, а если элемент не подключён
+ * к Web Audio — через el.volume.
  */
 (() => {
   'use strict';
@@ -70,6 +75,8 @@
     el.addEventListener('encrypted', () => markBlocked(el, 'drm'));
     el.addEventListener('loadstart', () => onSourceChange(el));
     el.addEventListener('pause', () => stopProbe(chains.get(el)));
+    // сам элемент, а не document: удалённый из DOM элемент тоже ставится на паузу
+    for (const t of ['pause', 'ended', 'volumechange', 'emptied', 'loadedmetadata']) el.addEventListener(t, onFocusEvent);
     if (speed !== 1) applySpeed(el, false);
   }
 
@@ -81,7 +88,7 @@
 
   // play не всплывает, но ловится на фазе захвата — так видны и элементы,
   // которые MutationObserver ещё не успел найти.
-  const onPlayEvent = (e) => { if (isMedia(e.target)) onPlay(e.target); };
+  const onPlayEvent = (e) => { if (isMedia(e.target)) { onPlay(e.target); onFocusEvent(e); } };
   const onPlayingEvent = (e) => { if (isMedia(e.target)) startProbe(chains.get(e.target)); };
   document.addEventListener('play', onPlayEvent, true);
   document.addEventListener('playing', onPlayingEvent, true);
@@ -224,6 +231,7 @@
       limiter: ctx.createDynamicsCompressor(),
       wet: ctx.createGain(),
       dry: ctx.createGain(),
+      focus: ctx.createGain(),               // AudioFocus: приглушение, когда вкладка в фоне
       probe: ctx.createAnalyser(),
       buf: null, timer: 0, lastTick: 0, silentMs: 0, heard: false, silent: false, decoded: -1
     };
@@ -236,10 +244,12 @@
     c.limiter.attack.value = 0.001;
     c.limiter.release.value = 0.1;
 
+    c.focus.gain.value = held === 'duck' && !volDucked.has(el) ? settings.focusDuck : 1;
     src.connect(c.probe);
-    src.connect(c.dry).connect(ctx.destination);
+    src.connect(c.dry).connect(c.focus);
     src.connect(c.hp).connect(c.low).connect(c.mid).connect(c.high)
-      .connect(c.comp).connect(c.makeup).connect(c.limiter).connect(c.wet).connect(ctx.destination);
+      .connect(c.comp).connect(c.makeup).connect(c.limiter).connect(c.wet).connect(c.focus);
+    c.focus.connect(ctx.destination);
 
     applyParams(c, true);
     chains.set(el, c);
@@ -407,6 +417,98 @@
     overlayTimer = setTimeout(() => { overlay.label.style.opacity = '0'; }, 900);
   }
 
+  // ───────────────────────── AudioFocus ─────────────────────────
+
+  const SHORT_SOUND = 5;                   // с: звуки уведомлений короче — фокус не забирают
+  const DUCK_TAU = 0.12;                   // плавность приглушения, с
+  let held = null;                         // null | 'pause' | 'duck' — команда фонового скрипта
+  let sentAudible = false;                 // что последним сообщили фоновому скрипту
+  const pausedByFocus = new Set();         // элементы, которые на паузу поставили мы
+  const volDucked = new Map();             // элемент → { orig, set }: приглушён через el.volume
+  const wasAudible = new WeakMap();
+
+  function audible(el) {
+    if (el.paused || el.ended || el.muted) return false;
+    const d = volDucked.get(el);
+    if ((d ? d.orig : el.volume) === 0) return false;
+    return !(isFinite(el.duration) && el.duration < SHORT_SOUND);
+  }
+
+  function onFocusEvent(e) {
+    const el = e.target;
+    if (e.type === 'volumechange') {
+      // громкость поменял сайт или пользователь — наше приглушение больше не трогаем
+      const d = volDucked.get(el);
+      if (d && Math.abs(el.volume - d.set) > 0.002) volDucked.delete(el);
+    }
+    if (settings.focusMode === 'off') return;
+    const now = audible(el);
+    const before = wasAudible.get(el) || false;
+    wasAudible.set(el, now);
+    if (now && held === 'duck') duck(el);
+    // звук включили во вкладке, которую видно: она забирает фокус
+    reportFocus(now && !before && document.visibilityState === 'visible');
+  }
+
+  function reportFocus(claim) {
+    let playing = false;
+    for (const el of media) if (audible(el)) { playing = true; break; }
+    if (playing === sentAudible && !(claim && playing)) return;
+    sentAudible = playing;
+    try { chrome.runtime.sendMessage({ type: 'lv:audible', playing, claim: claim && playing }).catch(() => {}); }
+    catch (e) { /* расширение обновили */ }
+  }
+
+  function duck(el) {
+    const c = chains.get(el);
+    if (c && c.focus) {
+      c.focus.gain.setTargetAtTime(settings.focusDuck, ctx.currentTime, DUCK_TAU);
+    } else if (!volDucked.has(el) && el.volume > 0) {
+      const orig = el.volume;
+      el.volume = orig * settings.focusDuck;
+      volDucked.set(el, { orig, set: el.volume });
+    }
+  }
+
+  function unduckAll() {
+    for (const el of media) {
+      const c = chains.get(el);
+      if (c && c.focus) c.focus.gain.setTargetAtTime(1, ctx.currentTime, DUCK_TAU);
+    }
+    for (const [el, d] of volDucked) if (Math.abs(el.volume - d.set) <= 0.002) el.volume = d.orig;
+    volDucked.clear();
+  }
+
+  function onFocusCommand(action) {
+    if (action === 'restore' || action !== held) {
+      unduckAll();
+      for (const el of pausedByFocus) if (el.paused && el.isConnected) el.play().catch(() => {});
+      pausedByFocus.clear();
+      held = null;
+    }
+    if (action === 'pause') {
+      held = 'pause';
+      for (const el of media) if (audible(el)) { pausedByFocus.add(el); el.pause(); }
+    } else if (action === 'duck') {
+      held = 'duck';
+      for (const el of media) duck(el);
+    }
+  }
+
+  // режим включили — сообщаем, звучит ли фрейм прямо сейчас; выключили — всё отпускаем
+  function onFocusMode() {
+    if (settings.focusMode === 'off') {
+      sentAudible = false;
+      onFocusCommand('restore');
+    } else {
+      for (const el of media) wasAudible.set(el, audible(el));
+      reportFocus(false);
+    }
+  }
+
+  const onPageHide = () => { if (sentAudible) { sentAudible = false; reportFocus(false); } };
+  window.addEventListener('pagehide', onPageHide);
+
   // ───────────────────────── статус для popup ─────────────────────────
 
   function status() {
@@ -467,6 +569,8 @@
       // пока двигают ползунок: применяем сразу, в storage popup пишет реже
       params = PR.normalizeParams(msg.params);
       applyAll();
+    } else if (msg.type === 'lv:focus') {
+      onFocusCommand(msg.action);
     }
   };
   chrome.runtime.onMessage.addListener(onMessage);
@@ -483,9 +587,10 @@
     if (first ? profile.speed !== 1 : profile.speed !== prev.speed && profile.speed !== speed) setSpeed(profile.speed);
   }
 
-  chrome.storage.sync.get(['enabled', 'def', 'keys', SITE_KEY], (all) => {
+  chrome.storage.sync.get(['enabled', 'focusMode', 'focusDuck', 'def', 'keys', SITE_KEY], (all) => {
     all = all || {};
     settings = LV.normalize(all);
+    if (settings.focusMode !== 'off') onFocusMode();
     keys = PR.normalizeKeys(all.keys);
     stored = { def: all.def, [SITE_KEY]: all[SITE_KEY] };
     resolveProfile(true);
@@ -502,9 +607,14 @@
     }
     if (area !== 'sync') return;
     if (changes.keys) keys = PR.normalizeKeys(changes.keys.newValue);
-    if (changes.enabled) {
-      settings = LV.normalize({ enabled: changes.enabled.newValue });
-      applyAll();
+    if (changes.enabled || changes.focusMode || changes.focusDuck) {
+      const prev = settings;
+      const next = {};
+      for (const k of ['enabled', 'focusMode', 'focusDuck']) next[k] = changes[k] ? changes[k].newValue : prev[k];
+      settings = LV.normalize(next);
+      if (settings.enabled !== prev.enabled) applyAll();
+      if (settings.focusMode !== prev.focusMode) onFocusMode();
+      else if (held === 'duck' && settings.focusDuck !== prev.focusDuck) for (const el of media) duck(el);
     }
     if (changes.def || changes[SITE_KEY]) {
       if (changes.def) stored.def = changes.def.newValue;
@@ -522,7 +632,11 @@
     window.removeEventListener('pointerdown', wake, true);
     window.removeEventListener('keydown', wake, true);
     window.removeEventListener('keydown', onKey, true);
+    window.removeEventListener('pagehide', onPageHide);
     mo.disconnect();
+    // после обновления фоновый скрипт начинает с чистого листа: приглушение не должно остаться
+    unduckAll();
+    for (const el of media) for (const t of ['pause', 'ended', 'volumechange', 'emptied', 'loadedmetadata']) el.removeEventListener(t, onFocusEvent);
     for (const el of media) stopProbe(chains.get(el));
     if (overlay) overlay.host.remove();
     try {
@@ -533,5 +647,5 @@
   window.addEventListener('leveler-takeover', teardown);
 
   // для автотестов (store/tests): доступно только в изолированном мире расширения
-  self.__leveler = { status, chains, media, get ctx() { return ctx; }, get params() { return params; } };
+  self.__leveler = { status, chains, media, get ctx() { return ctx; }, get params() { return params; }, get held() { return held; } };
 })();

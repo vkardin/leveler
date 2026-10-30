@@ -277,5 +277,26 @@
   },
   "o_key_step": {
     "message": "Speed step for hotkeys"
+  },
+  "o_focus": {
+    "message": "Background tabs"
+  },
+  "o_focus_hint": {
+    "message": "When sound starts in the tab you are looking at, other tabs with sound pause or get quieter, and continue when it stops."
+  },
+  "o_focus_mode": {
+    "message": "Other tabs with sound"
+  },
+  "o_focus_off": {
+    "message": "Leave as is"
+  },
+  "o_focus_pause": {
+    "message": "Pause"
+  },
+  "o_focus_duck_mode": {
+    "message": "Make quieter"
+  },
+  "o_focus_duck": {
+    "message": "Volume of background tabs"
   }
 }
