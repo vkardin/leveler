@@ -62,6 +62,12 @@
   "n_original": {
     "message": "The sound plays unchanged, speed control still works."
   },
+  "n_drm": {
+    "message": "The video is DRM-protected, so the browser does not let extensions touch its sound. It plays unchanged; speed control still works."
+  },
+  "n_cors": {
+    "message": "The sound comes from another server that does not allow processing. It plays unchanged; speed control still works."
+  },
   "p_preset": {
     "message": "Preset"
   },
@@ -169,6 +175,12 @@
   },
   "pr_bass": {
     "message": "Bass+"
+  },
+  "pr_podcast": {
+    "message": "Podcasts"
+  },
+  "pr_music": {
+    "message": "Music"
   },
   "pr_off": {
     "message": "Off"
@@ -278,25 +290,28 @@
   "o_key_step": {
     "message": "Speed step for hotkeys"
   },
-  "o_focus": {
-    "message": "Background tabs"
+  "p_stereo": {
+    "message": "Stereo"
   },
-  "o_focus_hint": {
-    "message": "When sound starts in the tab you are looking at, other tabs with sound pause or get quieter, and continue when it stops."
+  "p_stereo_hint": {
+    "message": "Saved for this site, presets do not change it. Double-click a slider to center it."
   },
-  "o_focus_mode": {
-    "message": "Other tabs with sound"
+  "s_pan": {
+    "message": "Pan"
   },
-  "o_focus_off": {
-    "message": "Leave as is"
+  "s_balance": {
+    "message": "Balance L/R"
   },
-  "o_focus_pause": {
-    "message": "Pause"
+  "s_mono": {
+    "message": "Mono"
   },
-  "o_focus_duck_mode": {
-    "message": "Make quieter"
+  "u_center": {
+    "message": "center"
   },
-  "o_focus_duck": {
-    "message": "Volume of background tabs"
+  "u_left": {
+    "message": "L $1"
+  },
+  "u_right": {
+    "message": "R $1"
   }
 }

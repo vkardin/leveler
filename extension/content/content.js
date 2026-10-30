@@ -3,9 +3,14 @@
  *
  * Цепочка для каждого элемента (одна на элемент, см. chains):
  *
- *   MediaElementSource ─┬─ HighPass → EQ low/mid/high → Compressor → Makeup → Limiter → wet ─┬→ destination
- *                       ├─ dry ───────────────────────────────────────────────────────────────┘
+ *   MediaElementSource ─┬─ HighPass → EQ low/mid/high → Compressor → Makeup → Стерео → Limiter → wet ─┬→ destination
+ *                       ├─ dry ──────────────────────────────────────────────────────────────────────────┘
  *                       └─ probe (AnalyserNode, только для проверки на тишину)
+ *
+ *   Стерео:  ─┬─ stereo ─────────┬→ Panner → Splitter ─┬─ balL ─┬→ Merger
+ *             └─ monoMix (1 кан.) ┘                     └─ balR ─┘
+ *   Моно — плавный переход между stereo и monoMix: узел с одним каналом сводит L+R,
+ *   дальше моно снова раскладывается на оба канала.
  *
  * Вкл/выкл (bypass) — плавный переход между wet и dry, без перезагрузки и без щелчков.
  *
@@ -35,6 +40,7 @@
   // (background.js, popup). Старый экземпляр в той же вкладке уступает место новому:
   // снимает свои обработчики, а AudioContext и цепочки оставляет в window.__lvAudio —
   // элемент, уже подключённый к Web Audio, второй раз подключить нельзя.
+  const takeover = !!window.__lvAudio;
   window.dispatchEvent(new Event('leveler-takeover'));
   const shared = window.__lvAudio || (window.__lvAudio = { ctx: null, chains: new WeakMap() });
 
@@ -228,6 +234,13 @@
       high: biquad('highshelf', 8000),
       comp: ctx.createDynamicsCompressor(),
       makeup: ctx.createGain(),
+      stereo: ctx.createGain(),
+      monoMix: ctx.createGain(),
+      panner: ctx.createStereoPanner(),
+      split: ctx.createChannelSplitter(2),
+      balL: ctx.createGain(),
+      balR: ctx.createGain(),
+      merge: ctx.createChannelMerger(2),
       limiter: ctx.createDynamicsCompressor(),
       wet: ctx.createGain(),
       dry: ctx.createGain(),
@@ -244,16 +257,25 @@
     c.limiter.attack.value = 0.001;
     c.limiter.release.value = 0.1;
 
-    c.focus.gain.value = held === 'duck' && !volDucked.has(el) ? settings.focusDuck : 1;
+    c.monoMix.channelCount = 1;
+    c.monoMix.channelCountMode = 'explicit';
+    c.monoMix.channelInterpretation = 'speakers';   // стерео → моно: (L + R) / 2
+
     src.connect(c.probe);
     src.connect(c.dry).connect(c.focus);
     src.connect(c.hp).connect(c.low).connect(c.mid).connect(c.high)
-      .connect(c.comp).connect(c.makeup).connect(c.limiter).connect(c.wet).connect(c.focus);
-    c.focus.connect(ctx.destination);
+      .connect(c.comp).connect(c.makeup);
+    c.makeup.connect(c.stereo).connect(c.panner);
+    c.makeup.connect(c.monoMix).connect(c.panner);
+    c.panner.connect(c.split);
+    c.split.connect(c.balL, 0).connect(c.merge, 0, 0);
+    c.split.connect(c.balR, 1).connect(c.merge, 0, 1);
+    c.merge.connect(c.limiter).connect(c.wet).connect(ctx.destination);
 
     applyParams(c, true);
     chains.set(el, c);
     if (!el.paused) startProbe(c);
+    updateBadge();
   }
 
   function setParam(p, v, now) {
@@ -274,6 +296,12 @@
     setParam(c.low.gain, p.low, now);
     setParam(c.mid.gain, p.mid, now);
     setParam(c.high.gain, p.high, now);
+    // панорама может сложить оба канала в один — лимитер стоит после неё
+    setParam(c.stereo.gain, p.mono ? 0 : 1, now);
+    setParam(c.monoMix.gain, p.mono ? 1 : 0, now);
+    setParam(c.panner.pan, p.pan / 100, now);
+    setParam(c.balL.gain, Math.min(1, 1 - p.balance / 100), now);
+    setParam(c.balR.gain, Math.min(1, 1 + p.balance / 100), now);
     const on = settings.enabled && !c.silent && !PR.isNeutral(p);
     setParam(c.wet.gain, on ? 1 : 0, now);
     setParam(c.dry.gain, on ? 0 : 1, now);
@@ -285,6 +313,7 @@
       if (c) applyParams(c, false);
       else if (settings.enabled && !el.paused) connect(el);
     }
+    updateBadge();
   }
 
   // ───────────────────────── DRM / CORS ─────────────────────────
@@ -353,6 +382,7 @@
       markBlocked(el, 'silent');
       applyParams(c, false);
       rememberUnsupported();
+      updateBadge();
     }
   }
 
@@ -526,9 +556,23 @@
     if (!reason && (hostUnsupported || cachedUnsupported) && found) reason = hostUnsupported ? 'drm' : 'cached';
     return {
       type: 'lv:status', host: HOST, site: SITE, top: window === window.top,
-      found, playing, processed, reason, reload, speed,
+      found, playing, processed, reason, reload, speed, drmHost: hostUnsupported,
       audio: ctx ? ctx.state : 'none'
     };
+  }
+
+  // ───────── значок: усиление громкости на иконке расширения ─────────
+  // Показываем, только когда звук этого фрейма реально обрабатывается. Рисует значок
+  // background.js; сообщение уходит, только если текст изменился.
+  let badge = takeover ? null : '';        // после обновления расширения значок мог остаться от старого скрипта
+  function updateBadge() {
+    let on = false;
+    for (const el of media) { const c = chains.get(el); if (c && !c.silent) { on = true; break; } }
+    const v = Math.round(params.volume);
+    const text = on && settings.enabled && v !== 100 ? v + '%' : '';
+    if (text === badge) return;
+    badge = text;
+    try { chrome.runtime.sendMessage({ type: 'lv:badge', text, boost: v > 100 }).catch(() => {}); } catch (e) { /* расширение обновили */ }
   }
 
   // Уровни для индикатора в popup: popup спрашивает, пока открыт, на странице ничего не крутится.
