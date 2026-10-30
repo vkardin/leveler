@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="UNI">
+  <defs>
+    <linearGradient id="ug" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7aa7ff"/>
+      <stop offset="1" stop-color="#d99a5b"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="29" fill="#0f1114"/>
+  <text x="64" y="88" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="62" text-anchor="middle" fill="url(#ug)">U</text>
+</svg>
