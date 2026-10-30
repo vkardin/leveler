@@ -6,6 +6,7 @@
   const CACHE_KEY = 'unsupportedHosts';
   const STALE_MS = 2500;                   // ответ фрейма старше этого — фрейма больше нет
   const SAVE_MS = 400;                     // storage.sync ограничивает частоту записи
+  const NOTICE = { drm: 'n_drm', cors: 'n_cors' };   // причина → пояснение под «Этот сайт не поддерживает…»
 
   // Ползунки компрессора и эквалайзера. scale — множитель для показа (с → мс).
   const COMP = [
@@ -21,6 +22,12 @@
     { key: 'low', label: 's_low', step: 0.5, unit: ' dB', signed: true },
     { key: 'mid', label: 's_mid', step: 0.5, unit: ' dB', signed: true },
     { key: 'high', label: 's_high', step: 0.5, unit: ' dB', signed: true }
+  ];
+  // center — двойной щелчок по ползунку возвращает в центр
+  const side = (v) => (v === 0 ? t('u_center') : t(v < 0 ? 'u_left' : 'u_right', Math.abs(Math.round(v))));
+  const STEREO = [
+    { key: 'pan', label: 's_pan', step: 5, fmt: side, center: true },
+    { key: 'balance', label: 's_balance', step: 5, fmt: side, center: true }
   ];
 
   let settings = LV.normalize();
@@ -45,7 +52,7 @@
     saveAs: $('#saveAs'), rename: $('#rename'), remove: $('#remove'),
     nameForm: $('#nameForm'), nameInput: $('#nameInput'), nameCancel: $('#nameCancel'),
     confirm: $('#confirm'), confirmText: $('#confirmText'), confirmYes: $('#confirmYes'), confirmNo: $('#confirmNo'),
-    makeDefault: $('#makeDefault'), resetSite: $('#resetSite')
+    makeDefault: $('#makeDefault'), resetSite: $('#resetSite'), siteDone: $('#siteDone')
   };
 
   els.speed.min = LV.SPEED_MIN;
@@ -99,8 +106,8 @@
     const p = findPreset(id);
     if (!p) return;
     profile.preset = id;
-    // усиление громкости не часть пресета: остаётся как было
-    profile.params = PR.normalizeParams(Object.assign({}, p.params, { volume: profile.params.volume }));
+    // усиление громкости и стерео не часть пресета: остаются как были
+    profile.params = PR.presetParams(p.params, profile.params);
     renderAll();
     sendParams();
     saveProfile(true);
@@ -142,7 +149,8 @@
     els.levelInfo.textContent = p.ratio <= 1 ? t('p_level_none')
       : t('p_level_info', fmtDb(p.threshold), r2(p.ratio) + ':1');
     fill(els.level);
-    for (const s of COMP.concat(EQ)) {
+    $('#mono').checked = p.mono;
+    for (const s of COMP.concat(EQ, STEREO)) {
       const input = document.getElementById('sl-' + s.key);
       input.value = p[s.key];
       fill(input);
@@ -203,15 +211,18 @@
         if (PR.COMP_KEYS.includes(s.key)) next.level = null;   // компрессор настроен вручную
         changeParams(next);
       });
-      root.appendChild(wrap);
+      if (s.center) input.addEventListener('dblclick', () => changeParams(Object.assign({}, profile.params, { [s.key]: 0 })));
+      root.insertBefore(wrap, root.querySelector('.toggle'));
     }
   }
   buildSliders($('#compSliders'), COMP);
   buildSliders($('#eqSliders'), EQ);
+  buildSliders($('#stereoSliders'), STEREO);
+  $('#mono').addEventListener('change', (e) => changeParams(Object.assign({}, profile.params, { mono: e.target.checked })));
 
   function renderStatus() {
     const now = Date.now();
-    let found = 0, playing = 0, processed = 0, reason = null, reload = false, suspended = false, any = false;
+    let found = 0, playing = 0, processed = 0, reason = null, reload = false, suspended = false, any = false, drm = false;
     for (const [id, f] of frames) {
       if (now - f.at > STALE_MS) { frames.delete(id); continue; }
       any = true;
@@ -219,8 +230,12 @@
       found += s.found; playing += s.playing; processed += s.processed;
       if (s.reason && (!reason || s.playing)) reason = s.reason;
       reload = reload || s.reload;
+      drm = drm || (s.top && s.drmHost);
       if (s.audio === 'suspended' && s.found) suspended = true;
     }
+
+    // сайт с DRM (Netflix и т.п.) известен заранее: предупреждаем, даже пока видео не нашлось
+    if (!reason && drm) reason = 'drm';
 
     let cls = '', text;
     if (tabId === null || !any) text = t('st_no_access');
@@ -236,9 +251,11 @@
 
     els.notice.hidden = !reason;
     if (reason) {
-      els.noticeText.textContent = reload ? t('n_reload') : t('n_original');
+      els.noticeText.textContent = t(reload ? 'n_reload' : NOTICE[reason] || 'n_original');
       els.retry.hidden = reason !== 'cached';
     }
+    // звук здесь не обработать: ползунки звука ничего не дадут, скорость остаётся
+    document.body.classList.toggle('nosound', !!reason && !processed);
   }
 
   // ───────────────────────── связь со страницей ─────────────────────────
@@ -360,11 +377,18 @@
     renderPresets();
   });
 
+  // короткое «Готово» рядом с кнопками сайта
+  let flashTimer = 0;
+  function flash(el) {
+    el.hidden = false;
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => { el.hidden = true; }, 1200);
+  }
+
   els.makeDefault.addEventListener('click', () => {
     all.def = { preset: profile.preset, params: profile.params, speed: 1 };
     chrome.storage.sync.set({ def: all.def });
-    els.makeDefault.textContent = t('p_done');
-    setTimeout(() => { els.makeDefault.textContent = t('p_make_default'); }, 1200);
+    flash(els.siteDone);
   });
 
   els.resetSite.addEventListener('click', () => {
@@ -375,6 +399,7 @@
     renderAll();
     sendParams();
     if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:speed', speed: profile.speed }).catch(() => {});
+    flash(els.siteDone);
   });
 
   els.retry.addEventListener('click', async () => {
