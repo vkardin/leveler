@@ -148,6 +148,7 @@
       format: 1,
       exported: new Date().toISOString(),
       enabled: all.enabled !== false,
+      liveCatchup: all.liveCatchup === true,
       presets: normalizePresets(all.presets),
       keys: normalizeKeys(all.keys),
       default: normalizeProfile(all.def || DEFAULT_PROFILE),
@@ -161,6 +162,7 @@
     if (data.format > 1) throw new Error('too-new');
     const out = {
       enabled: data.enabled !== false,
+      liveCatchup: data.liveCatchup === true,
       presets: normalizePresets(data.presets),
       keys: normalizeKeys(data.keys),
       def: normalizeProfile(data.default)

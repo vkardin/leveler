@@ -4,7 +4,8 @@
 (() => {
   // Общие настройки. Пресет, параметры звука и скорость — в профиле сайта (presets.js).
   const DEFAULTS = Object.freeze({
-    enabled: true       // false — bypass: оригинальный звук, цепочка остаётся подключённой
+    enabled: true,      // false — bypass: оригинальный звук, цепочка остаётся подключённой
+    liveCatchup: false  // догонять прямой эфир, если отстали от края буфера
   });
 
   const SPEED_MIN = 0.25;
@@ -18,7 +19,8 @@
   function normalize(s) {
     s = s || {};
     return {
-      enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULTS.enabled
+      enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULTS.enabled,
+      liveCatchup: typeof s.liveCatchup === 'boolean' ? s.liveCatchup : DEFAULTS.liveCatchup
     };
   }
 

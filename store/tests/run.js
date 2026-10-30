@@ -10,7 +10,8 @@
 //  - элемент не подключается дважды;
 //  - скорость с preservesPitch и оверлей;
 //  - чужой origin без CORS не трогается;
-//  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается.
+//  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается;
+//  - догон прямого эфира на имитации трансляции (MSE, сегмент каждые 2 с; нужен ffmpeg).
 const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
@@ -23,6 +24,13 @@ const SHOTS = process.argv[2] || null;
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'leveler-test-'));
 const WAV = path.join(tmp, 't.wav');
 execFileSync('python3', [path.join(__dirname, 'make_wav.py'), WAV]);
+// 2-секундный сегмент «трансляции» (webm/opus) для догона эфира
+const SEG = path.join(tmp, 'seg.webm');
+let hasSeg = true;
+try {
+  execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i',
+    'sine=frequency=440:duration=2:sample_rate=48000', '-c:a', 'libopus', '-b:a', '48k', SEG]);
+} catch (e) { hasSeg = false; }
 
 const A = 8711, B = 8712;            // localhost:A — «сайт», 127.0.0.1:B — чужой origin
 const page = (body) => `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#111;color:#eee;font:14px sans-serif">${body}</body>`;
@@ -31,7 +39,28 @@ const ROUTES = {
     <iframe id="f" src="http://127.0.0.1:${A}/frame" width="300" height="60" style="border:0"></iframe>`),
   '/frame': page('<audio id="a" src="/t.wav" controls></audio>'),
   '/cors': page(`<video id="v" src="http://127.0.0.1:${B}/t.wav" width="480" height="270"></video>`),
-  '/redirect': page('<video id="v" src="/redir.wav" width="480" height="270"></video>')
+  '/redirect': page('<video id="v" src="/redir.wav" width="480" height="270"></video>'),
+  // Имитация трансляции: зритель отстал на 10 с (5 сегментов в буфере), дальше сегмент
+  // приходит раз в 2 с, как у HLS/DASH. Рядом обычное видео с конечной длительностью.
+  '/live': page(`<audio id="v" muted></audio><audio id="vod" src="/t.wav" loop muted></audio>
+    <script>
+      window.waits = 0;
+      const v = document.getElementById('v');
+      const ms = new MediaSource();
+      v.src = URL.createObjectURL(ms);
+      ms.addEventListener('sourceopen', async () => {
+        const sb = ms.addSourceBuffer('audio/webm; codecs="opus"');
+        sb.mode = 'sequence';
+        const seg = await (await fetch('/seg.webm')).arrayBuffer();
+        ms.duration = Infinity;
+        const append = () => new Promise((r) => { sb.addEventListener('updateend', r, { once: true }); sb.appendBuffer(seg.slice(0)); });
+        for (let i = 0; i < 5; i++) await append();
+        window.ready = true;
+        setInterval(append, 2000);
+      });
+      v.addEventListener('playing', () => { v.addEventListener('waiting', () => window.waits++); }, { once: true });
+      window.ahead = () => { const b = v.buffered; return b.length ? b.end(b.length - 1) - v.currentTime : 0; };
+    </script>`)
 };
 function server(port) {
   return http.createServer((req, res) => {
@@ -48,6 +77,7 @@ function server(port) {
         'Content-Range': `bytes ${from}-${to}/${data.length}` });
       return res.end(data.subarray(from, to + 1));
     }
+    if (u === '/seg.webm') { res.writeHead(200, { 'Content-Type': 'audio/webm' }); return res.end(fs.readFileSync(SEG)); }
     if (u === '/redir.wav') { res.writeHead(302, { Location: `http://127.0.0.1:${B}/t.wav` }); return res.end(); }
     if (ROUTES[u]) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); return res.end(ROUTES[u]); }
     res.writeHead(404); res.end();
@@ -465,6 +495,70 @@ const MEASURE = (ms) => `(async () => {
     st = await isoR2('__leveler.status()');
     ok(st.reason === 'cached' && st.processed === 0, 'после перезагрузки сайт не трогается, звук оригинальный', st);
     await isoR2('chrome.storage.local.remove("unsupportedHosts")');
+    await pr.close();
+
+    // ── 7. догон прямого эфира ──
+    if (!hasSeg) console.log('  skip догон эфира: нет ffmpeg с libopus');
+    else {
+      const pl = await ctx.newPage();
+      await pl.goto(`http://localhost:${A}/live`);
+      await pl.waitForFunction(() => window.ready);
+      const isoL = await isolated(pl);
+      await isoL('chrome.storage.sync.set({ liveCatchup: true })');
+      await sleep(200);
+      await pl.evaluate(() => Promise.all(['v', 'vod'].map((id) => document.getElementById(id).play())));
+      const rate = () => pl.evaluate(() => ({
+        rate: document.getElementById('v').playbackRate, vod: document.getElementById('vod').playbackRate,
+        ahead: Math.round(window.ahead() * 10) / 10, waits: window.waits
+      }));
+      // пока мало истории (8 с), скорость не трогаем
+      await sleep(5000);
+      let r = await rate();
+      ok(r.rate === 1, 'первые секунды трансляции: скорость не меняется, копим историю буфера', r);
+      let maxRate = 1, boosted = null;
+      for (let i = 0; i < 20 && !boosted; i++) {
+        await sleep(500);
+        r = await rate();
+        maxRate = Math.max(maxRate, r.rate);
+        if (r.rate > 1) boosted = r;
+      }
+      ok(boosted && r.vod === 1, 'отстали на 10 с: скорость плавно поднялась, обычное видео не тронуто', r);
+      st = await isoL('__leveler.status()');
+      ok(st.live && st.live.rate > 1 && st.speed === 1, 'статус для popup: идёт догон', st.live);
+
+      await isoL('chrome.storage.sync.set({ liveCatchup: false })');
+      await sleep(300);
+      r = await rate();
+      ok(r.rate === 1, 'догон выключен: сразу обычная скорость', r);
+      await isoL('chrome.storage.sync.set({ liveCatchup: true })');
+
+      // догоняем до безопасного запаса и возвращаемся к 1× без подгрузок
+      const log = [];
+      let back = null;
+      for (let i = 0; i < 150 && !back; i++) {
+        await sleep(500);
+        r = await rate();
+        maxRate = Math.max(maxRate, r.rate);
+        if (i % 4 === 0) log.push(r.rate + '@' + r.ahead);
+        if (r.rate > 1) boosted = r;
+        else if (boosted && i > 20) back = r;
+      }
+      console.log('       скорость@запас:', log.join(' '));
+      ok(back && back.ahead >= 1.5, 'догнали: снова 1×, запас буфера не меньше безопасного', back);
+      ok(maxRate <= 1.2, 'скорость не выше 1.2×', maxRate);
+      ok(r.waits === 0, 'ни одной подгрузки (waiting) за время догона', r.waits);
+      await sleep(4000);
+      r = await rate();
+      ok(r.rate === 1 && r.waits === 0, 'на краю эфира скорость держится 1×', r);
+
+      // сайт сам поменял скорость: не спорим
+      await pl.evaluate(() => { document.getElementById('v').playbackRate = 1.3; });
+      await sleep(1500);
+      r = await rate();
+      ok(r.rate === 1.3, 'скорость, выставленную сайтом, догон не трогает', r);
+      await isoL('chrome.storage.sync.remove("liveCatchup")');
+      await pl.close();
+    }
   } catch (e) {
     console.error(e);
     failed++;
