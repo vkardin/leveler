@@ -176,6 +176,7 @@
 
   function renderSettings() {
     els.enabled.checked = settings.enabled;
+    els.live.checked = settings.liveCatchup;
     document.body.classList.toggle('off', !settings.enabled);
   }
 
@@ -232,7 +233,9 @@
       reload = reload || s.reload;
       drm = drm || (s.top && s.drmHost);
       if (s.audio === 'suspended' && s.found) suspended = true;
+      if (s.live && (!live || s.live.rate > live.rate)) live = s.live;
     }
+    renderLive(live);
 
     // сайт с DRM (Netflix и т.п.) известен заранее: предупреждаем, даже пока видео не нашлось
     if (!reason && drm) reason = 'drm';
@@ -256,6 +259,14 @@
     }
     // звук здесь не обработать: ползунки звука ничего не дадут, скорость остаётся
     document.body.classList.toggle('nosound', !!reason && !processed);
+  }
+
+  // live: { rate, ahead } самой отстающей трансляции во вкладке или null
+  function renderLive(live) {
+    const show = settings.liveCatchup && live;
+    els.liveNote.hidden = !show;
+    if (!show) return;
+    els.liveNote.textContent = live.rate > 1 ? t('p_live_catching', fmtSpeed(live.rate)) : t('p_live_on_edge');
   }
 
   // ───────────────────────── связь со страницей ─────────────────────────
@@ -298,6 +309,12 @@
     settings.enabled = els.enabled.checked;
     renderSettings();
     chrome.storage.sync.set({ enabled: settings.enabled });
+    setTimeout(hello, 150);
+  });
+
+  els.live.addEventListener('change', () => {
+    settings.liveCatchup = els.live.checked;
+    chrome.storage.sync.set({ liveCatchup: settings.liveCatchup });
     setTimeout(hello, 150);
   });
 
@@ -420,7 +437,7 @@
       if (changes[k].newValue === undefined) delete all[k];
       else all[k] = changes[k].newValue;
     }
-    if (changes.enabled) settings = LV.normalize(all);
+    if (changes.enabled || changes.liveCatchup) settings = LV.normalize(all);
     if (Date.now() - editing > 1000 && Date.now() - speedTouched > 1000 && (changes.def || (site && changes[PR.siteKey(site)]))) {
       profile = currentProfile();
     }
