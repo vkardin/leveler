@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Background tabs (settings page, off by default): when sound starts in the tab you are looking at, other tabs with sound pause or get quieter, and continue when it stops. Short sounds such as notifications are ignored
+
 ## 1.0.0
 
 First public version.

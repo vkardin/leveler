@@ -10,7 +10,8 @@
 //  - элемент не подключается дважды;
 //  - скорость с preservesPitch и оверлей;
 //  - чужой origin без CORS не трогается;
-//  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается.
+//  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается;
+//  - AudioFocus: пауза и приглушение фоновых вкладок, возврат, когда активная замолчала.
 const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
@@ -465,6 +466,72 @@ const MEASURE = (ms) => `(async () => {
     st = await isoR2('__leveler.status()');
     ok(st.reason === 'cached' && st.processed === 0, 'после перезагрузки сайт не трогается, звук оригинальный', st);
     await isoR2('chrome.storage.local.remove("unsupportedHosts")');
+
+    // ── 7. AudioFocus: звук в активной вкладке ставит фоновые на паузу или приглушает ──
+    const fa = await ctx.newPage();
+    await fa.goto(`http://localhost:${A}/`);
+    const fb = await ctx.newPage();
+    await fb.goto(`http://127.0.0.1:${B}/`);
+    const fc = await ctx.newPage();
+    await fc.goto(`http://127.0.0.1:${A}/frame`);
+    await sleep(500);
+    const isoFa = await isolated(fa), isoFb = await isolated(fb), isoFc = await isolated(fc);
+    await isoFa('chrome.storage.sync.set({ focusMode: "pause" })');
+    await sleep(300);
+    const playIn = async (pg, sel) => {
+      await pg.bringToFront();
+      await pg.mouse.click(700, 400);
+      await pg.evaluate((s) => { const m = document.querySelector(s); m.loop = true; return m.play(); }, sel);
+    };
+    const vState = (pg, sel) => pg.evaluate((s) => { const m = document.querySelector(s); return { paused: m.paused, volume: m.volume }; }, sel);
+    const focusGain = (iso) => iso('(() => { const c = __leveler.chains.get(document.getElementById("v")); return c ? Math.round(c.focus.gain.value * 100) / 100 : null; })()');
+
+    await playIn(fa, '#v');
+    await sleep(600);
+    await playIn(fb, '#v');
+    await sleep(800);
+    ok((await vState(fa, '#v')).paused && await isoFa('__leveler.held') === 'pause', 'пауза: фоновая вкладка остановилась', await vState(fa, '#v'));
+    ok(!(await vState(fb, '#v')).paused, 'пауза: активная вкладка играет');
+    await fb.evaluate(() => document.getElementById('v').pause());
+    await sleep(600);
+    ok((await vState(fa, '#v')).paused, 'короткая пауза в активной вкладке фоновую не будит');
+    await sleep(1600);
+    ok(!(await vState(fa, '#v')).paused && await isoFa('__leveler.held') === null, 'активная замолчала: фоновая продолжила', await vState(fa, '#v'));
+
+    await isoFa('chrome.storage.sync.set({ focusMode: "duck", enabled: false })');
+    await sleep(300);
+    await playIn(fc, '#a');     // обработка выключена: элемент не подключён к Web Audio, приглушение через volume
+    await sleep(500);
+    await playIn(fb, '#v');
+    await sleep(1200);
+    let ga = await focusGain(isoFa);
+    let vc = await vState(fc, '#a');
+    ok(ga === 0.2 && !(await vState(fa, '#v')).paused, 'приглушение: фоновая вкладка тише (GainNode), но играет', ga);
+    ok(Math.abs(vc.volume - 0.2) < 0.01 && !vc.paused && await isoFc('__leveler.status().processed') === 0, 'приглушение без Web Audio: через volume', vc);
+    await isoFa('chrome.storage.sync.set({ focusDuck: 0.5 })');
+    await sleep(800);
+    ok(await focusGain(isoFa) === 0.5, 'смена громкости фоновых вкладок применяется сразу', await focusGain(isoFa));
+    await fb.evaluate(() => document.getElementById('v').pause());
+    await sleep(2400);
+    ga = await focusGain(isoFa);
+    vc = await vState(fc, '#a');
+    ok(ga === 1 && Math.abs(vc.volume - 1) < 0.01, 'активная замолчала: громкость вернулась', [ga, vc]);
+
+    await playIn(fb, '#v');
+    await sleep(1000);
+    await fb.close();
+    await sleep(2400);
+    ok(await focusGain(isoFa) === 1, 'закрыли активную вкладку: громкость вернулась', await focusGain(isoFa));
+    await isoFa('chrome.storage.sync.set({ focusMode: "off", focusDuck: 0.2, enabled: true })');
+    await sleep(300);
+    await isoFa('chrome.storage.sync.set({ focusMode: "pause" })');
+    await sleep(300);
+    await isoFa('chrome.storage.sync.set({ focusMode: "off" })');
+    await sleep(300);
+    await playIn(fa, '#v');
+    await sleep(800);
+    ok(!(await vState(fc, '#a')).paused && !(await vState(fa, '#v')).paused, 'выключено: вкладки не трогаются');
+    await fa.close(); await fc.close();
   } catch (e) {
     console.error(e);
     failed++;

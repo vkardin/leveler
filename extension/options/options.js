@@ -55,8 +55,24 @@
     chrome.storage.sync.set({ keys: Object.assign(PR.normalizeKeys(all.keys), { step: +e.target.value }) });
   });
 
+  // ── AudioFocus: фоновые вкладки ──
+  const FOCUS_LABELS = { off: 'o_focus_off', pause: 'o_focus_pause', duck: 'o_focus_duck_mode' };
+  function renderFocus() {
+    const st = LV.normalize(all);
+    const mode = $('#optFocus');
+    if (!mode.options.length) for (const m of LV.FOCUS_MODES) mode.appendChild(new Option(t(FOCUS_LABELS[m]), m));
+    mode.value = st.focusMode;
+    const duck = $('#optDuck');
+    if (!duck.options.length) for (const d of LV.FOCUS_DUCKS) duck.appendChild(new Option(Math.round(d * 100) + '%', d));
+    duck.value = st.focusDuck;
+    $('#optDuckRow').hidden = st.focusMode !== 'duck';
+  }
+  $('#optFocus').addEventListener('change', (e) => chrome.storage.sync.set({ focusMode: e.target.value }));
+  $('#optDuck').addEventListener('change', (e) => chrome.storage.sync.set({ focusDuck: +e.target.value }));
+
   function render() {
     renderGeneral();
+    renderFocus();
     renderKeys();
     const presets = PR.normalizePresets(all.presets);
     const ul = $('#presets');
