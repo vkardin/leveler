@@ -79,6 +79,18 @@ Leveler не збирає дані й нічого нікуди не надси�
 
 <br clear="left">
 
+<a href="https://vkardin.github.io/floatr/"><img src="docs/img/floatr.svg" width="56" align="left" alt="Floatr"></a>
+
+**[Floatr](https://vkardin.github.io/floatr/)**: виносить будь-яке веб-відео в плаваюче вікно поверх усіх вікон разом із субтитрами сайту й пам’ятає секунду, де ви зупинилися. Закладки з нотатками та експорт у Markdown. Безкоштовно для Chrome і Firefox. [Сайт](https://vkardin.github.io/floatr/) · [GitHub](https://github.com/vkardin/floatr)
+
+<br clear="left">
+
+<a href="https://vkardin.github.io/uni-homebot/"><img src="docs/img/uni.svg" width="56" align="left" alt="UNI"></a>
+
+**[UNI](https://vkardin.github.io/uni-homebot/)**: ваш домашній сервер у Telegram: застосунки однією сіткою, моніторинг, зведення новин і ремонт сервера в чаті та міні-застосунку. Свій екземпляр на своєму сервері, встановлюється однією командою (інтерфейс російською). [Сайт](https://vkardin.github.io/uni-homebot/) · [GitHub](https://github.com/vkardin/uni-homebot)
+
+<br clear="left">
+
 ## Ліцензія
 
 [MIT](LICENSE) © vkardin
