@@ -277,5 +277,29 @@
   },
   "o_key_step": {
     "message": "Шаг скорости для клавиш"
+  },
+  "p_stereo": {
+    "message": "Стерео"
+  },
+  "p_stereo_hint": {
+    "message": "Запоминается для сайта, пресеты его не меняют. Двойной щелчок по ползунку — в центр."
+  },
+  "s_pan": {
+    "message": "Панорама"
+  },
+  "s_balance": {
+    "message": "Баланс Л/П"
+  },
+  "s_mono": {
+    "message": "Моно"
+  },
+  "u_center": {
+    "message": "центр"
+  },
+  "u_left": {
+    "message": "Л $1"
+  },
+  "u_right": {
+    "message": "П $1"
   }
 }
