@@ -32,6 +32,7 @@ Leveler evens out the sound of any HTML5 video or audio: quiet dialogue gets lou
 - Playback speed 0.25–4× without the chipmunk voice, hotkeys `[` `]` `\` (configurable), short speed overlay
 - Works in iframes and fullscreen, picks up videos added later, starts in open tabs right after install
 - Smooth on / off without reloading the page; backup of all settings to a JSON file
+- Background tabs (off by default): when sound starts in the tab you are looking at, other tabs with sound pause or get quieter and continue when it stops
 - Light and dark theme, English, Русский, Українська
 
 | Presets and level meter | Compressor and equalizer | Speed and volume boost |

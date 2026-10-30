@@ -4,8 +4,13 @@
 (() => {
   // Общие настройки. Пресет, параметры звука и скорость — в профиле сайта (presets.js).
   const DEFAULTS = Object.freeze({
-    enabled: true       // false — bypass: оригинальный звук, цепочка остаётся подключённой
+    enabled: true,      // false — bypass: оригинальный звук, цепочка остаётся подключённой
+    focusMode: 'off',   // AudioFocus: 'off' | 'pause' | 'duck' — что делать с фоновыми вкладками
+    focusDuck: 0.2      // громкость фоновых вкладок в режиме 'duck' (доля от исходной)
   });
+
+  const FOCUS_MODES = ['off', 'pause', 'duck'];
+  const FOCUS_DUCKS = [0.1, 0.2, 0.3, 0.5];
 
   const SPEED_MIN = 0.25;
   const SPEED_MAX = 4;
@@ -18,7 +23,9 @@
   function normalize(s) {
     s = s || {};
     return {
-      enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULTS.enabled
+      enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULTS.enabled,
+      focusMode: FOCUS_MODES.includes(s.focusMode) ? s.focusMode : DEFAULTS.focusMode,
+      focusDuck: FOCUS_DUCKS.includes(s.focusDuck) ? s.focusDuck : DEFAULTS.focusDuck
     };
   }
 
@@ -43,7 +50,7 @@
   }
 
   self.LV = Object.freeze({
-    DEFAULTS, SPEED_MIN, SPEED_MAX, SPEED_STEP,
+    DEFAULTS, FOCUS_MODES, FOCUS_DUCKS, SPEED_MIN, SPEED_MAX, SPEED_STEP,
     clamp, num, normHost, normalize, clampSpeed, levelToParams
   });
 })();
