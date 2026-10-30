@@ -296,11 +296,19 @@ const CHANNELS = (ms) => `(async () => {
     await sleep(400);
     let g = await iso(`__leveler.chains.get(document.getElementById('v')).makeup.gain.value`);
     ok(Math.abs(g - 2) < 0.05, 'усиление громкости 200%', g);
+    const badgeText = () => popup.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tabId);
+    ok(await badgeText() === '200%', 'на иконке значок усиления', await badgeText());
     await popup.selectOption('#preset', 'b:off');
     await sleep(150);
     prm = await iso('__leveler.params');
     ok(prm.volume === 200 && prm.ratio === 1, 'смена пресета не сбрасывает усиление, «Выкл» + 200% всё равно усиливает', prm);
     await popup.click('#volChips button[data-volume="100"]');
+    await sleep(300);
+    ok(await badgeText() === '', 'усиление 100% — значка нет', await badgeText());
+    await popup.selectOption('#preset', 'b:podcast');
+    await sleep(150);
+    prm = await iso('__leveler.params');
+    ok(prm.hp === 100 && prm.ratio === 8 && prm.mid === 3, 'пресет «Подкасты»', prm);
     await popup.selectOption('#preset', 'b:night');
     await sleep(150);
 
@@ -446,6 +454,28 @@ const CHANNELS = (ms) => `(async () => {
     await sleep(300);
     ok(await opt.evaluate(() => document.getElementById('backupMsg').classList.contains('err')), 'чужой файл не импортируется');
     if (SHOTS) await opt.screenshot({ path: path.join(SHOTS, 'options.png'), fullPage: true });
+
+    // сброс настроек сайта одним кликом
+    const pz = await ctx.newPage();
+    await pz.setViewportSize({ width: 320, height: 420 });
+    await pz.goto(`chrome-extension://${extId}/popup/popup.html?tab=${tabId}`);
+    await sleep(1400);
+    await pz.selectOption('#preset', 'b:music');
+    await sleep(150);
+    prm = await iso2('__leveler.params');
+    ok(prm.ratio === 2 && prm.knee === 30, 'пресет «Музыка»', prm);
+    await pz.click('#chips button[data-speed="1.5"]');
+    await sleep(700);
+    sync = await pz.evaluate(() => chrome.storage.sync.get(null));
+    ok(sync['s:localhost'] && sync['s:localhost'].preset === 'b:music' && sync['s:localhost'].speed === 1.5, 'у сайта свои настройки', sync['s:localhost']);
+    await pz.click('#resetSite');
+    await sleep(400);
+    sync = await pz.evaluate(() => chrome.storage.sync.get(null));
+    prm = await iso2('__leveler.params');
+    const rateReset = await p.evaluate(() => document.getElementById('v').playbackRate);
+    ok(!sync['s:localhost'] && prm.ratio !== 2 && rateReset === 1 && await pz.isVisible('#siteDone') && await pz.isHidden('#resetSite'),
+      'сброс сайта: профиль удалён, звук и скорость по умолчанию, «Готово»', [prm.ratio, rateReset]);
+    await pz.close();
     await opt.evaluate(() => chrome.storage.sync.clear());
     await opt.close();
     await p.close();
@@ -487,6 +517,22 @@ const CHANNELS = (ms) => `(async () => {
     const isoC = await isolated(pc);
     st = await isoC('__leveler.status()');
     ok(st.reason === 'cors' && st.processed === 0 && !st.reload, 'чужой origin без CORS: не подключён, оригинальный звук', st);
+    const notice = async (pg) => {
+      const pp = await ctx.newPage();
+      await pp.setViewportSize({ width: 320, height: 520 });
+      await pp.goto(`chrome-extension://${extId}/popup/popup.html?tab=${await tabIdOf(ctx, extId, await isolated(pg))}`);
+      await sleep(1600);
+      const n = await pp.evaluate(() => ({
+        shown: !document.getElementById('notice').hidden,
+        text: document.getElementById('noticeText').textContent,
+        drm: chrome.i18n.getMessage('n_drm'), cors: chrome.i18n.getMessage('n_cors'),
+        nosound: document.body.classList.contains('nosound')
+      }));
+      return { pp, n };
+    };
+    let nt = await notice(pc);
+    ok(nt.n.shown && nt.n.text === nt.n.cors && nt.n.nosound, 'popup: понятное сообщение для чужого origin, ползунки звука приглушены', nt.n);
+    await nt.pp.close();
     await pc.close();
 
     // ── 6. тишина после подключения (редирект на чужой origin) ──
@@ -519,6 +565,21 @@ const CHANNELS = (ms) => `(async () => {
     st = await isoR2('__leveler.status()');
     ok(st.reason === 'cached' && st.processed === 0, 'после перезагрузки сайт не трогается, звук оригинальный', st);
     await isoR2('chrome.storage.local.remove("unsupportedHosts")');
+    await pr.close();
+
+    // ── 7. сайт с DRM (Netflix): сообщение сразу, звук не трогаем, скорость работает ──
+    await ctx.route('https://www.netflix.com/**', (r) => r.fulfill({ contentType: 'text/html',
+      body: page('<video id="v" src="/t.wav" width="480" height="270"></video>') }));
+    const pn = await ctx.newPage();
+    await pn.goto('https://www.netflix.com/watch/1');
+    await sleep(500);
+    nt = await notice(pn);
+    ok(nt.n.shown && nt.n.text === nt.n.drm && nt.n.nosound, 'popup на Netflix: «звук защищён DRM, скорость работает»', nt.n);
+    if (SHOTS) await nt.pp.screenshot({ path: path.join(SHOTS, 'popup-drm.png'), fullPage: true });
+    await nt.pp.click('#chips button[data-speed="1.5"]');
+    await sleep(300);
+    ok(await pn.evaluate(() => document.getElementById('v').playbackRate) === 1.5, 'на DRM-сайте скорость меняется');
+    await nt.pp.close();
   } catch (e) {
     console.error(e);
     failed++;

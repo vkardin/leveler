@@ -24,7 +24,7 @@ Leveler evens out the sound of any HTML5 video or audio: quiet dialogue gets lou
 
 ## Features
 
-- Presets: Night mode (strong compression), Louder dialogue, Headphones, Bass+, Off. After install the preset is Off and nothing is processed until you pick one
+- Presets: Night mode (strong compression), Louder dialogue, Podcasts, Headphones, Bass+, Music, Off. After install the preset is Off and nothing is processed until you pick one
 - One “Level the sound” slider or full control: threshold, ratio, knee, attack, release, makeup gain; low cut and 3-band equalizer
 - Volume boost up to 400 % with a safety limiter, level meter before / after compression
 - Pan, left/right balance and forced mono, remembered for each site (handy with one earbud or a broken speaker)

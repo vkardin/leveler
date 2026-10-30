@@ -35,6 +35,7 @@
   // (background.js, popup). Старый экземпляр в той же вкладке уступает место новому:
   // снимает свои обработчики, а AudioContext и цепочки оставляет в window.__lvAudio —
   // элемент, уже подключённый к Web Audio, второй раз подключить нельзя.
+  const takeover = !!window.__lvAudio;
   window.dispatchEvent(new Event('leveler-takeover'));
   const shared = window.__lvAudio || (window.__lvAudio = { ctx: null, chains: new WeakMap() });
 
@@ -266,6 +267,7 @@
     applyParams(c, true);
     chains.set(el, c);
     if (!el.paused) startProbe(c);
+    updateBadge();
   }
 
   function setParam(p, v, now) {
@@ -303,6 +305,7 @@
       if (c) applyParams(c, false);
       else if (settings.enabled && !el.paused) connect(el);
     }
+    updateBadge();
   }
 
   // ───────────────────────── DRM / CORS ─────────────────────────
@@ -371,6 +374,7 @@
       markBlocked(el, 'silent');
       applyParams(c, false);
       rememberUnsupported();
+      updateBadge();
     }
   }
 
@@ -452,9 +456,23 @@
     if (!reason && (hostUnsupported || cachedUnsupported) && found) reason = hostUnsupported ? 'drm' : 'cached';
     return {
       type: 'lv:status', host: HOST, site: SITE, top: window === window.top,
-      found, playing, processed, reason, reload, speed,
+      found, playing, processed, reason, reload, speed, drmHost: hostUnsupported,
       audio: ctx ? ctx.state : 'none'
     };
+  }
+
+  // ───────── значок: усиление громкости на иконке расширения ─────────
+  // Показываем, только когда звук этого фрейма реально обрабатывается. Рисует значок
+  // background.js; сообщение уходит, только если текст изменился.
+  let badge = takeover ? null : '';        // после обновления расширения значок мог остаться от старого скрипта
+  function updateBadge() {
+    let on = false;
+    for (const el of media) { const c = chains.get(el); if (c && !c.silent) { on = true; break; } }
+    const v = Math.round(params.volume);
+    const text = on && settings.enabled && v !== 100 ? v + '%' : '';
+    if (text === badge) return;
+    badge = text;
+    try { chrome.runtime.sendMessage({ type: 'lv:badge', text, boost: v > 100 }).catch(() => {}); } catch (e) { /* расширение обновили */ }
   }
 
   // Уровни для индикатора в popup: popup спрашивает, пока открыт, на странице ничего не крутится.
