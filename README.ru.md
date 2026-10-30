@@ -43,7 +43,7 @@ Netflix, Кинопоиск, Okko, Иви и другие сервисы с за
 
 ## Проверено
 
-- Автотест в Chromium на локальной странице: `node store/tests/run.js` (звуковая цепочка, пресеты, настройки сайтов, горячие клавиши, резервная копия, откат для DRM/CORS)
+- Автотест в Chromium на локальной странице: `node store/tests/run.js` (звуковая цепочка, пресеты, настройки сайтов, горячие клавиши, резервная копия, откат для DRM/CORS). Запускается в GitHub Actions для каждого pull request и push в `main`
 - YouTube в Google Chrome: работает (проверил автор после перезагрузки вкладки)
 - Twitch, другие плееры, Firefox: ещё не проверено. [Напишите](../../issues/new/choose), что получилось
 
@@ -64,6 +64,7 @@ Leveler не собирает данные и ничего никуда не о�
 | [`docs/`](docs) | Сайт для GitHub Pages |
 | [`store/`](store) | Тексты для магазинов, скриншоты, политика конфиденциальности, скрипты тестов и скриншотов |
 | [`tools/`](tools) | `build.py` собирает `leveler-chrome-<версия>.zip` и `leveler-firefox-<версия>.zip` |
+| [`.github/workflows/`](.github/workflows) | `test.yml` запускает проверки сборки и автотест; `release.yml` публикует релиз с обоими zip, когда в `main` приходит новая версия из `manifest.json` (или вручную: Actions → Release → Run workflow) |
 
 ## Ещё от автора
 
