@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Clearer popup message on sites where the sound cannot be processed: it says why (DRM-protected video such as Netflix, or sound from another server) and that speed control still works. On DRM sites it shows right away, and the sound sliders are dimmed
+- Badge on the toolbar icon with the volume boost (for example 200%) while it is applied in the tab
+- "Reset this site" confirms with "Done"
+- New built-in presets: Podcasts and Music
+
 ## 1.0.0
 
 First public version.
