@@ -32,6 +32,7 @@
   // ── общие настройки ──
   function renderGeneral() {
     $('#optEnabled').checked = all.enabled !== false;
+    $('#optLive').checked = LV.normalize(all).liveCatchup;
     const sel = $('#optDefault');
     sel.textContent = '';
     for (const p of PR.BUILTIN) sel.appendChild(new Option(t(p.name), p.id));
@@ -46,6 +47,7 @@
     step.value = PR.normalizeKeys(all.keys).step;
   }
   $('#optEnabled').addEventListener('change', (e) => chrome.storage.sync.set({ enabled: e.target.checked }));
+  $('#optLive').addEventListener('change', (e) => chrome.storage.sync.set({ liveCatchup: e.target.checked }));
   $('#optDefault').addEventListener('change', (e) => {
     const id = e.target.value;
     const p = PR.builtin(id) || PR.normalizePresets(all.presets).find((x) => x.id === id);

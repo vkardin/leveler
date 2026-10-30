@@ -25,6 +25,13 @@ const SHOTS = process.argv[2] || null;
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'leveler-test-'));
 const WAV = path.join(tmp, 't.wav');
 execFileSync('python3', [path.join(__dirname, 'make_wav.py'), WAV]);
+// 2-секундный сегмент «трансляции» (webm/opus) для догона эфира
+const SEG = path.join(tmp, 'seg.webm');
+let hasSeg = true;
+try {
+  execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i',
+    'sine=frequency=440:duration=2:sample_rate=48000', '-c:a', 'libopus', '-b:a', '48k', SEG]);
+} catch (e) { hasSeg = false; }
 
 const A = 8711, B = 8712;            // localhost:A — «сайт», 127.0.0.1:B — чужой origin
 const page = (body) => `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#111;color:#eee;font:14px sans-serif">${body}</body>`;
@@ -33,7 +40,28 @@ const ROUTES = {
     <iframe id="f" src="http://127.0.0.1:${A}/frame" width="300" height="60" style="border:0"></iframe>`),
   '/frame': page('<audio id="a" src="/t.wav" controls></audio>'),
   '/cors': page(`<video id="v" src="http://127.0.0.1:${B}/t.wav" width="480" height="270"></video>`),
-  '/redirect': page('<video id="v" src="/redir.wav" width="480" height="270"></video>')
+  '/redirect': page('<video id="v" src="/redir.wav" width="480" height="270"></video>'),
+  // Имитация трансляции: зритель отстал на 10 с (5 сегментов в буфере), дальше сегмент
+  // приходит раз в 2 с, как у HLS/DASH. Рядом обычное видео с конечной длительностью.
+  '/live': page(`<audio id="v" muted></audio><audio id="vod" src="/t.wav" loop muted></audio>
+    <script>
+      window.waits = 0;
+      const v = document.getElementById('v');
+      const ms = new MediaSource();
+      v.src = URL.createObjectURL(ms);
+      ms.addEventListener('sourceopen', async () => {
+        const sb = ms.addSourceBuffer('audio/webm; codecs="opus"');
+        sb.mode = 'sequence';
+        const seg = await (await fetch('/seg.webm')).arrayBuffer();
+        ms.duration = Infinity;
+        const append = () => new Promise((r) => { sb.addEventListener('updateend', r, { once: true }); sb.appendBuffer(seg.slice(0)); });
+        for (let i = 0; i < 5; i++) await append();
+        window.ready = true;
+        setInterval(append, 2000);
+      });
+      v.addEventListener('playing', () => { v.addEventListener('waiting', () => window.waits++); }, { once: true });
+      window.ahead = () => { const b = v.buffered; return b.length ? b.end(b.length - 1) - v.currentTime : 0; };
+    </script>`)
 };
 function server(port) {
   return http.createServer((req, res) => {
@@ -50,6 +78,7 @@ function server(port) {
         'Content-Range': `bytes ${from}-${to}/${data.length}` });
       return res.end(data.subarray(from, to + 1));
     }
+    if (u === '/seg.webm') { res.writeHead(200, { 'Content-Type': 'audio/webm' }); return res.end(fs.readFileSync(SEG)); }
     if (u === '/redir.wav') { res.writeHead(302, { Location: `http://127.0.0.1:${B}/t.wav` }); return res.end(); }
     if (ROUTES[u]) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); return res.end(ROUTES[u]); }
     res.writeHead(404); res.end();
