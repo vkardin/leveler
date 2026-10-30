@@ -79,6 +79,18 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 
 <br clear="left">
 
+<a href="https://vkardin.github.io/floatr/"><img src="docs/img/floatr.svg" width="56" align="left" alt="Floatr"></a>
+
+**[Floatr](https://vkardin.github.io/floatr/)**: pops any web video out into a floating window that stays on top, with the site's subtitles, and remembers the second you stopped at. Bookmarks with notes and Markdown export. Free for Chrome and Firefox. [Website](https://vkardin.github.io/floatr/) · [GitHub](https://github.com/vkardin/floatr)
+
+<br clear="left">
+
+<a href="https://vkardin.github.io/uni-homebot/"><img src="docs/img/uni.svg" width="56" align="left" alt="UNI"></a>
+
+**[UNI](https://vkardin.github.io/uni-homebot/)**: your home server in Telegram: apps in one grid, monitoring, a news digest and server repair in the chat and a mini app. Self-hosted, installs with one command (Russian interface). [Website](https://vkardin.github.io/uni-homebot/) · [GitHub](https://github.com/vkardin/uni-homebot)
+
+<br clear="left">
+
 ## License
 
 [MIT](LICENSE) © vkardin
