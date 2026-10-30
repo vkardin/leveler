@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # build.py заодно проверяет манифест, ключи _locales и синтаксис JS
+      - name: Build Chrome and Firefox zips
+        run: python3 tools/build.py extension dist
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Run store/tests/run.js
+        run: node store/tests/run.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: leveler-zips
+          path: dist/*.zip
+          retention-days: 14
