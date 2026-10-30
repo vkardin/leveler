@@ -52,6 +52,7 @@ header { display: flex; align-items: center; justify-content: space-between; mar
   padding: 12px; margin-bottom: 10px;
 }
 body.off #levelCard { opacity: .5; }
+body.nosound :is(#volumeCard, #levelCard, #compCard, #eqCard) { opacity: .45; pointer-events: none; }
 .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
 .row label { font-weight: 500; }
 output { font-variant-numeric: tabular-nums; color: var(--muted); }
@@ -123,6 +124,7 @@ button:disabled { opacity: .35; cursor: default; }
 .btn.danger { background: #c0392b; border-color: #c0392b; color: #fff; }
 .site-actions { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .site-actions .link:hover, footer .link:hover { color: var(--text); }
+.site-actions .done { color: var(--accent); }
 
 /* свёрнутые блоки ползунков */
 details.fold { padding: 0; }
@@ -138,10 +140,10 @@ details.fold[open] summary::after { transform: rotate(180deg); }
 .slider .row label { font-weight: 400; }
 input[type=range].manual::-webkit-slider-thumb { background: var(--muted); }
 
-/* догон прямого эфира */
-.row.live { align-items: center; margin: 10px 0 0; }
-.row.live label:first-child { font-weight: 400; color: var(--muted); }
+/* стерео */
+.row.toggle { align-items: center; margin: 4px 0 0; font-size: 12px; }
+.row.toggle label:first-child { font-weight: 400; }
 .switch.small { width: 32px; height: 18px; }
-.switch.small span::after { top: 2px; left: 2px; width: 14px; height: 14px; }
+.switch.small span::after { top: 3px; left: 3px; width: 12px; height: 12px; }
 .switch.small input:checked + span::after { transform: translateX(14px); }
-#liveNote { margin: 4px 0 0; }
+.hint.pad { padding: 0 12px 10px; margin-top: -4px; }

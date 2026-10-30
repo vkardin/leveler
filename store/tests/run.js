@@ -9,9 +9,10 @@
 //  - видео, добавленное позже, и <audio> во iframe;
 //  - элемент не подключается дважды;
 //  - скорость с preservesPitch и оверлей;
+//  - панорама, баланс L/R и моно;
 //  - чужой origin без CORS не трогается;
 //  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается;
-//  - догон прямого эфира на имитации трансляции (MSE, сегмент каждые 2 с; нужен ffmpeg).
+//  - AudioFocus: пауза и приглушение фоновых вкладок, возврат, когда активная замолчала.
 const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
@@ -147,6 +148,27 @@ const MEASURE = (ms) => `(async () => {
   c.wet.disconnect(post); c.dry.disconnect(dry);
   const db = (x) => Math.round(10 * Math.log10(x / n + 1e-12) * 10) / 10;
   return { pre: db(a), post: db(b), dry: db(d), t: Math.round(el.currentTime * 10) / 10 };
+})()`;
+
+// Уровень левого и правого канала на выходе обработки (dBFS) за `ms` миллисекунд.
+const CHANNELS = (ms) => `(async () => {
+  const c = __leveler.chains.get(document.getElementById('v'));
+  const ac = c.src.context;
+  const sp = ac.createChannelSplitter(2);
+  const an = [ac.createAnalyser(), ac.createAnalyser()];
+  c.limiter.connect(sp);
+  sp.connect(an[0], 0); sp.connect(an[1], 1);
+  const buf = new Float32Array(2048);
+  const rms = (a) => { a.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; return s / buf.length; };
+  let l = 0, r = 0, n = 0;
+  const end = performance.now() + ${ms};
+  while (performance.now() < end) {
+    await new Promise((res) => setTimeout(res, 40));
+    l += rms(an[0]); r += rms(an[1]); n++;
+  }
+  c.limiter.disconnect(sp);
+  const db = (x) => Math.round(10 * Math.log10(x / n + 1e-12) * 10) / 10;
+  return { l: db(l), r: db(r) };
 })()`;
 
 (async () => {
@@ -304,13 +326,53 @@ const MEASURE = (ms) => `(async () => {
     await sleep(400);
     let g = await iso(`__leveler.chains.get(document.getElementById('v')).makeup.gain.value`);
     ok(Math.abs(g - 2) < 0.05, 'усиление громкости 200%', g);
+    const badgeText = () => popup.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tabId);
+    ok(await badgeText() === '200%', 'на иконке значок усиления', await badgeText());
     await popup.selectOption('#preset', 'b:off');
     await sleep(150);
     prm = await iso('__leveler.params');
     ok(prm.volume === 200 && prm.ratio === 1, 'смена пресета не сбрасывает усиление, «Выкл» + 200% всё равно усиливает', prm);
     await popup.click('#volChips button[data-volume="100"]');
+    await sleep(300);
+    ok(await badgeText() === '', 'усиление 100% — значка нет', await badgeText());
+    await popup.selectOption('#preset', 'b:podcast');
+    await sleep(150);
+    prm = await iso('__leveler.params');
+    ok(prm.hp === 100 && prm.ratio === 8 && prm.mid === 3, 'пресет «Подкасты»', prm);
     await popup.selectOption('#preset', 'b:night');
     await sleep(150);
+
+    // ── 4б. панорама, баланс, моно ──
+    await popup.click('#stereoCard summary');
+    const setSlider = async (id, v) => { await popup.fill(id, String(v)); await popup.dispatchEvent(id, 'input'); await sleep(400); };
+    await p.evaluate(() => { const v = document.getElementById('v'); v.currentTime = 3.6; return v.play(); });
+    await sleep(300);
+    await setSlider('#sl-balance', 100);
+    let lr = await iso(CHANNELS(600));
+    ok(lr.l < -80 && lr.r > -20, 'баланс вправо: левый канал молчит', lr);
+    await setSlider('#sl-balance', 0);
+    await setSlider('#sl-pan', -100);
+    lr = await iso(CHANNELS(600));
+    ok(lr.r < -80 && lr.l > -20, 'панорама влево: правый канал молчит', lr);
+    ok(await popup.textContent('#out-pan') === await popup.evaluate(() => chrome.i18n.getMessage('u_left', ['100'])), 'подпись панорамы', await popup.textContent('#out-pan'));
+    await popup.dblclick('#sl-pan');
+    await sleep(400);
+    await popup.check('#mono');
+    await sleep(400);
+    let mono = await iso(`(() => { const c = __leveler.chains.get(document.getElementById('v'));
+      return { mono: c.monoMix.gain.value, stereo: c.stereo.gain.value, pan: c.panner.pan.value }; })()`);
+    ok(mono.mono > 0.95 && mono.stereo < 0.05 && Math.abs(mono.pan) < 0.01, 'моно включено, двойной щелчок вернул панораму в центр', mono);
+    await popup.selectOption('#preset', 'b:dialog');
+    await sleep(300);
+    sync = await iso('chrome.storage.sync.get(null)');
+    prm = await iso('__leveler.params');
+    ok(prm.mono === true && sync['s:localhost'].params.mono === true && sync['s:localhost'].preset === 'b:dialog'
+      && !(await popup.isVisible('#modified')), 'моно запомнено для сайта, смена пресета его не сбрасывает', sync['s:localhost'].params);
+    await popup.uncheck('#mono');
+    await popup.selectOption('#preset', 'b:night');
+    await sleep(300);
+    prm = await iso('__leveler.params');
+    ok(!prm.mono && !prm.pan && !prm.balance, 'стерео снова по умолчанию', prm);
     await popup.click('#compCard summary');
     await popup.fill('#sl-ratio', '4');
     await popup.dispatchEvent('#sl-ratio', 'input');
@@ -422,6 +484,28 @@ const MEASURE = (ms) => `(async () => {
     await sleep(300);
     ok(await opt.evaluate(() => document.getElementById('backupMsg').classList.contains('err')), 'чужой файл не импортируется');
     if (SHOTS) await opt.screenshot({ path: path.join(SHOTS, 'options.png'), fullPage: true });
+
+    // сброс настроек сайта одним кликом
+    const pz = await ctx.newPage();
+    await pz.setViewportSize({ width: 320, height: 420 });
+    await pz.goto(`chrome-extension://${extId}/popup/popup.html?tab=${tabId}`);
+    await sleep(1400);
+    await pz.selectOption('#preset', 'b:music');
+    await sleep(150);
+    prm = await iso2('__leveler.params');
+    ok(prm.ratio === 2 && prm.knee === 30, 'пресет «Музыка»', prm);
+    await pz.click('#chips button[data-speed="1.5"]');
+    await sleep(700);
+    sync = await pz.evaluate(() => chrome.storage.sync.get(null));
+    ok(sync['s:localhost'] && sync['s:localhost'].preset === 'b:music' && sync['s:localhost'].speed === 1.5, 'у сайта свои настройки', sync['s:localhost']);
+    await pz.click('#resetSite');
+    await sleep(400);
+    sync = await pz.evaluate(() => chrome.storage.sync.get(null));
+    prm = await iso2('__leveler.params');
+    const rateReset = await p.evaluate(() => document.getElementById('v').playbackRate);
+    ok(!sync['s:localhost'] && prm.ratio !== 2 && rateReset === 1 && await pz.isVisible('#siteDone') && await pz.isHidden('#resetSite'),
+      'сброс сайта: профиль удалён, звук и скорость по умолчанию, «Готово»', [prm.ratio, rateReset]);
+    await pz.close();
     await opt.evaluate(() => chrome.storage.sync.clear());
     await opt.close();
     await p.close();
@@ -463,6 +547,22 @@ const MEASURE = (ms) => `(async () => {
     const isoC = await isolated(pc);
     st = await isoC('__leveler.status()');
     ok(st.reason === 'cors' && st.processed === 0 && !st.reload, 'чужой origin без CORS: не подключён, оригинальный звук', st);
+    const notice = async (pg) => {
+      const pp = await ctx.newPage();
+      await pp.setViewportSize({ width: 320, height: 520 });
+      await pp.goto(`chrome-extension://${extId}/popup/popup.html?tab=${await tabIdOf(ctx, extId, await isolated(pg))}`);
+      await sleep(1600);
+      const n = await pp.evaluate(() => ({
+        shown: !document.getElementById('notice').hidden,
+        text: document.getElementById('noticeText').textContent,
+        drm: chrome.i18n.getMessage('n_drm'), cors: chrome.i18n.getMessage('n_cors'),
+        nosound: document.body.classList.contains('nosound')
+      }));
+      return { pp, n };
+    };
+    let nt = await notice(pc);
+    ok(nt.n.shown && nt.n.text === nt.n.cors && nt.n.nosound, 'popup: понятное сообщение для чужого origin, ползунки звука приглушены', nt.n);
+    await nt.pp.close();
     await pc.close();
 
     // ── 6. тишина после подключения (редирект на чужой origin) ──
@@ -497,68 +597,19 @@ const MEASURE = (ms) => `(async () => {
     await isoR2('chrome.storage.local.remove("unsupportedHosts")');
     await pr.close();
 
-    // ── 7. догон прямого эфира ──
-    if (!hasSeg) console.log('  skip догон эфира: нет ffmpeg с libopus');
-    else {
-      const pl = await ctx.newPage();
-      await pl.goto(`http://localhost:${A}/live`);
-      await pl.waitForFunction(() => window.ready);
-      const isoL = await isolated(pl);
-      await isoL('chrome.storage.sync.set({ liveCatchup: true })');
-      await sleep(200);
-      await pl.evaluate(() => Promise.all(['v', 'vod'].map((id) => document.getElementById(id).play())));
-      const rate = () => pl.evaluate(() => ({
-        rate: document.getElementById('v').playbackRate, vod: document.getElementById('vod').playbackRate,
-        ahead: Math.round(window.ahead() * 10) / 10, waits: window.waits
-      }));
-      // пока мало истории (8 с), скорость не трогаем
-      await sleep(5000);
-      let r = await rate();
-      ok(r.rate === 1, 'первые секунды трансляции: скорость не меняется, копим историю буфера', r);
-      let maxRate = 1, boosted = null;
-      for (let i = 0; i < 20 && !boosted; i++) {
-        await sleep(500);
-        r = await rate();
-        maxRate = Math.max(maxRate, r.rate);
-        if (r.rate > 1) boosted = r;
-      }
-      ok(boosted && r.vod === 1, 'отстали на 10 с: скорость плавно поднялась, обычное видео не тронуто', r);
-      st = await isoL('__leveler.status()');
-      ok(st.live && st.live.rate > 1 && st.speed === 1, 'статус для popup: идёт догон', st.live);
-
-      await isoL('chrome.storage.sync.set({ liveCatchup: false })');
-      await sleep(300);
-      r = await rate();
-      ok(r.rate === 1, 'догон выключен: сразу обычная скорость', r);
-      await isoL('chrome.storage.sync.set({ liveCatchup: true })');
-
-      // догоняем до безопасного запаса и возвращаемся к 1× без подгрузок
-      const log = [];
-      let back = null;
-      for (let i = 0; i < 150 && !back; i++) {
-        await sleep(500);
-        r = await rate();
-        maxRate = Math.max(maxRate, r.rate);
-        if (i % 4 === 0) log.push(r.rate + '@' + r.ahead);
-        if (r.rate > 1) boosted = r;
-        else if (boosted && i > 20) back = r;
-      }
-      console.log('       скорость@запас:', log.join(' '));
-      ok(back && back.ahead >= 1.5, 'догнали: снова 1×, запас буфера не меньше безопасного', back);
-      ok(maxRate <= 1.2, 'скорость не выше 1.2×', maxRate);
-      ok(r.waits === 0, 'ни одной подгрузки (waiting) за время догона', r.waits);
-      await sleep(4000);
-      r = await rate();
-      ok(r.rate === 1 && r.waits === 0, 'на краю эфира скорость держится 1×', r);
-
-      // сайт сам поменял скорость: не спорим
-      await pl.evaluate(() => { document.getElementById('v').playbackRate = 1.3; });
-      await sleep(1500);
-      r = await rate();
-      ok(r.rate === 1.3, 'скорость, выставленную сайтом, догон не трогает', r);
-      await isoL('chrome.storage.sync.remove("liveCatchup")');
-      await pl.close();
-    }
+    // ── 7. сайт с DRM (Netflix): сообщение сразу, звук не трогаем, скорость работает ──
+    await ctx.route('https://www.netflix.com/**', (r) => r.fulfill({ contentType: 'text/html',
+      body: page('<video id="v" src="/t.wav" width="480" height="270"></video>') }));
+    const pn = await ctx.newPage();
+    await pn.goto('https://www.netflix.com/watch/1');
+    await sleep(500);
+    nt = await notice(pn);
+    ok(nt.n.shown && nt.n.text === nt.n.drm && nt.n.nosound, 'popup на Netflix: «звук защищён DRM, скорость работает»', nt.n);
+    if (SHOTS) await nt.pp.screenshot({ path: path.join(SHOTS, 'popup-drm.png'), fullPage: true });
+    await nt.pp.click('#chips button[data-speed="1.5"]');
+    await sleep(300);
+    ok(await pn.evaluate(() => document.getElementById('v').playbackRate) === 1.5, 'на DRM-сайте скорость меняется');
+    await nt.pp.close();
   } catch (e) {
     console.error(e);
     failed++;

@@ -85,6 +85,7 @@
     <div class="site-actions" id="siteActions">
       <button type="button" class="link" id="makeDefault" data-i18n="p_make_default"></button>
       <button type="button" class="link" id="resetSite" data-i18n="p_reset_site"></button>
+      <span class="done" id="siteDone" data-i18n="p_done" hidden></span>
     </div>
   </section>
 
@@ -110,6 +111,17 @@
   <details class="card fold" id="eqCard">
     <summary data-i18n="p_eq"></summary>
     <div class="sliders" id="eqSliders"></div>
+  </details>
+
+  <details class="card fold" id="stereoCard">
+    <summary data-i18n="p_stereo"></summary>
+    <div class="sliders" id="stereoSliders">
+      <div class="row toggle">
+        <label for="mono" data-i18n="s_mono"></label>
+        <label class="switch small"><input type="checkbox" id="mono"><span></span></label>
+      </div>
+    </div>
+    <div class="hint pad" data-i18n="p_stereo_hint"></div>
   </details>
 
 
