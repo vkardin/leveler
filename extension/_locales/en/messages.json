@@ -277,5 +277,29 @@
   },
   "o_key_step": {
     "message": "Speed step for hotkeys"
+  },
+  "p_stereo": {
+    "message": "Stereo"
+  },
+  "p_stereo_hint": {
+    "message": "Saved for this site, presets do not change it. Double-click a slider to center it."
+  },
+  "s_pan": {
+    "message": "Pan"
+  },
+  "s_balance": {
+    "message": "Balance L/R"
+  },
+  "s_mono": {
+    "message": "Mono"
+  },
+  "u_center": {
+    "message": "center"
+  },
+  "u_left": {
+    "message": "L $1"
+  },
+  "u_right": {
+    "message": "R $1"
   }
 }
