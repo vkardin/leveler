@@ -43,7 +43,7 @@ Netflix, Megogo, Sweet.tv та інші сервіси із захистом DRM
 
 ## Перевірено
 
-- Автотест у Chromium на локальній сторінці: `node store/tests/run.js` (звуковий ланцюжок, пресети, налаштування сайтів, гарячі клавіші, резервна копія, відкат для DRM/CORS)
+- Автотест у Chromium на локальній сторінці: `node store/tests/run.js` (звуковий ланцюжок, пресети, налаштування сайтів, гарячі клавіші, резервна копія, відкат для DRM/CORS). Запускається в GitHub Actions для кожного pull request і push у `main`
 - YouTube у Google Chrome: працює (перевірив автор після перезавантаження вкладки)
 - Twitch, інші плеєри, Firefox: ще не перевірено. [Напишіть](../../issues/new/choose), що вийшло
 
@@ -64,6 +64,7 @@ Leveler не збирає дані й нічого нікуди не надси�
 | [`docs/`](docs) | Сайт для GitHub Pages |
 | [`store/`](store) | Тексти для магазинів, скриншоти, політика конфіденційності, скрипти тестів і скриншотів |
 | [`tools/`](tools) | `build.py` збирає `leveler-chrome-<версія>.zip` і `leveler-firefox-<версія>.zip` |
+| [`.github/workflows/`](.github/workflows) | `test.yml` запускає перевірки збирання й автотест; `release.yml` публікує реліз з обома zip, коли в `main` надходить нова версія з `manifest.json` (або вручну: Actions → Release → Run workflow) |
 
 ## Ще від автора
 

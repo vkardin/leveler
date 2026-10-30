@@ -43,7 +43,7 @@ Netflix, Disney+, Prime Video and other services with DRM protection do not let 
 
 ## Tested
 
-- Automated test in Chromium on a local page: `node store/tests/run.js` (sound chain, presets, per-site settings, hotkeys, backup, DRM/CORS fallback)
+- Automated test in Chromium on a local page: `node store/tests/run.js` (sound chain, presets, per-site settings, hotkeys, backup, DRM/CORS fallback). Runs in GitHub Actions for every pull request and push to `main`
 - YouTube in Google Chrome: works (checked by the author after reloading the tab)
 - Twitch, other players, Firefox: not verified yet. Please [report](../../issues/new/choose) what you find
 
@@ -64,6 +64,7 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 | [`docs/`](docs) | Website, served by GitHub Pages |
 | [`store/`](store) | Store texts, screenshots, privacy policy, test and screenshot scripts |
 | [`tools/`](tools) | `build.py` packs `leveler-chrome-<version>.zip` and `leveler-firefox-<version>.zip` |
+| [`.github/workflows/`](.github/workflows) | `test.yml` runs the build checks and the automated test; `release.yml` publishes a release with both zips when a new version from `manifest.json` reaches `main` (or on demand: Actions → Release → Run workflow) |
 
 ## Also by the author
 
