@@ -277,5 +277,20 @@
   },
   "o_key_step": {
     "message": "Speed step for hotkeys"
+  },
+  "p_live": {
+    "message": "Catch up on live streams"
+  },
+  "p_live_title": {
+    "message": "Gently speed up a live stream that fell behind, without skipping"
+  },
+  "p_live_catching": {
+    "message": "Catching up with the live stream: $1"
+  },
+  "p_live_on_edge": {
+    "message": "Live stream: keeping up"
+  },
+  "o_live_hint": {
+    "message": "If a live stream on Twitch, YouTube or Kick falls behind, the speed rises a little (up to 1.2×, pitch preserved) until the buffer is back to a safe margin. No jumps, so no extra buffering."
   }
 }

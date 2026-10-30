@@ -29,6 +29,7 @@ Leveler evens out the sound of any HTML5 video or audio: quiet dialogue gets lou
 - Volume boost up to 400 % with a safety limiter, level meter before / after compression
 - Your own presets: save, rename, delete; preset, volume and speed are remembered for each site
 - Playback speed 0.25–4× without the chipmunk voice, hotkeys `[` `]` `\` (configurable), short speed overlay
+- Live stream catch-up (off by default): if a stream on Twitch, YouTube or Kick falls behind, playback speeds up a little (up to 1.2×) until the buffer is back to a safe margin, without jumps or extra buffering
 - Works in iframes and fullscreen, picks up videos added later, starts in open tabs right after install
 - Smooth on / off without reloading the page; backup of all settings to a JSON file
 - Light and dark theme, English, Русский, Українська

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Live stream catch-up (off by default, switch in the popup and on the settings page): a stream that fell behind is played slightly faster (1.1–1.2×, pitch preserved) until the buffer is down to a safe margin, then back to 1×. No seeking, so no extra buffering; after a stall the margin grows. Leaves alone recorded parts of a stream (DVR), your own speed and players that manage speed themselves
+
 ## 1.0.0
 
 First public version.

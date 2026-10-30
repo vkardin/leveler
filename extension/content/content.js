@@ -19,6 +19,10 @@
  * и не подключаем. Если тишина всё же пришла после подключения, это видно по probe:
  * звук декодируется, а на выходе ровно 0 несколько секунд. Тогда сайт запоминается
  * в chrome.storage.local, и после перезагрузки страницы звук идёт без обработки.
+ *
+ * Догон прямого эфира (настройка liveCatchup): если трансляция отстала от края буфера,
+ * скорость чуть поднимается (до 1.2×, с сохранением высоты тона) и возвращается к 1×,
+ * когда запас буфера дошёл до безопасного. Перемоток нет, поэтому нет и подгрузок.
  */
 (() => {
   'use strict';
@@ -70,6 +74,9 @@
     el.addEventListener('encrypted', () => markBlocked(el, 'drm'));
     el.addEventListener('loadstart', () => onSourceChange(el));
     el.addEventListener('pause', () => stopProbe(chains.get(el)));
+    el.addEventListener('durationchange', () => onDuration(el));
+    el.addEventListener('waiting', () => onStall(el));
+    el.addEventListener('seeking', () => { const s = lives.get(el); if (s) s.samples = []; });
     if (speed !== 1) applySpeed(el, false);
   }
 
@@ -82,7 +89,11 @@
   // play не всплывает, но ловится на фазе захвата — так видны и элементы,
   // которые MutationObserver ещё не успел найти.
   const onPlayEvent = (e) => { if (isMedia(e.target)) onPlay(e.target); };
-  const onPlayingEvent = (e) => { if (isMedia(e.target)) startProbe(chains.get(e.target)); };
+  const onPlayingEvent = (e) => {
+    if (!isMedia(e.target)) return;
+    startProbe(chains.get(e.target));
+    startLive();
+  };
   document.addEventListener('play', onPlayEvent, true);
   document.addEventListener('playing', onPlayingEvent, true);
 
@@ -358,6 +369,8 @@
   // ───────────────────────── скорость ─────────────────────────
 
   function applySpeed(el, show) {
+    const ls = lives.get(el);
+    if (ls) { ls.rate = 0; ls.samples = []; }   // скорость задали вручную: догон начинает заново
     try {
       el.preservesPitch = true;
       if (Math.abs(el.playbackRate - speed) > 0.001) el.playbackRate = speed;
@@ -380,6 +393,150 @@
   function isVisible(el) {
     const r = el.getBoundingClientRect();
     return r.width > 40 && r.height > 40 && r.bottom > 0 && r.top < innerHeight;
+  }
+
+  // ───────────────────────── догон прямого эфира ─────────────────────────
+  //
+  // Насколько отстали, видно по запасу буфера: сколько секунд уже загружено впереди
+  // текущей позиции. У трансляции он пилой растёт с каждым сегментом и тает между ними,
+  // поэтому смотрим на минимум за последние секунды: это запас в самый худший момент.
+  // Пока минимум выше безопасного, есть что «проглотить» быстрее, не дожидаясь сети.
+  // Если всё же случилась подгрузка, безопасный запас для этого элемента растёт.
+  const LIVE = {
+    every: 500,          // мс между проверками, пока играет видео
+    window: 10000,       // мс истории запаса буфера
+    safe: 2,             // с, ниже этого запаса не опускаемся
+    safeMax: 8,
+    start: 1.5,          // с лишнего запаса, с которых начинаем догонять
+    stop: 0.3,           // с лишнего запаса, на которых возвращаем 1×
+    gain: 0.06,          // прибавка скорости на секунду лишнего запаса
+    minRate: 1.1,        // медленнее догонять нет смысла: хвост растянется на минуты
+    maxRate: 1.2,
+    step: 0.05,          // шаг изменения скорости за одну проверку
+    dvr: 30,             // с: дальше этого от края — смотрят запись эфира, не трогаем
+    yield: 30000         // мс паузы, если скорость поменял сам сайт
+  };
+  const lives = new WeakMap();             // элемент → состояние догона
+  let liveTimer = 0;
+
+  function liveState(el) {
+    let s = lives.get(el);
+    if (!s) lives.set(el, s = { samples: [], rate: 0, safe: LIVE.safe, grow: 0, dur: 0, until: 0 });
+    return s;
+  }
+
+  // Трансляцию выдаёт длительность: бесконечная, условно огромная (2^30 у плееров Twitch
+  // и Kick) или растущая во время просмотра (YouTube).
+  function isLive(el) {
+    const d = el.duration;
+    if (d === Infinity || d >= 1e9) return true;
+    return liveState(el).grow >= 3;
+  }
+
+  function onDuration(el) {
+    const s = liveState(el), d = el.duration;
+    if (isFinite(d) && s.dur > 0 && d > s.dur && d - s.dur < 60 && !el.paused) s.grow++;
+    else if (!isFinite(d) || d < s.dur) s.grow = 0;
+    s.dur = isFinite(d) ? d : 0;
+    if (isLive(el)) startLive();
+  }
+
+  function onStall(el) {
+    const s = lives.get(el);
+    if (!s || !s.rate) return;
+    // догоняли и всё же упёрлись в край: дальше держим запас побольше
+    s.safe = Math.min(LIVE.safeMax, s.safe + 1);
+    releaseLive(el, s);
+  }
+
+  function startLive() {
+    if (liveTimer || !settings.liveCatchup) return;
+    liveTimer = setInterval(liveTick, LIVE.every);
+  }
+
+  function stopLive() {
+    clearInterval(liveTimer);
+    liveTimer = 0;
+    for (const el of media) { const s = lives.get(el); if (s) releaseLive(el, s); }
+  }
+
+  // вернуть скорость пользователя, если на элементе всё ещё наша
+  function releaseLive(el, s) {
+    if (s.rate && Math.abs(el.playbackRate - s.rate) < 0.001) {
+      try { el.playbackRate = speed; } catch (e) { /* плеер не даёт менять скорость */ }
+    }
+    s.rate = 0;
+    s.samples = [];
+  }
+
+  // Запас буфера впереди текущей позиции и конец этого участка.
+  function bufferAhead(el) {
+    const b = el.buffered, t = el.currentTime;
+    for (let i = b.length - 1; i >= 0; i--) {
+      if (b.start(i) <= t + 0.2 && b.end(i) >= t) return { ahead: b.end(i) - t, end: b.end(i) };
+    }
+    return null;
+  }
+
+  function liveTick() {
+    if (!settings.liveCatchup) { stopLive(); return; }
+    const now = performance.now();
+    let playing = false;
+    for (const el of media) {
+      if (el.paused || el.ended) { const s = lives.get(el); if (s && s.rate) releaseLive(el, s); continue; }
+      playing = true;
+      if (!isLive(el)) continue;
+      const s = liveState(el);
+      // пользователь выбрал свою скорость — догон ему не нужен
+      if (speed !== 1 || now < s.until) { if (s.rate) releaseLive(el, s); continue; }
+      // скорость сменил кто-то другой: сайт сам управляет задержкой, не спорим
+      if (Math.abs(el.playbackRate - (s.rate || speed)) > 0.001) {
+        s.rate = 0; s.samples = []; s.until = now + LIVE.yield;
+        continue;
+      }
+      const buf = bufferAhead(el);
+      const sk = el.seekable;
+      const edge = sk.length ? sk.end(sk.length - 1) : NaN;
+      if (!buf || (isFinite(edge) && edge - buf.end > LIVE.dvr)) { if (s.rate) releaseLive(el, s); continue; }
+
+      s.samples.push({ t: now, a: buf.ahead });
+      while (s.samples.length && now - s.samples[0].t > LIVE.window) s.samples.shift();
+      // мало истории — ещё не знаем, как глубоко проседает запас между сегментами
+      if (now - s.samples[0].t < LIVE.window * 0.8) continue;
+      let min = Infinity;
+      for (const x of s.samples) if (x.a < min) min = x.a;
+      const spare = min - s.safe;
+
+      let want = 1;
+      if (spare > (s.rate ? LIVE.stop : LIVE.start)) {
+        want = Math.max(LIVE.minRate, Math.min(LIVE.maxRate, 1 + spare * LIVE.gain));
+        want = Math.round(want / LIVE.step) * LIVE.step;
+      }
+      const cur = s.rate || 1;
+      let next = cur + Math.max(-LIVE.step, Math.min(LIVE.step, want - cur));
+      next = Math.round(next * 100) / 100;
+      if (next <= 1.001) { if (s.rate) releaseLive(el, s); continue; }
+      if (Math.abs(next - cur) < 0.001 && s.rate) continue;
+      try {
+        el.preservesPitch = true;
+        el.playbackRate = next;
+        s.rate = next;
+      } catch (e) {
+        s.until = now + LIVE.yield;
+      }
+    }
+    if (!playing) { clearInterval(liveTimer); liveTimer = 0; }
+  }
+
+  function liveStatus() {
+    let out = null;
+    for (const el of media) {
+      if (el.paused || !isLive(el)) continue;
+      const s = liveState(el), buf = bufferAhead(el);
+      const cur = { rate: s.rate || 0, ahead: buf ? Math.round(buf.ahead * 10) / 10 : null };
+      if (!out || cur.rate > out.rate) out = cur;
+    }
+    return out;
   }
 
   let overlay = null, overlayTimer = 0;
@@ -424,7 +581,7 @@
     if (!reason && (hostUnsupported || cachedUnsupported) && found) reason = hostUnsupported ? 'drm' : 'cached';
     return {
       type: 'lv:status', host: HOST, site: SITE, top: window === window.top,
-      found, playing, processed, reason, reload, speed,
+      found, playing, processed, reason, reload, speed, live: liveStatus(),
       audio: ctx ? ctx.state : 'none'
     };
   }
@@ -483,9 +640,10 @@
     if (first ? profile.speed !== 1 : profile.speed !== prev.speed && profile.speed !== speed) setSpeed(profile.speed);
   }
 
-  chrome.storage.sync.get(['enabled', 'def', 'keys', SITE_KEY], (all) => {
+  chrome.storage.sync.get(['enabled', 'liveCatchup', 'def', 'keys', SITE_KEY], (all) => {
     all = all || {};
     settings = LV.normalize(all);
+    for (const el of media) if (!el.paused) startLive();
     keys = PR.normalizeKeys(all.keys);
     stored = { def: all.def, [SITE_KEY]: all[SITE_KEY] };
     resolveProfile(true);
@@ -502,9 +660,14 @@
     }
     if (area !== 'sync') return;
     if (changes.keys) keys = PR.normalizeKeys(changes.keys.newValue);
-    if (changes.enabled) {
-      settings = LV.normalize({ enabled: changes.enabled.newValue });
-      applyAll();
+    if (changes.enabled || changes.liveCatchup) {
+      const next = Object.assign({}, settings);
+      if (changes.enabled) next.enabled = changes.enabled.newValue;
+      if (changes.liveCatchup) next.liveCatchup = changes.liveCatchup.newValue;
+      settings = LV.normalize(next);
+      if (changes.enabled) applyAll();
+      if (settings.liveCatchup) { for (const el of media) if (!el.paused) startLive(); }
+      else stopLive();
     }
     if (changes.def || changes[SITE_KEY]) {
       if (changes.def) stored.def = changes.def.newValue;
@@ -524,6 +687,7 @@
     window.removeEventListener('keydown', onKey, true);
     mo.disconnect();
     for (const el of media) stopProbe(chains.get(el));
+    stopLive();
     if (overlay) overlay.host.remove();
     try {
       chrome.runtime.onMessage.removeListener(onMessage);
@@ -533,5 +697,5 @@
   window.addEventListener('leveler-takeover', teardown);
 
   // для автотестов (store/tests): доступно только в изолированном мире расширения
-  self.__leveler = { status, chains, media, get ctx() { return ctx; }, get params() { return params; } };
+  self.__leveler = { status, chains, media, LIVE, get ctx() { return ctx; }, get params() { return params; } };
 })();
