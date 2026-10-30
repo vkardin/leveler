@@ -6,6 +6,7 @@
 - Badge on the toolbar icon with the volume boost (for example 200%) while it is applied in the tab
 - "Reset this site" confirms with "Done"
 - New built-in presets: Podcasts and Music
+- Stereo section in the popup: pan, left/right balance and forced mono. Remembered for each site, presets do not change it
 
 ## 1.0.0
 
