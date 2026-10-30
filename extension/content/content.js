@@ -3,9 +3,14 @@
  *
  * Цепочка для каждого элемента (одна на элемент, см. chains):
  *
- *   MediaElementSource ─┬─ HighPass → EQ low/mid/high → Compressor → Makeup → Limiter → wet ─┬→ destination
- *                       ├─ dry ───────────────────────────────────────────────────────────────┘
+ *   MediaElementSource ─┬─ HighPass → EQ low/mid/high → Compressor → Makeup → Стерео → Limiter → wet ─┬→ destination
+ *                       ├─ dry ──────────────────────────────────────────────────────────────────────────┘
  *                       └─ probe (AnalyserNode, только для проверки на тишину)
+ *
+ *   Стерео:  ─┬─ stereo ─────────┬→ Panner → Splitter ─┬─ balL ─┬→ Merger
+ *             └─ monoMix (1 кан.) ┘                     └─ balR ─┘
+ *   Моно — плавный переход между stereo и monoMix: узел с одним каналом сводит L+R,
+ *   дальше моно снова раскладывается на оба канала.
  *
  * Вкл/выкл (bypass) — плавный переход между wet и dry, без перезагрузки и без щелчков.
  *
@@ -221,6 +226,13 @@
       high: biquad('highshelf', 8000),
       comp: ctx.createDynamicsCompressor(),
       makeup: ctx.createGain(),
+      stereo: ctx.createGain(),
+      monoMix: ctx.createGain(),
+      panner: ctx.createStereoPanner(),
+      split: ctx.createChannelSplitter(2),
+      balL: ctx.createGain(),
+      balR: ctx.createGain(),
+      merge: ctx.createChannelMerger(2),
       limiter: ctx.createDynamicsCompressor(),
       wet: ctx.createGain(),
       dry: ctx.createGain(),
@@ -236,10 +248,20 @@
     c.limiter.attack.value = 0.001;
     c.limiter.release.value = 0.1;
 
+    c.monoMix.channelCount = 1;
+    c.monoMix.channelCountMode = 'explicit';
+    c.monoMix.channelInterpretation = 'speakers';   // стерео → моно: (L + R) / 2
+
     src.connect(c.probe);
     src.connect(c.dry).connect(ctx.destination);
     src.connect(c.hp).connect(c.low).connect(c.mid).connect(c.high)
-      .connect(c.comp).connect(c.makeup).connect(c.limiter).connect(c.wet).connect(ctx.destination);
+      .connect(c.comp).connect(c.makeup);
+    c.makeup.connect(c.stereo).connect(c.panner);
+    c.makeup.connect(c.monoMix).connect(c.panner);
+    c.panner.connect(c.split);
+    c.split.connect(c.balL, 0).connect(c.merge, 0, 0);
+    c.split.connect(c.balR, 1).connect(c.merge, 0, 1);
+    c.merge.connect(c.limiter).connect(c.wet).connect(ctx.destination);
 
     applyParams(c, true);
     chains.set(el, c);
@@ -264,6 +286,12 @@
     setParam(c.low.gain, p.low, now);
     setParam(c.mid.gain, p.mid, now);
     setParam(c.high.gain, p.high, now);
+    // панорама может сложить оба канала в один — лимитер стоит после неё
+    setParam(c.stereo.gain, p.mono ? 0 : 1, now);
+    setParam(c.monoMix.gain, p.mono ? 1 : 0, now);
+    setParam(c.panner.pan, p.pan / 100, now);
+    setParam(c.balL.gain, Math.min(1, 1 - p.balance / 100), now);
+    setParam(c.balR.gain, Math.min(1, 1 + p.balance / 100), now);
     const on = settings.enabled && !c.silent && !PR.isNeutral(p);
     setParam(c.wet.gain, on ? 1 : 0, now);
     setParam(c.dry.gain, on ? 0 : 1, now);

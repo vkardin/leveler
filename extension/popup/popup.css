@@ -137,3 +137,11 @@ details.fold[open] summary::after { transform: rotate(180deg); }
 .slider .row { margin-bottom: 0; font-size: 12px; }
 .slider .row label { font-weight: 400; }
 input[type=range].manual::-webkit-slider-thumb { background: var(--muted); }
+
+/* стерео */
+.row.toggle { align-items: center; margin: 4px 0 0; font-size: 12px; }
+.row.toggle label:first-child { font-weight: 400; }
+.switch.small { width: 32px; height: 18px; }
+.switch.small span::after { top: 3px; left: 3px; width: 12px; height: 12px; }
+.switch.small input:checked + span::after { transform: translateX(14px); }
+.hint.pad { padding: 0 12px 10px; margin-top: -4px; }

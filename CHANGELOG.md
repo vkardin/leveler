@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Stereo section in the popup: pan, left/right balance and forced mono. Remembered for each site, presets do not change it
+
 ## 1.0.0
 
 First public version.
