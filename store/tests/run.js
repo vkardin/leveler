@@ -9,6 +9,7 @@
 //  - видео, добавленное позже, и <audio> во iframe;
 //  - элемент не подключается дважды;
 //  - скорость с preservesPitch и оверлей;
+//  - панорама, баланс L/R и моно;
 //  - чужой origin без CORS не трогается;
 //  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается.
 const { chromium } = require('playwright');
@@ -117,6 +118,27 @@ const MEASURE = (ms) => `(async () => {
   c.wet.disconnect(post); c.dry.disconnect(dry);
   const db = (x) => Math.round(10 * Math.log10(x / n + 1e-12) * 10) / 10;
   return { pre: db(a), post: db(b), dry: db(d), t: Math.round(el.currentTime * 10) / 10 };
+})()`;
+
+// Уровень левого и правого канала на выходе обработки (dBFS) за `ms` миллисекунд.
+const CHANNELS = (ms) => `(async () => {
+  const c = __leveler.chains.get(document.getElementById('v'));
+  const ac = c.src.context;
+  const sp = ac.createChannelSplitter(2);
+  const an = [ac.createAnalyser(), ac.createAnalyser()];
+  c.limiter.connect(sp);
+  sp.connect(an[0], 0); sp.connect(an[1], 1);
+  const buf = new Float32Array(2048);
+  const rms = (a) => { a.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; return s / buf.length; };
+  let l = 0, r = 0, n = 0;
+  const end = performance.now() + ${ms};
+  while (performance.now() < end) {
+    await new Promise((res) => setTimeout(res, 40));
+    l += rms(an[0]); r += rms(an[1]); n++;
+  }
+  c.limiter.disconnect(sp);
+  const db = (x) => Math.round(10 * Math.log10(x / n + 1e-12) * 10) / 10;
+  return { l: db(l), r: db(r) };
 })()`;
 
 (async () => {
@@ -289,6 +311,38 @@ const MEASURE = (ms) => `(async () => {
     ok(prm.hp === 100 && prm.ratio === 8 && prm.mid === 3, 'пресет «Подкасты»', prm);
     await popup.selectOption('#preset', 'b:night');
     await sleep(150);
+
+    // ── 4б. панорама, баланс, моно ──
+    await popup.click('#stereoCard summary');
+    const setSlider = async (id, v) => { await popup.fill(id, String(v)); await popup.dispatchEvent(id, 'input'); await sleep(400); };
+    await p.evaluate(() => { const v = document.getElementById('v'); v.currentTime = 3.6; return v.play(); });
+    await sleep(300);
+    await setSlider('#sl-balance', 100);
+    let lr = await iso(CHANNELS(600));
+    ok(lr.l < -80 && lr.r > -20, 'баланс вправо: левый канал молчит', lr);
+    await setSlider('#sl-balance', 0);
+    await setSlider('#sl-pan', -100);
+    lr = await iso(CHANNELS(600));
+    ok(lr.r < -80 && lr.l > -20, 'панорама влево: правый канал молчит', lr);
+    ok(await popup.textContent('#out-pan') === await popup.evaluate(() => chrome.i18n.getMessage('u_left', ['100'])), 'подпись панорамы', await popup.textContent('#out-pan'));
+    await popup.dblclick('#sl-pan');
+    await sleep(400);
+    await popup.check('#mono');
+    await sleep(400);
+    let mono = await iso(`(() => { const c = __leveler.chains.get(document.getElementById('v'));
+      return { mono: c.monoMix.gain.value, stereo: c.stereo.gain.value, pan: c.panner.pan.value }; })()`);
+    ok(mono.mono > 0.95 && mono.stereo < 0.05 && Math.abs(mono.pan) < 0.01, 'моно включено, двойной щелчок вернул панораму в центр', mono);
+    await popup.selectOption('#preset', 'b:dialog');
+    await sleep(300);
+    sync = await iso('chrome.storage.sync.get(null)');
+    prm = await iso('__leveler.params');
+    ok(prm.mono === true && sync['s:localhost'].params.mono === true && sync['s:localhost'].preset === 'b:dialog'
+      && !(await popup.isVisible('#modified')), 'моно запомнено для сайта, смена пресета его не сбрасывает', sync['s:localhost'].params);
+    await popup.uncheck('#mono');
+    await popup.selectOption('#preset', 'b:night');
+    await sleep(300);
+    prm = await iso('__leveler.params');
+    ok(!prm.mono && !prm.pan && !prm.balance, 'стерео снова по умолчанию', prm);
     await popup.click('#compCard summary');
     await popup.fill('#sl-ratio', '4');
     await popup.dispatchEvent('#sl-ratio', 'input');

@@ -23,6 +23,12 @@
     { key: 'mid', label: 's_mid', step: 0.5, unit: ' dB', signed: true },
     { key: 'high', label: 's_high', step: 0.5, unit: ' dB', signed: true }
   ];
+  // center — двойной щелчок по ползунку возвращает в центр
+  const side = (v) => (v === 0 ? t('u_center') : t(v < 0 ? 'u_left' : 'u_right', Math.abs(Math.round(v))));
+  const STEREO = [
+    { key: 'pan', label: 's_pan', step: 5, fmt: side, center: true },
+    { key: 'balance', label: 's_balance', step: 5, fmt: side, center: true }
+  ];
 
   let settings = LV.normalize();
   let all = {};                            // снимок storage.sync
@@ -100,8 +106,8 @@
     const p = findPreset(id);
     if (!p) return;
     profile.preset = id;
-    // усиление громкости не часть пресета: остаётся как было
-    profile.params = PR.normalizeParams(Object.assign({}, p.params, { volume: profile.params.volume }));
+    // усиление громкости и стерео не часть пресета: остаются как были
+    profile.params = PR.presetParams(p.params, profile.params);
     renderAll();
     sendParams();
     saveProfile(true);
@@ -143,7 +149,8 @@
     els.levelInfo.textContent = p.ratio <= 1 ? t('p_level_none')
       : t('p_level_info', fmtDb(p.threshold), r2(p.ratio) + ':1');
     fill(els.level);
-    for (const s of COMP.concat(EQ)) {
+    $('#mono').checked = p.mono;
+    for (const s of COMP.concat(EQ, STEREO)) {
       const input = document.getElementById('sl-' + s.key);
       input.value = p[s.key];
       fill(input);
@@ -204,11 +211,14 @@
         if (PR.COMP_KEYS.includes(s.key)) next.level = null;   // компрессор настроен вручную
         changeParams(next);
       });
-      root.appendChild(wrap);
+      if (s.center) input.addEventListener('dblclick', () => changeParams(Object.assign({}, profile.params, { [s.key]: 0 })));
+      root.insertBefore(wrap, root.querySelector('.toggle'));
     }
   }
   buildSliders($('#compSliders'), COMP);
   buildSliders($('#eqSliders'), EQ);
+  buildSliders($('#stereoSliders'), STEREO);
+  $('#mono').addEventListener('change', (e) => changeParams(Object.assign({}, profile.params, { mono: e.target.checked })));
 
   function renderStatus() {
     const now = Date.now();
