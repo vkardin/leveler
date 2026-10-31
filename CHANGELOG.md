@@ -1,12 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - Clearer popup message on sites where the sound cannot be processed: it says why (DRM-protected video such as Netflix, or sound from another server) and that speed control still works. On DRM sites it shows right away, and the sound sliders are dimmed
 - Badge on the toolbar icon with the volume boost (for example 200%) while it is applied in the tab
 - "Reset this site" confirms with "Done"
 - New built-in presets: Podcasts and Music
 - Stereo section in the popup: pan, left/right balance and forced mono. Remembered for each site, presets do not change it
+- Live stream catch-up (off by default, switch in the popup and on the settings page): a stream that fell behind is played slightly faster (1.1–1.2×, pitch preserved) until the buffer is down to a safe margin, then back to 1×. No seeking, so no extra buffering; after a stall the margin grows. Leaves alone recorded parts of a stream (DVR), your own speed and players that manage speed themselves
+- Background tabs (settings page, off by default): when sound starts in the tab you are looking at, other tabs with sound pause or get quieter, and continue when it stops. Short sounds such as notifications are ignored
+- Buttons under the popup: All settings, Website, Support the project
+- Firefox Add-ons listing linked on the website and in the READMEs
 
 ## 1.0.0
 

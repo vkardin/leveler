@@ -7,7 +7,7 @@
 
 <p align="center">
 <a href="https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko"><img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/v/phbjpipnbhffcegccfbbfabbhmgaelko?label=Chrome&logo=googlechrome&logoColor=white"></a>
-<a href="https://addons.mozilla.org/"><img alt="Firefox Add-ons" src="https://img.shields.io/badge/Firefox-soon-lightgrey?logo=firefoxbrowser&logoColor=white"></a>
+<a href="https://addons.mozilla.org/firefox/addon/leveler/"><img alt="Firefox Add-ons" src="https://img.shields.io/amo/v/leveler?label=Firefox&logo=firefoxbrowser&logoColor=white"></a>
 <a href="https://vkardin.github.io/leveler/"><img alt="Website" src="https://img.shields.io/badge/site-vkardin.github.io%2Fleveler-222"></a>
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -19,7 +19,7 @@ Leveler выравнивает звук любого HTML5-видео и ауд�
 ## Установка
 
 - **Chrome, Edge, Brave, Opera:** [Chrome Web Store](https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko)
-- **Firefox:** Firefox Add-ons (скоро)
+- **Firefox:** [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/leveler/)
 - **Вручную:** скачайте `leveler-chrome-<версия>.zip` на странице [Releases](../../releases), распакуйте, откройте `chrome://extensions`, включите **Режим разработчика** и нажмите **Загрузить распакованное** → выберите распакованную папку. Firefox: `about:debugging#/runtime/this-firefox` → **Загрузить временное дополнение…** → `manifest.json` из `leveler-firefox-<версия>.zip`.
 
 ## Возможности
@@ -46,7 +46,7 @@ Netflix, Кинопоиск, Okko, Иви и другие сервисы с за
 
 ## Проверено
 
-- Автотест в Chromium на локальной странице: `node store/tests/run.js` (звуковая цепочка, пресеты, настройки сайтов, горячие клавиши, резервная копия, откат для DRM/CORS). Запускается в GitHub Actions для каждого pull request и push в `main`
+- Автотест в Chromium на локальной странице: `node store/tests/run.js` (звуковая цепочка, пресеты, настройки сайтов, горячие клавиши, резервная копия, откат для DRM/CORS, фоновые вкладки). Запускается в GitHub Actions для каждого pull request и push в `main`
 - YouTube в Google Chrome: работает (проверил автор после перезагрузки вкладки)
 - Twitch, другие плееры, Firefox: ещё не проверено. [Напишите](../../issues/new/choose), что получилось
 

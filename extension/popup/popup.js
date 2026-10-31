@@ -6,6 +6,7 @@
   const CACHE_KEY = 'unsupportedHosts';
   const STALE_MS = 2500;                   // ответ фрейма старше этого — фрейма больше нет
   const SAVE_MS = 400;                     // storage.sync ограничивает частоту записи
+  const SITE_URL = 'https://vkardin.github.io/leveler/';
   const NOTICE = { drm: 'n_drm', cors: 'n_cors' };   // причина → пояснение под «Этот сайт не поддерживает…»
 
   // Ползунки компрессора и эквалайзера. scale — множитель для показа (с → мс).
@@ -52,7 +53,8 @@
     saveAs: $('#saveAs'), rename: $('#rename'), remove: $('#remove'),
     nameForm: $('#nameForm'), nameInput: $('#nameInput'), nameCancel: $('#nameCancel'),
     confirm: $('#confirm'), confirmText: $('#confirmText'), confirmYes: $('#confirmYes'), confirmNo: $('#confirmNo'),
-    makeDefault: $('#makeDefault'), resetSite: $('#resetSite'), siteDone: $('#siteDone')
+    makeDefault: $('#makeDefault'), resetSite: $('#resetSite'), siteDone: $('#siteDone'),
+    live: $('#live'), liveNote: $('#liveNote')
   };
 
   els.speed.min = LV.SPEED_MIN;
@@ -224,6 +226,7 @@
   function renderStatus() {
     const now = Date.now();
     let found = 0, playing = 0, processed = 0, reason = null, reload = false, suspended = false, any = false, drm = false;
+    let live = null;
     for (const [id, f] of frames) {
       if (now - f.at > STALE_MS) { frames.delete(id); continue; }
       any = true;
@@ -429,6 +432,9 @@
   });
 
   $('#openOptions').addEventListener('click', () => { chrome.runtime.openOptionsPage(); window.close(); });
+  const openTab = (url) => { chrome.tabs.create({ url }); window.close(); };
+  $('#openSite').addEventListener('click', () => openTab(SITE_URL));
+  $('#openDonate').addEventListener('click', () => openTab(SITE_URL + '#donate'));
 
   // изменения из другой вкладки или со страницы настроек
   chrome.storage.onChanged.addListener((changes, area) => {
