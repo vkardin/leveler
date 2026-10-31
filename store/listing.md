@@ -24,6 +24,10 @@ Tired of turning the volume up for every whisper and down for every explosion? L
 • One "Level the sound" slider, or full control: threshold, ratio, knee, attack, release, makeup gain
 • 3-band equalizer and low cut to make voices clearer
 • Level meter before and after compression
+• Volume boost up to 400 % with a safety limiter
+• Stereo: pan, left/right balance and forced mono, remembered for each site
+• Live stream catch-up (optional): a stream that fell behind plays slightly faster until it is back at the live edge, without skipping
+• Background tabs (optional): when sound starts in the tab you are watching, other tabs with sound pause or get quieter
 • Save your own presets, rename and delete them
 • Preset and speed are remembered for each site
 • Playback speed 0.25–4× without the chipmunk effect, hotkeys [ ] \ (you can change them)
@@ -55,6 +59,10 @@ Free and open source: https://github.com/vkardin/leveler
 • Один ползунок «Выровнять звук» или полная настройка: порог, степень сжатия, мягкость, атака, восстановление, усиление
 • Эквалайзер на 3 полосы и срез низов, чтобы голоса звучали разборчивее
 • Индикатор уровня до и после компрессии
+• Усиление громкости до 400 % с защитным ограничителем
+• Стерео: панорама, баланс Л/П и принудительное моно, запоминаются для каждого сайта
+• Догон прямого эфира (по желанию): отставшая трансляция идёт чуть быстрее, пока не догонит эфир, без перескоков
+• Фоновые вкладки (по желанию): когда звук включается во вкладке, которую вы смотрите, остальные ставятся на паузу или звучат тише
 • Свои пресеты: сохранить, переименовать, удалить
 • Пресет и скорость запоминаются для каждого сайта
 • Скорость 0.25–4× без «мультяшного» голоса, горячие клавиши [ ] \ (можно поменять)
@@ -86,6 +94,10 @@ Free and open source: https://github.com/vkardin/leveler
 • Один повзунок «Вирівняти звук» або повне налаштування: поріг, ступінь стиснення, м’якість, атака, відновлення, підсилення
 • Еквалайзер на 3 смуги та зріз низів, щоб голоси звучали розбірливіше
 • Індикатор рівня до і після компресії
+• Підсилення гучності до 400 % із захисним обмежувачем
+• Стерео: панорама, баланс Л/П і примусове моно, запам’ятовуються для кожного сайту
+• Наздоганяння прямої трансляції (за бажанням): трансляція, що відстала, йде трохи швидше, доки не наздожене ефір, без перескоків
+• Фонові вкладки (за бажанням): коли звук вмикається у вкладці, яку ви дивитеся, інші ставляться на паузу або звучать тихіше
 • Власні пресети: зберегти, перейменувати, видалити
 • Пресет і швидкість запам’ятовуються для кожного сайту
 • Швидкість 0.25–4× без «мультяшного» голосу, гарячі клавіші [ ] \ (можна змінити)
@@ -99,3 +111,13 @@ Free and open source: https://github.com/vkardin/leveler
 Конфіденційність: усе обробляється на вашому пристрої. Дані не збираються й нікуди не надсилаються, аналітики немає.
 
 Безкоштовно, відкритий код: https://github.com/vkardin/leveler
+
+---
+
+## What's new in 1.1.0 (release notes field)
+
+**EN:** Volume boost up to 400 %, stereo section (pan, balance, mono), new presets Podcasts and Music, optional live stream catch-up and background tab pausing, clearer message on DRM sites, quick buttons in the popup: All settings, Website, Support the project.
+
+**RU:** Усиление громкости до 400 %, раздел «Стерео» (панорама, баланс, моно), новые пресеты «Подкасты» и «Музыка», по желанию догон прямого эфира и пауза фоновых вкладок, понятное сообщение на сайтах с DRM, быстрые кнопки в окне: «Все настройки», «Сайт», «Поддержать проект».
+
+**UK:** Підсилення гучності до 400 %, розділ «Стерео» (панорама, баланс, моно), нові пресети «Подкасти» і «Музика», за бажанням наздоганяння прямої трансляції та пауза фонових вкладок, зрозуміле повідомлення на сайтах із DRM, швидкі кнопки у вікні: «Усі налаштування», «Сайт», «Підтримати проєкт».
