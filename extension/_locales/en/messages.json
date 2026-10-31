@@ -164,6 +164,18 @@
   "p_options": {
     "message": "Settings and backup"
   },
+  "p_btn_options": {
+    "message": "All settings"
+  },
+  "p_btn_site": {
+    "message": "Website"
+  },
+  "p_btn_donate": {
+    "message": "Support the project"
+  },
+  "p_note": {
+    "message": "Changes apply instantly"
+  },
   "pr_night": {
     "message": "Night mode"
   },
@@ -313,5 +325,41 @@
   },
   "u_right": {
     "message": "R $1"
+  },
+  "p_live": {
+    "message": "Catch up on live streams"
+  },
+  "p_live_title": {
+    "message": "Gently speed up a live stream that fell behind, without skipping"
+  },
+  "p_live_catching": {
+    "message": "Catching up with the live stream: $1"
+  },
+  "p_live_on_edge": {
+    "message": "Live stream: keeping up"
+  },
+  "o_live_hint": {
+    "message": "If a live stream on Twitch, YouTube or Kick falls behind, the speed rises a little (up to 1.2×, pitch preserved) until the buffer is back to a safe margin. No jumps, so no extra buffering."
+  },
+  "o_focus": {
+    "message": "Background tabs"
+  },
+  "o_focus_hint": {
+    "message": "When sound starts in the tab you are looking at, other tabs with sound pause or get quieter, and continue when it stops."
+  },
+  "o_focus_mode": {
+    "message": "Other tabs with sound"
+  },
+  "o_focus_off": {
+    "message": "Leave as is"
+  },
+  "o_focus_pause": {
+    "message": "Pause"
+  },
+  "o_focus_duck_mode": {
+    "message": "Make quieter"
+  },
+  "o_focus_duck": {
+    "message": "Volume of background tabs"
   }
 }

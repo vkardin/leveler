@@ -97,6 +97,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .hbtns button.icon { width: 28px; height: 28px; font-size: 15px; }
 
 footer { color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; margin: 2px 2px 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.actions .btn { flex: 1 1 auto; height: 28px; border-radius: 999px; background: var(--card); color: var(--text); }
+.actions .btn:hover { border-color: var(--muted); }
 
 /* пресеты */
 body.loading .card { opacity: .45; pointer-events: none; }
@@ -123,7 +126,7 @@ button:disabled { opacity: .35; cursor: default; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.danger { background: #c0392b; border-color: #c0392b; color: #fff; }
 .site-actions { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--muted); }
-.site-actions .link:hover, footer .link:hover { color: var(--text); }
+.site-actions .link:hover { color: var(--text); }
 .site-actions .done { color: var(--accent); }
 
 /* свёрнутые блоки ползунков */
@@ -147,3 +150,7 @@ input[type=range].manual::-webkit-slider-thumb { background: var(--muted); }
 .switch.small span::after { top: 3px; left: 3px; width: 12px; height: 12px; }
 .switch.small input:checked + span::after { transform: translateX(14px); }
 .hint.pad { padding: 0 12px 10px; margin-top: -4px; }
+/* догон прямого эфира */
+.row.live { align-items: center; margin: 10px 0 0; }
+.row.live label:first-child { font-weight: 400; color: var(--muted); }
+#liveNote { margin: 4px 0 0; }

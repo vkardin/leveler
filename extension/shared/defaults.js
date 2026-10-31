@@ -6,7 +6,8 @@
   const DEFAULTS = Object.freeze({
     enabled: true,      // false — bypass: оригинальный звук, цепочка остаётся подключённой
     focusMode: 'off',   // AudioFocus: 'off' | 'pause' | 'duck' — что делать с фоновыми вкладками
-    focusDuck: 0.2      // громкость фоновых вкладок в режиме 'duck' (доля от исходной)
+    focusDuck: 0.2,     // громкость фоновых вкладок в режиме 'duck' (доля от исходной)
+    liveCatchup: false  // догонять прямой эфир, если отстали от края буфера
   });
 
   const FOCUS_MODES = ['off', 'pause', 'duck'];
@@ -25,7 +26,8 @@
     return {
       enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULTS.enabled,
       focusMode: FOCUS_MODES.includes(s.focusMode) ? s.focusMode : DEFAULTS.focusMode,
-      focusDuck: FOCUS_DUCKS.includes(s.focusDuck) ? s.focusDuck : DEFAULTS.focusDuck
+      focusDuck: FOCUS_DUCKS.includes(s.focusDuck) ? s.focusDuck : DEFAULTS.focusDuck,
+      liveCatchup: typeof s.liveCatchup === 'boolean' ? s.liveCatchup : DEFAULTS.liveCatchup
     };
   }
 

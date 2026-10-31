@@ -29,6 +29,9 @@
  * появился или пропал звук, и по его команде ставит свои элементы на паузу или приглушает.
  * Приглушение — через отдельный GainNode перед destination, а если элемент не подключён
  * к Web Audio — через el.volume.
+ * Догон прямого эфира (настройка liveCatchup): если трансляция отстала от края буфера,
+ * скорость чуть поднимается (до 1.2×, с сохранением высоты тона) и возвращается к 1×,
+ * когда запас буфера дошёл до безопасного. Перемоток нет, поэтому нет и подгрузок.
  */
 (() => {
   'use strict';
@@ -83,6 +86,9 @@
     el.addEventListener('pause', () => stopProbe(chains.get(el)));
     // сам элемент, а не document: удалённый из DOM элемент тоже ставится на паузу
     for (const t of ['pause', 'ended', 'volumechange', 'emptied', 'loadedmetadata']) el.addEventListener(t, onFocusEvent);
+    el.addEventListener('durationchange', () => onDuration(el));
+    el.addEventListener('waiting', () => onStall(el));
+    el.addEventListener('seeking', () => { const s = lives.get(el); if (s) s.samples = []; });
     if (speed !== 1) applySpeed(el, false);
   }
 
@@ -95,7 +101,11 @@
   // play не всплывает, но ловится на фазе захвата — так видны и элементы,
   // которые MutationObserver ещё не успел найти.
   const onPlayEvent = (e) => { if (isMedia(e.target)) { onPlay(e.target); onFocusEvent(e); } };
-  const onPlayingEvent = (e) => { if (isMedia(e.target)) startProbe(chains.get(e.target)); };
+  const onPlayingEvent = (e) => {
+    if (!isMedia(e.target)) return;
+    startProbe(chains.get(e.target));
+    startLive();
+  };
   document.addEventListener('play', onPlayEvent, true);
   document.addEventListener('playing', onPlayingEvent, true);
 
@@ -261,6 +271,7 @@
     c.monoMix.channelCountMode = 'explicit';
     c.monoMix.channelInterpretation = 'speakers';   // стерео → моно: (L + R) / 2
 
+    c.focus.gain.value = held === 'duck' && !volDucked.has(el) ? settings.focusDuck : 1;
     src.connect(c.probe);
     src.connect(c.dry).connect(c.focus);
     src.connect(c.hp).connect(c.low).connect(c.mid).connect(c.high)
@@ -270,7 +281,8 @@
     c.panner.connect(c.split);
     c.split.connect(c.balL, 0).connect(c.merge, 0, 0);
     c.split.connect(c.balR, 1).connect(c.merge, 0, 1);
-    c.merge.connect(c.limiter).connect(c.wet).connect(ctx.destination);
+    c.merge.connect(c.limiter).connect(c.wet).connect(c.focus);
+    c.focus.connect(ctx.destination);
 
     applyParams(c, true);
     chains.set(el, c);
@@ -702,7 +714,7 @@
     if (!reason && (hostUnsupported || cachedUnsupported) && found) reason = hostUnsupported ? 'drm' : 'cached';
     return {
       type: 'lv:status', host: HOST, site: SITE, top: window === window.top,
-      found, playing, processed, reason, reload, speed, drmHost: hostUnsupported,
+      found, playing, processed, reason, reload, speed, drmHost: hostUnsupported, live: liveStatus(),
       audio: ctx ? ctx.state : 'none'
     };
   }
@@ -777,10 +789,11 @@
     if (first ? profile.speed !== 1 : profile.speed !== prev.speed && profile.speed !== speed) setSpeed(profile.speed);
   }
 
-  chrome.storage.sync.get(['enabled', 'focusMode', 'focusDuck', 'def', 'keys', SITE_KEY], (all) => {
+  chrome.storage.sync.get(['enabled', 'focusMode', 'focusDuck', 'liveCatchup', 'def', 'keys', SITE_KEY], (all) => {
     all = all || {};
     settings = LV.normalize(all);
     if (settings.focusMode !== 'off') onFocusMode();
+    for (const el of media) if (!el.paused) startLive();
     keys = PR.normalizeKeys(all.keys);
     stored = { def: all.def, [SITE_KEY]: all[SITE_KEY] };
     resolveProfile(true);
@@ -797,14 +810,18 @@
     }
     if (area !== 'sync') return;
     if (changes.keys) keys = PR.normalizeKeys(changes.keys.newValue);
-    if (changes.enabled || changes.focusMode || changes.focusDuck) {
+    if (changes.enabled || changes.focusMode || changes.focusDuck || changes.liveCatchup) {
       const prev = settings;
       const next = {};
-      for (const k of ['enabled', 'focusMode', 'focusDuck']) next[k] = changes[k] ? changes[k].newValue : prev[k];
+      for (const k of ['enabled', 'focusMode', 'focusDuck', 'liveCatchup']) next[k] = changes[k] ? changes[k].newValue : prev[k];
       settings = LV.normalize(next);
       if (settings.enabled !== prev.enabled) applyAll();
       if (settings.focusMode !== prev.focusMode) onFocusMode();
       else if (held === 'duck' && settings.focusDuck !== prev.focusDuck) for (const el of media) duck(el);
+      if (settings.liveCatchup !== prev.liveCatchup) {
+        if (settings.liveCatchup) { for (const el of media) if (!el.paused) startLive(); }
+        else stopLive();
+      }
     }
     if (changes.def || changes[SITE_KEY]) {
       if (changes.def) stored.def = changes.def.newValue;
@@ -838,5 +855,5 @@
   window.addEventListener('leveler-takeover', teardown);
 
   // для автотестов (store/tests): доступно только в изолированном мире расширения
-  self.__leveler = { status, chains, media, get ctx() { return ctx; }, get params() { return params; }, get held() { return held; } };
+  self.__leveler = { status, chains, media, LIVE, get ctx() { return ctx; }, get params() { return params; }, get held() { return held; } };
 })();
