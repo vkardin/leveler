@@ -7,7 +7,7 @@ English · <a href="README.ru.md">Русский</a> · <a href="README.uk.md">�
 
 <p align="center">
 <a href="https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko"><img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/v/phbjpipnbhffcegccfbbfabbhmgaelko?label=Chrome&logo=googlechrome&logoColor=white"></a>
-<a href="https://addons.mozilla.org/"><img alt="Firefox Add-ons" src="https://img.shields.io/badge/Firefox-soon-lightgrey?logo=firefoxbrowser&logoColor=white"></a>
+<a href="https://addons.mozilla.org/firefox/addon/leveler/"><img alt="Firefox Add-ons" src="https://img.shields.io/amo/v/leveler?label=Firefox&logo=firefoxbrowser&logoColor=white"></a>
 <a href="https://vkardin.github.io/leveler/"><img alt="Website" src="https://img.shields.io/badge/site-vkardin.github.io%2Fleveler-222"></a>
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -19,7 +19,7 @@ Leveler evens out the sound of any HTML5 video or audio: quiet dialogue gets lou
 ## Install
 
 - **Chrome, Edge, Brave, Opera:** [Chrome Web Store](https://chromewebstore.google.com/detail/phbjpipnbhffcegccfbbfabbhmgaelko)
-- **Firefox:** Firefox Add-ons (coming soon)
+- **Firefox:** [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/leveler/)
 - **Manual install:** download `leveler-chrome-<version>.zip` from [Releases](../../releases), unzip it, open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked** → choose the unzipped folder. Firefox: `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → `manifest.json` from `leveler-firefox-<version>.zip`.
 
 ## Features
@@ -46,7 +46,7 @@ Netflix, Disney+, Prime Video and other services with DRM protection do not let 
 
 ## Tested
 
-- Automated test in Chromium on a local page: `node store/tests/run.js` (sound chain, presets, per-site settings, hotkeys, backup, DRM/CORS fallback). Runs in GitHub Actions for every pull request and push to `main`
+- Automated test in Chromium on a local page: `node store/tests/run.js` (sound chain, presets, per-site settings, hotkeys, backup, DRM/CORS fallback, background tabs). Runs in GitHub Actions for every pull request and push to `main`
 - YouTube in Google Chrome: works (checked by the author after reloading the tab)
 - Twitch, other players, Firefox: not verified yet. Please [report](../../issues/new/choose) what you find
 
