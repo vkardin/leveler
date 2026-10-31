@@ -13,6 +13,7 @@
 //  - чужой origin без CORS не трогается;
 //  - тишина после подключения (редирект на чужой origin) распознаётся и сайт запоминается;
 //  - AudioFocus: пауза и приглушение фоновых вкладок, возврат, когда активная замолчала.
+//  - догон прямого эфира на имитации трансляции (MSE, сегмент каждые 2 с; нужен ffmpeg).
 const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
@@ -289,6 +290,17 @@ const CHANNELS = (ms) => `(async () => {
     const stText = await popup.textContent('#statusText');
     ok(/3/.test(stText), 'popup видит три элемента (два видео + audio во iframe)', stText);
     if (SHOTS) await popup.screenshot({ path: path.join(SHOTS, 'popup-ok.png'), fullPage: true });
+
+    // кнопки внизу popup: «Сайт» и «Поддержать проект» открывают вкладку сайта, popup закрывается
+    await ctx.route('https://vkardin.github.io/**', (r) => r.fulfill({ contentType: 'text/html', body: 'site' }));
+    for (const [btn, want] of [['#openSite', 'https://vkardin.github.io/leveler/'], ['#openDonate', 'https://vkardin.github.io/leveler/#donate']]) {
+      const pb = await ctx.newPage();
+      await pb.goto(`chrome-extension://${extId}/popup/popup.html?tab=${tabId}`);
+      const [tab] = await Promise.all([ctx.waitForEvent('page'), pb.click(btn)]);
+      await tab.waitForURL(want, { timeout: 5000 }).catch(() => {});
+      ok(tab.url() === want && pb.isClosed(), `кнопка ${btn} открывает ${want}`, tab.url());
+      await tab.close();
+    }
 
     await popup.click('#chips button[data-speed="1.5"]');
     await sleep(300);
@@ -610,6 +622,134 @@ const CHANNELS = (ms) => `(async () => {
     await sleep(300);
     ok(await pn.evaluate(() => document.getElementById('v').playbackRate) === 1.5, 'на DRM-сайте скорость меняется');
     await nt.pp.close();
+    // ── 8. догон прямого эфира ──
+    if (!hasSeg) console.log('  skip догон эфира: нет ffmpeg с libopus');
+    else {
+      const pl = await ctx.newPage();
+      await pl.goto(`http://localhost:${A}/live`);
+      await pl.waitForFunction(() => window.ready);
+      const isoL = await isolated(pl);
+      await isoL('chrome.storage.sync.set({ liveCatchup: true })');
+      await sleep(200);
+      await pl.evaluate(() => Promise.all(['v', 'vod'].map((id) => document.getElementById(id).play())));
+      const rate = () => pl.evaluate(() => ({
+        rate: document.getElementById('v').playbackRate, vod: document.getElementById('vod').playbackRate,
+        ahead: Math.round(window.ahead() * 10) / 10, waits: window.waits
+      }));
+      // пока мало истории (8 с), скорость не трогаем
+      await sleep(5000);
+      let r = await rate();
+      ok(r.rate === 1, 'первые секунды трансляции: скорость не меняется, копим историю буфера', r);
+      let maxRate = 1, boosted = null;
+      for (let i = 0; i < 20 && !boosted; i++) {
+        await sleep(500);
+        r = await rate();
+        maxRate = Math.max(maxRate, r.rate);
+        if (r.rate > 1) boosted = r;
+      }
+      ok(boosted && r.vod === 1, 'отстали на 10 с: скорость плавно поднялась, обычное видео не тронуто', r);
+      st = await isoL('__leveler.status()');
+      ok(st.live && st.live.rate > 1 && st.speed === 1, 'статус для popup: идёт догон', st.live);
+
+      await isoL('chrome.storage.sync.set({ liveCatchup: false })');
+      await sleep(300);
+      r = await rate();
+      ok(r.rate === 1, 'догон выключен: сразу обычная скорость', r);
+      await isoL('chrome.storage.sync.set({ liveCatchup: true })');
+
+      // догоняем до безопасного запаса и возвращаемся к 1× без подгрузок
+      const log = [];
+      let back = null;
+      for (let i = 0; i < 150 && !back; i++) {
+        await sleep(500);
+        r = await rate();
+        maxRate = Math.max(maxRate, r.rate);
+        if (i % 4 === 0) log.push(r.rate + '@' + r.ahead);
+        if (r.rate > 1) boosted = r;
+        else if (boosted && i > 20) back = r;
+      }
+      console.log('       скорость@запас:', log.join(' '));
+      ok(back && back.ahead >= 1.5, 'догнали: снова 1×, запас буфера не меньше безопасного', back);
+      ok(maxRate <= 1.2, 'скорость не выше 1.2×', maxRate);
+      ok(r.waits === 0, 'ни одной подгрузки (waiting) за время догона', r.waits);
+      await sleep(4000);
+      r = await rate();
+      ok(r.rate === 1 && r.waits === 0, 'на краю эфира скорость держится 1×', r);
+
+      // сайт сам поменял скорость: не спорим
+      await pl.evaluate(() => { document.getElementById('v').playbackRate = 1.3; });
+      await sleep(1500);
+      r = await rate();
+      ok(r.rate === 1.3, 'скорость, выставленную сайтом, догон не трогает', r);
+      await isoL('chrome.storage.sync.remove("liveCatchup")');
+      await pl.close();
+    }
+
+    // ── 9. AudioFocus: звук в активной вкладке ставит фоновые на паузу или приглушает ──
+    const fa = await ctx.newPage();
+    await fa.goto(`http://localhost:${A}/`);
+    const fb = await ctx.newPage();
+    await fb.goto(`http://127.0.0.1:${B}/`);
+    const fc = await ctx.newPage();
+    await fc.goto(`http://127.0.0.1:${A}/frame`);
+    await sleep(500);
+    const isoFa = await isolated(fa), isoFb = await isolated(fb), isoFc = await isolated(fc);
+    await isoFa('chrome.storage.sync.set({ focusMode: "pause" })');
+    await sleep(300);
+    const playIn = async (pg, sel) => {
+      await pg.bringToFront();
+      await pg.mouse.click(700, 400);
+      await pg.evaluate((s) => { const m = document.querySelector(s); m.loop = true; return m.play(); }, sel);
+    };
+    const vState = (pg, sel) => pg.evaluate((s) => { const m = document.querySelector(s); return { paused: m.paused, volume: m.volume }; }, sel);
+    const focusGain = (iso) => iso('(() => { const c = __leveler.chains.get(document.getElementById("v")); return c ? Math.round(c.focus.gain.value * 100) / 100 : null; })()');
+
+    await playIn(fa, '#v');
+    await sleep(600);
+    await playIn(fb, '#v');
+    await sleep(800);
+    ok((await vState(fa, '#v')).paused && await isoFa('__leveler.held') === 'pause', 'пауза: фоновая вкладка остановилась', await vState(fa, '#v'));
+    ok(!(await vState(fb, '#v')).paused, 'пауза: активная вкладка играет');
+    await fb.evaluate(() => document.getElementById('v').pause());
+    await sleep(600);
+    ok((await vState(fa, '#v')).paused, 'короткая пауза в активной вкладке фоновую не будит');
+    await sleep(1600);
+    ok(!(await vState(fa, '#v')).paused && await isoFa('__leveler.held') === null, 'активная замолчала: фоновая продолжила', await vState(fa, '#v'));
+
+    await isoFa('chrome.storage.sync.set({ focusMode: "duck", enabled: false })');
+    await sleep(300);
+    await playIn(fc, '#a');     // обработка выключена: элемент не подключён к Web Audio, приглушение через volume
+    await sleep(500);
+    await playIn(fb, '#v');
+    await sleep(1200);
+    let ga = await focusGain(isoFa);
+    let vc = await vState(fc, '#a');
+    ok(ga === 0.2 && !(await vState(fa, '#v')).paused, 'приглушение: фоновая вкладка тише (GainNode), но играет', ga);
+    ok(Math.abs(vc.volume - 0.2) < 0.01 && !vc.paused && await isoFc('__leveler.status().processed') === 0, 'приглушение без Web Audio: через volume', vc);
+    await isoFa('chrome.storage.sync.set({ focusDuck: 0.5 })');
+    await sleep(800);
+    ok(await focusGain(isoFa) === 0.5, 'смена громкости фоновых вкладок применяется сразу', await focusGain(isoFa));
+    await fb.evaluate(() => document.getElementById('v').pause());
+    await sleep(2400);
+    ga = await focusGain(isoFa);
+    vc = await vState(fc, '#a');
+    ok(ga === 1 && Math.abs(vc.volume - 1) < 0.01, 'активная замолчала: громкость вернулась', [ga, vc]);
+
+    await playIn(fb, '#v');
+    await sleep(1000);
+    await fb.close();
+    await sleep(2400);
+    ok(await focusGain(isoFa) === 1, 'закрыли активную вкладку: громкость вернулась', await focusGain(isoFa));
+    await isoFa('chrome.storage.sync.set({ focusMode: "off", focusDuck: 0.2, enabled: true })');
+    await sleep(300);
+    await isoFa('chrome.storage.sync.set({ focusMode: "pause" })');
+    await sleep(300);
+    await isoFa('chrome.storage.sync.set({ focusMode: "off" })');
+    await sleep(300);
+    await playIn(fa, '#v');
+    await sleep(800);
+    ok(!(await vState(fc, '#a')).paused && !(await vState(fa, '#v')).paused, 'выключено: вкладки не трогаются');
+    await fa.close(); await fc.close();
   } catch (e) {
     console.error(e);
     failed++;

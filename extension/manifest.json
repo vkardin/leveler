@@ -4,7 +4,7 @@
   "name": "__MSG_extName__",
   "short_name": "Leveler",
   "homepage_url": "https://github.com/vkardin/leveler",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "__MSG_extDescription__",
   "minimum_chrome_version": "110",
   "permissions": [
