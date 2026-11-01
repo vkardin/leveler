@@ -251,7 +251,10 @@ function setupDemo() {
     }
   }
   // Упрощённый компрессор: порог, степень сжатия и компенсация усиления.
-  const level = v => v < 0.04 ? v : Math.min(0.62, 0.4 + (v - 0.25) * 0.22);
+  let amount = .65;
+  const level = v => v * (1 - amount) + (v < 0.04 ? v : Math.min(0.62, 0.4 + (v - 0.25) * 0.22)) * amount;
+  document.addEventListener('leveler-demo-change', e => { amount = e.detail; kick(); });
+  new MutationObserver(kick).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme','data-motion'] });
 
   function size(c) {
     const r = c.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
@@ -261,7 +264,7 @@ function setupDemo() {
     const g = c.getContext('2d'), w = c.width, h = c.height;
     g.clearRect(0, 0, w, h);
     const bw = w / BARS, mid = h / 2;
-    const css = getComputedStyle(document.documentElement);
+    const css = getComputedStyle(document.body);
     g.strokeStyle = css.getPropertyValue('--line'); g.lineWidth = 1;
     g.setLineDash([4, 4]);
     for (const y of [mid - mid * 0.4, mid + mid * 0.4]) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
@@ -270,7 +273,8 @@ function setupDemo() {
     for (let i = 0; i <= BARS; i++) {
       const s = stream[(start + i) % stream.length];
       const a = map(s.v) * (mid - 2);
-      g.fillStyle = s.loud ? BOOM : TALK;
+      const light = getComputedStyle(document.documentElement).colorScheme === 'light';
+      g.fillStyle = s.loud ? (light ? '#c3444e' : BOOM) : (light ? '#a77616' : TALK);
       const x = (i - frac) * bw;
       g.beginPath();
       g.roundRect ? g.roundRect(x + bw * 0.18, mid - a, bw * 0.64, a * 2, bw * 0.3) : g.rect(x + bw * 0.18, mid - a, bw * 0.64, a * 2);
@@ -284,7 +288,7 @@ function setupDemo() {
     if (last) pos = (pos + (t - last) / STEP) % stream.length;
     last = t;
     draw(cb, pos, v => v); draw(ca, pos, level);
-    if (visible && !still.matches && !document.hidden) raf = requestAnimationFrame(frame);
+    if (visible && !still.matches && document.documentElement.dataset.motion !== 'reduce' && !document.hidden) raf = requestAnimationFrame(frame);
   }
   function kick() { last = 0; if (!raf) raf = requestAnimationFrame(frame); }
   const resize = () => { size(cb); size(ca); kick(); };
