@@ -154,3 +154,17 @@ input[type=range].manual::-webkit-slider-thumb { background: var(--muted); }
 .row.live { align-items: center; margin: 10px 0 0; }
 .row.live label:first-child { font-weight: 400; color: var(--muted); }
 #liveNote { margin: 4px 0 0; }
+
+/* Shared visual rhythm with Video Drift and Video Glow. */
+body { width: 370px; max-height: 590px; overflow-y: auto; }
+.card { box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.quick { background: linear-gradient(135deg, color-mix(in srgb,var(--accent) 10%,var(--card)),var(--card)); }
+.quick > button { width: 100%; margin-top: 4px; }
+.quick > button[aria-pressed=true] { border-color:var(--accent);color:var(--accent); }
+.meter-readout { display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-top:8px; }
+#meterSource { width:100%;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);padding:7px;margin-top:5px; }
+.reset-actions { display:flex;flex-wrap:wrap;gap:6px; }
+.reset-actions .btn { flex:1 0 40%;font-size:11px; }
+#speedCard > summary { margin-bottom:8px; }
+
+.quick p.hint { margin:6px 0 0; }

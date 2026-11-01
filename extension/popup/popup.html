@@ -20,13 +20,19 @@
 
   <div class="status" id="status"><i></i><span id="statusText"></span></div>
 
+  <section class="card quick">
+    <div class="row"><label for="siteEnabled" data-i18n="p_site_enabled"></label><label class="switch small"><input id="siteEnabled" type="checkbox"><span></span></label></div>
+    <button class="btn" id="compare" aria-pressed="false" data-i18n="p_compare"></button>
+    <p class="hint" data-i18n="p_compare_hint"></p>
+  </section>
+  <p class="notice" id="saveError" data-i18n="p_save_error" role="status" hidden></p>
   <div class="notice" id="notice" hidden>
     <b data-i18n="p_unsupported"></b>
     <span id="noticeText"></span>
     <button type="button" id="retry" class="link" data-i18n="p_retry" hidden></button>
   </div>
 
-  <section class="card" id="speedCard">
+  <details class="card fold" id="speedCard"><summary data-i18n="p_speed"></summary>
     <div class="row">
       <label for="speed" data-i18n="p_speed"></label>
       <output id="speedOut"></output>
@@ -44,7 +50,7 @@
       <label class="switch small" data-i18n-title="p_live_title"><input type="checkbox" id="live"><span></span></label>
     </div>
     <p class="hint" id="liveNote" hidden></p>
-  </section>
+  </details>
 
   <section class="card" id="volumeCard">
     <div class="row">
@@ -68,7 +74,7 @@
     </div>
     <div class="preset-row">
       <select id="preset"></select>
-      <button type="button" class="icon" id="saveAs" data-i18n-title="p_save_as">&#65291;</button>
+      <button type="button" class="icon" id="saveAs" data-i18n-title="p_save_as">+</button>
       <button type="button" class="icon" id="rename" data-i18n-title="p_rename">&#9998;</button>
       <button type="button" class="icon" id="remove" data-i18n-title="p_delete">&#10005;</button>
     </div>
@@ -101,6 +107,9 @@
       <div class="meter"><span data-i18n="m_after"></span><b><i id="mPost"></i></b></div>
     </div>
     <div class="hint mono" id="levelInfo"></div>
+    <label class="hint" for="meterSource" data-i18n="p_meter_source"></label><select id="meterSource"></select>
+    <div class="meter-readout"><span data-i18n="p_reduction"></span><output id="reduction">0 dB</output></div>
+    <div class="meter-readout"><span data-i18n="p_limiting"></span><output id="limiting">0 dB</output></div>
   </section>
 
   <details class="card fold" id="compCard">
@@ -125,6 +134,9 @@
   </details>
 
 
+  <div class="card reset-actions">
+    <button class="btn" id="restorePreset" data-i18n="p_restore_preset"></button><button class="btn" id="resetEq" data-i18n="p_reset_eq"></button><button class="btn" id="resetStereo" data-i18n="p_reset_stereo"></button><button class="btn" id="undo" data-i18n="p_undo" disabled></button>
+  </div>
   <div class="actions">
     <button type="button" class="btn" id="openOptions" data-i18n="p_btn_options"></button>
     <button type="button" class="btn" id="openSite" data-i18n="p_btn_site"></button>

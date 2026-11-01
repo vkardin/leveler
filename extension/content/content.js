@@ -39,6 +39,10 @@
   const LV = self.LV;
   const PR = self.LV_PRESETS;
   if (!LV || !PR) return;
+  // An obsolete or non-extension world must not take over an existing audio chain.
+  try {
+    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id || !chrome.runtime.onMessage || !chrome.storage) return;
+  } catch { return; }
   // После установки или обновления расширения скрипт заново внедряется в открытые вкладки
   // (background.js, popup). Старый экземпляр в той же вкладке уступает место новому:
   // снимает свои обработчики, а AudioContext и цепочки оставляет в window.__lvAudio —
@@ -63,6 +67,9 @@
   let stored = {};                         // def и профиль сайта из storage.sync
   let profile = PR.normalizeProfile(PR.DEFAULT_PROFILE);
   let params = profile.params;             // текущие параметры звука (popup может менять их вживую)
+  let compareOriginal = false, compareTimer = 0;
+  const mediaIds = new WeakMap();
+  let nextMediaId = 1;
   let speed = 1;                           // скорость на этой странице
   let ctx = shared.ctx;
   let hostUnsupported = DRM_HOSTS.some((h) => HOST === h || HOST.endsWith('.' + h));
@@ -81,6 +88,7 @@
   function track(el) {
     if (media.has(el)) return;
     media.add(el);
+    mediaIds.set(el, nextMediaId++);
     el.addEventListener('encrypted', () => markBlocked(el, 'drm'));
     el.addEventListener('loadstart', () => onSourceChange(el));
     el.addEventListener('pause', () => stopProbe(chains.get(el)));
@@ -188,7 +196,7 @@
     if (chains.has(el) || blocked.has(el)) return;
     const why = blockReason(el);
     if (why) { markBlocked(el, why); return; }
-    if (!settings.enabled) return;         // выключено и ещё не подключали — вообще не трогаем элемент
+    if (!settings.enabled || !profile.audioEnabled || compareOriginal) return;         // выключено и ещё не подключали — вообще не трогаем элемент
     if (PR.isNeutral(params)) return;      // пресет «Выкл»: обрабатывать нечего, звук остаётся как есть
     if (!ensureCtx()) return;
     if (ctx.state === 'running') build(el);
@@ -314,7 +322,7 @@
     setParam(c.panner.pan, p.pan / 100, now);
     setParam(c.balL.gain, Math.min(1, 1 - p.balance / 100), now);
     setParam(c.balR.gain, Math.min(1, 1 + p.balance / 100), now);
-    const on = settings.enabled && !c.silent && !PR.isNeutral(p);
+    const on = settings.enabled && profile.audioEnabled && !compareOriginal && !c.silent && !PR.isNeutral(p);
     setParam(c.wet.gain, on ? 1 : 0, now);
     setParam(c.dry.gain, on ? 0 : 1, now);
   }
@@ -715,6 +723,8 @@
     return {
       type: 'lv:status', host: HOST, site: SITE, top: window === window.top,
       found, playing, processed, reason, reload, speed, drmHost: hostUnsupported, live: liveStatus(),
+      comparing: compareOriginal,
+      sources: [...media].filter((el) => el.isConnected || !el.paused).map((el) => ({ id: mediaIds.get(el), label: el.getAttribute('aria-label') || el.title || (el.tagName.toLowerCase() + ' ' + mediaIds.get(el)), playing: !el.paused })),
       audio: ctx ? ctx.state : 'none'
     };
   }
@@ -727,7 +737,7 @@
     let on = false;
     for (const el of media) { const c = chains.get(el); if (c && !c.silent) { on = true; break; } }
     const v = Math.round(params.volume);
-    const text = on && settings.enabled && v !== 100 ? v + '%' : '';
+    const text = on && settings.enabled && profile.audioEnabled && !compareOriginal && v !== 100 ? v + '%' : '';
     if (text === badge) return;
     badge = text;
     try { chrome.runtime.sendMessage({ type: 'lv:badge', text, boost: v > 100 }).catch(() => {}); } catch (e) { /* расширение обновили */ }
@@ -741,8 +751,11 @@
     for (let i = 0; i < meterBuf.length; i++) sum += meterBuf[i] * meterBuf[i];
     return Math.max(-90, 10 * Math.log10(sum / meterBuf.length + 1e-12));
   }
-  function levels() {
-    for (const el of media) {
+  function levels(id) {
+    const list = [...media];
+    if (id != null) list.sort((a,b) => (mediaIds.get(b) === id) - (mediaIds.get(a) === id));
+    for (const el of list) {
+      if (id != null && mediaIds.get(el) !== id) continue;
       const c = chains.get(el);
       if (!c || el.paused || c.silent) continue;
       if (!c.meter) {
@@ -750,7 +763,8 @@
         c.meter.fftSize = 2048;
         c.limiter.connect(c.meter);
       }
-      return { pre: rmsDb(c.probe), post: settings.enabled ? rmsDb(c.meter) : rmsDb(c.probe) };
+      const active = settings.enabled && profile.audioEnabled && !compareOriginal && !PR.isNeutral(params);
+      return { pre: rmsDb(c.probe), post: active ? rmsDb(c.meter) : rmsDb(c.probe), reduction: active ? c.comp.reduction : 0, limiting: active ? c.limiter.reduction : 0, id: mediaIds.get(el) };
     }
     return null;
   }
@@ -758,8 +772,14 @@
   const onMessage = (msg, sender, reply) => {
     if (!msg || typeof msg.type !== 'string') return;
     if (msg.type === 'lv:levels') {
-      const l = levels();
+      const l = levels(msg.id);
       if (l) reply(l);           // фреймы без играющего видео молчат, ответит тот, где звук
+    } else if (msg.type === 'lv:compare') {
+      compareOriginal = msg.original === true;
+      clearTimeout(compareTimer);
+      if (compareOriginal) compareTimer = setTimeout(() => { compareOriginal = false; applyAll(); }, 1400);
+      applyAll();
+      reply({ ok: true });
     } else if (msg.type === 'lv:hello') {
       const s = status();
       // каждый фрейм отвечает отдельным сообщением: reply от вкладки доходит только один
@@ -770,6 +790,7 @@
     } else if (msg.type === 'lv:params') {
       // пока двигают ползунок: применяем сразу, в storage popup пишет реже
       params = PR.normalizeParams(msg.params);
+      if (typeof msg.audioEnabled === 'boolean') profile.audioEnabled = msg.audioEnabled;
       applyAll();
     } else if (msg.type === 'lv:focus') {
       onFocusCommand(msg.action);
@@ -841,6 +862,7 @@
     window.removeEventListener('keydown', onKey, true);
     window.removeEventListener('pagehide', onPageHide);
     mo.disconnect();
+    clearTimeout(compareTimer); compareOriginal = false;
     // после обновления фоновый скрипт начинает с чистого листа: приглушение не должно остаться
     unduckAll();
     for (const el of media) for (const t of ['pause', 'ended', 'volumechange', 'emptied', 'loadedmetadata']) el.removeEventListener(t, onFocusEvent);

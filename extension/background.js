@@ -146,3 +146,27 @@ api.storage.onChanged.addListener((changes, area) => {
     await save();
   });
 });
+
+
+const pendingProfiles = new Map();
+api.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (!msg || msg.type !== 'lv:save-profile') return;
+  // Only extension pages may write profiles through this endpoint.
+  if (!sender.url || !sender.url.startsWith(api.runtime.getURL(''))) return;
+  if (typeof msg.key !== 'string' || !(msg.key === 'def' || /^s:[a-z0-9.\-[\]:]{1,253}$/.test(msg.key)) || !msg.profile) { reply({ ok: false }); return; }
+  const old = pendingProfiles.get(msg.key);
+  if (old) clearTimeout(old.timer);
+  const entry = { value: msg.profile, replies: old ? old.replies : [] };
+  entry.replies.push(reply);
+  entry.timer = setTimeout(async () => {
+    pendingProfiles.delete(msg.key);
+    try {
+      await api.storage.sync.set({ [msg.key]: entry.value });
+      entry.replies.forEach((fn) => { try { fn({ ok: true }); } catch {} });
+    } catch {
+      entry.replies.forEach((fn) => { try { fn({ ok: false }); } catch {} });
+    }
+  }, msg.immediate ? 0 : 350);
+  pendingProfiles.set(msg.key, entry);
+  return true;
+});

@@ -361,5 +361,80 @@
   },
   "o_focus_duck": {
     "message": "Гучність фонових вкладок"
+  },
+  "p_site_enabled": {
+    "message": "Обробляти звук на цьому сайті"
+  },
+  "p_compare": {
+    "message": "Послухати оригінал"
+  },
+  "p_processed": {
+    "message": "Повернути оброблений звук"
+  },
+  "p_compare_hint": {
+    "message": "Тимчасове порівняння в цій вкладці. Налаштування збережено."
+  },
+  "p_listening_original": {
+    "message": "Зараз звучить оригінал"
+  },
+  "p_site_off": {
+    "message": "Обробку звуку на цьому сайті вимкнено"
+  },
+  "p_save_error": {
+    "message": "Не вдалося зберегти налаштування. Спробуй ще раз."
+  },
+  "p_meter_source": {
+    "message": "Джерело індикаторів"
+  },
+  "p_source_auto": {
+    "message": "Автоматично · перше джерело, що грає"
+  },
+  "p_playing": {
+    "message": "Грає"
+  },
+  "p_paused": {
+    "message": "На паузі"
+  },
+  "p_reduction": {
+    "message": "Стиснення компресором"
+  },
+  "p_limiting": {
+    "message": "Зниження лімітером"
+  },
+  "p_restore_preset": {
+    "message": "Повернути пресет"
+  },
+  "p_reset_eq": {
+    "message": "Скинути EQ"
+  },
+  "p_reset_stereo": {
+    "message": "Скинути стерео"
+  },
+  "p_undo": {
+    "message": "Скасувати"
+  },
+  "o_site_search": {
+    "message": "Знайти сайт"
+  },
+  "o_edit_site": {
+    "message": "Змінити"
+  },
+  "o_save_site": {
+    "message": "Зберегти профіль"
+  },
+  "o_copy_host": {
+    "message": "Копіювати збережений профіль на"
+  },
+  "o_copy_site": {
+    "message": "Копіювати профіль"
+  },
+  "o_host_invalid": {
+    "message": "Введи інше ім’я сайту, наприклад example.com"
+  },
+  "o_replace_site": {
+    "message": "Замінити збережений профіль для $1?"
+  },
+  "o_import_confirm": {
+    "message": "Замінити пресети й профілі сайтів даними з копії? Дію можна скасувати."
   }
 }

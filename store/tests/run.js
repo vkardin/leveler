@@ -107,7 +107,7 @@ async function isolated(p, frameUrlPart) {
   await sleep(200);
   const walk = (n) => [n.frame].concat((n.childFrames || []).flatMap(walk));
   const target = frameUrlPart ? walk(frameTree).find((f) => f.url.includes(frameUrlPart)) : frameTree.frame;
-  const c = target && ctxs.find((x) => x.auxData && x.auxData.type === 'isolated' && x.auxData.frameId === target.id);
+  const c = target && ctxs.find((x) => x.auxData && x.auxData.type === 'isolated' && x.origin.startsWith('chrome-extension://') && x.auxData.frameId === target.id);
   if (!c) throw new Error('нет изолированного мира расширения');
   return async (expr) => {
     const r = await cdp.send('Runtime.evaluate', { expression: expr, contextId: c.id, awaitPromise: true, returnByValue: true });

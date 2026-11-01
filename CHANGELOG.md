@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.0
+
+- Temporary Original / Processed comparison in the current tab. Automatically restores processing when the popup closes, without changing saved profiles
+- Independent audio-processing switch per site; saved sound settings and playback speed remain available
+- Updated popup layout with primary audio controls first and expandable speed, compressor, EQ and stereo sections
+- Compression and limiter reduction readouts; choose the meter source when several media elements or frames are present
+- Restore a preset, reset EQ or stereo, and undo the last editing gesture
+- Search, edit and copy site profiles on the settings page, with undo for profile resets and copying
+- Background-owned debounced profile writes survive popup closure and report failed saves
+- Backups now include AudioFocus mode and duck level, plus per-site processing switches. Failed imports do not delete existing profiles before writing the replacement
+- Ignore unavailable extension runtimes before taking over audio, fixing startup errors in stale contexts
+- EN/RU/UK interfaces; regression tests cover real Web Audio, comparison expiry, profile editing, popup closure and source reuse during video relocation
+
 ## 1.1.0
 
 - Clearer popup message on sites where the sound cannot be processed: it says why (DRM-protected video such as Netflix, or sound from another server) and that speed control still works. On DRM sites it shows right away, and the sound sliders are dimmed

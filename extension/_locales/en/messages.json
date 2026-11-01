@@ -361,5 +361,80 @@
   },
   "o_focus_duck": {
     "message": "Volume of background tabs"
+  },
+  "p_site_enabled": {
+    "message": "Process sound on this site"
+  },
+  "p_compare": {
+    "message": "Listen to original"
+  },
+  "p_processed": {
+    "message": "Return to processed sound"
+  },
+  "p_compare_hint": {
+    "message": "Temporary comparison in this tab. Your settings stay saved."
+  },
+  "p_listening_original": {
+    "message": "Listening to original sound"
+  },
+  "p_site_off": {
+    "message": "Audio processing is off for this site"
+  },
+  "p_save_error": {
+    "message": "Could not save settings. Please try again."
+  },
+  "p_meter_source": {
+    "message": "Meter source"
+  },
+  "p_source_auto": {
+    "message": "Automatic · first playing source"
+  },
+  "p_playing": {
+    "message": "Playing"
+  },
+  "p_paused": {
+    "message": "Paused"
+  },
+  "p_reduction": {
+    "message": "Compression"
+  },
+  "p_limiting": {
+    "message": "Limiter reduction"
+  },
+  "p_restore_preset": {
+    "message": "Restore preset"
+  },
+  "p_reset_eq": {
+    "message": "Reset EQ"
+  },
+  "p_reset_stereo": {
+    "message": "Reset stereo"
+  },
+  "p_undo": {
+    "message": "Undo"
+  },
+  "o_site_search": {
+    "message": "Find a site"
+  },
+  "o_edit_site": {
+    "message": "Edit"
+  },
+  "o_save_site": {
+    "message": "Save profile"
+  },
+  "o_copy_host": {
+    "message": "Copy saved profile to"
+  },
+  "o_copy_site": {
+    "message": "Copy profile"
+  },
+  "o_host_invalid": {
+    "message": "Enter a different hostname, such as example.com"
+  },
+  "o_replace_site": {
+    "message": "Replace the saved profile for $1?"
+  },
+  "o_import_confirm": {
+    "message": "Replace saved presets and site profiles with this backup? You can undo this action."
   }
 }

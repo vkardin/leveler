@@ -121,3 +121,7 @@ Free and open source: https://github.com/vkardin/leveler
 **RU:** Усиление громкости до 400 %, раздел «Стерео» (панорама, баланс, моно), новые пресеты «Подкасты» и «Музыка», по желанию догон прямого эфира и пауза фоновых вкладок, понятное сообщение на сайтах с DRM, быстрые кнопки в окне: «Все настройки», «Сайт», «Поддержать проект».
 
 **UK:** Підсилення гучності до 400 %, розділ «Стерео» (панорама, баланс, моно), нові пресети «Подкасти» і «Музика», за бажанням наздоганяння прямої трансляції та пауза фонових вкладок, зрозуміле повідомлення на сайтах із DRM, швидкі кнопки у вікні: «Усі налаштування», «Сайт», «Підтримати проєкт».
+
+## What's new in 1.5.0 (release notes field)
+
+Original/processed comparison for the current tab, per-site processing switches, compressor/limiter reduction meters and source selection. Reset EQ or stereo, restore a preset and undo changes. Search, edit and copy site profiles. Background saving survives popup closure, backups include audio focus settings, and stale extension contexts exit safely.

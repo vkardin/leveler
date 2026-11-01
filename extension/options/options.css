@@ -40,3 +40,16 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
 .list .meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .list button { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; padding: 2px 4px; }
 .list button:hover { color: #e5534b; }
+
+main { max-width: 840px; }
+.card { box-shadow:0 1px 3px rgba(0,0,0,.06); }
+#siteSearch { width:100%;margin:8px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);padding:10px;font:inherit; }
+.list li { flex-wrap:wrap; }
+.site-editor { flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px; }
+.site-editor label { display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);min-width:0; }
+.site-editor input:not([type=checkbox]),.site-editor select { width:100%;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);padding:8px;font:inherit; }
+.site-editor input[type=checkbox] { align-self:start;accent-color:var(--accent); }
+.site-editor button { color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px; }
+@media(max-width:500px) { .site-editor{grid-template-columns:1fr}.fields label{flex-wrap:wrap}.list .meta{white-space:normal} }
+
+.list button:hover { color:var(--accent); }
