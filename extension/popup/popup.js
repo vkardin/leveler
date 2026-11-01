@@ -88,8 +88,15 @@
   function saveProfile(now) {
     const key = storeKey(), value = JSON.parse(JSON.stringify(profile));
     all[key] = value;
-    chrome.runtime.sendMessage({ type: 'lv:save-profile', key, profile: value, immediate: !!now })
-      .then((r) => { $('#saveError').hidden = !!r && r.ok; }, () => { $('#saveError').hidden = false; });
+    persistProfile(key, value, !!now);
+  }
+
+  async function persistProfile(key, value, immediate = true) {
+    try {
+      const reply = await chrome.runtime.sendMessage({ type: 'lv:save-profile', key, profile: value, immediate });
+      $('#saveError').hidden = !!reply && reply.ok;
+      return !!reply && reply.ok;
+    } catch { $('#saveError').hidden = false; return false; }
   }
 
   function sendParams() {
@@ -416,16 +423,16 @@
     flashTimer = setTimeout(() => { el.hidden = true; }, 1200);
   }
 
-  els.makeDefault.addEventListener('click', () => {
-    all.def = { audioEnabled: profile.audioEnabled, preset: profile.preset, params: profile.params, speed: 1 };
-    chrome.storage.sync.set({ def: all.def });
-    flash(els.siteDone);
+  els.makeDefault.addEventListener('click', async () => {
+    all.def = PR.normalizeProfile({ ...profile, speed: 1 });
+    if (await persistProfile('def', all.def)) flash(els.siteDone);
   });
 
-  els.resetSite.addEventListener('click', () => {
+  els.resetSite.addEventListener('click', async () => {
     if (!site) return;
-    delete all[PR.siteKey(site)];
-    chrome.storage.sync.remove(PR.siteKey(site));
+    const key = PR.siteKey(site);
+    if (!await persistProfile(key, null)) return;
+    delete all[key];
     profile = currentProfile();
     renderAll();
     sendParams();

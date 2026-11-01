@@ -752,9 +752,7 @@
     return Math.max(-90, 10 * Math.log10(sum / meterBuf.length + 1e-12));
   }
   function levels(id) {
-    const list = [...media];
-    if (id != null) list.sort((a,b) => (mediaIds.get(b) === id) - (mediaIds.get(a) === id));
-    for (const el of list) {
+    for (const el of media) {
       if (id != null && mediaIds.get(el) !== id) continue;
       const c = chains.get(el);
       if (!c || el.paused || c.silent) continue;

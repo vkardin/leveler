@@ -149,23 +149,32 @@ api.storage.onChanged.addListener((changes, area) => {
 
 
 const pendingProfiles = new Map();
+const profileWrites = new Map();
 api.runtime.onMessage.addListener((msg, sender, reply) => {
   if (!msg || msg.type !== 'lv:save-profile') return;
   // Only extension pages may write profiles through this endpoint.
   if (!sender.url || !sender.url.startsWith(api.runtime.getURL(''))) return;
-  if (typeof msg.key !== 'string' || !(msg.key === 'def' || /^s:[a-z0-9.\-[\]:]{1,253}$/.test(msg.key)) || !msg.profile) { reply({ ok: false }); return; }
+  const validKey = typeof msg.key === 'string' && (msg.key === 'def' || /^s:[a-z0-9.\-[\]:]{1,253}$/.test(msg.key));
+  const deleting = msg.profile === null;
+  if (!validKey || (deleting ? msg.key === 'def' : !msg.profile || typeof msg.profile !== 'object' || Array.isArray(msg.profile))) { reply({ ok: false }); return; }
   const old = pendingProfiles.get(msg.key);
   if (old) clearTimeout(old.timer);
   const entry = { value: msg.profile, replies: old ? old.replies : [] };
   entry.replies.push(reply);
-  entry.timer = setTimeout(async () => {
+  entry.timer = setTimeout(() => {
     pendingProfiles.delete(msg.key);
-    try {
-      await api.storage.sync.set({ [msg.key]: entry.value });
+    // An already started storage write cannot be cancelled. Queue the newer
+    // intent after it so a slow write cannot restore a reset profile.
+    const previous = profileWrites.get(msg.key) || Promise.resolve();
+    const write = previous.catch(() => {}).then(() => entry.value === null
+      ? api.storage.sync.remove(msg.key)
+      : api.storage.sync.set({ [msg.key]: entry.value }));
+    profileWrites.set(msg.key, write);
+    write.then(() => {
       entry.replies.forEach((fn) => { try { fn({ ok: true }); } catch {} });
-    } catch {
+    }, () => {
       entry.replies.forEach((fn) => { try { fn({ ok: false }); } catch {} });
-    }
+    }).finally(() => { if (profileWrites.get(msg.key) === write) profileWrites.delete(msg.key); });
   }, msg.immediate ? 0 : 350);
   pendingProfiles.set(msg.key, entry);
   return true;
