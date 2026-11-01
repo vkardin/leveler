@@ -22,6 +22,14 @@ Leveler evens out the sound of any HTML5 video or audio: quiet dialogue gets lou
 - **Firefox:** [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/leveler/)
 - **Manual install:** download `leveler-chrome-<version>.zip` from [Releases](../../releases), unzip it, open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked** → choose the unzipped folder. Firefox: `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → `manifest.json` from `leveler-firefox-<version>.zip`.
 
+## New in 1.5
+
+- Compare original and processed audio temporarily in the current tab; closing the popup restores processing automatically.
+- Disable processing per site, restore the current preset, reset EQ/stereo, and undo the last editing gesture.
+- Choose which source drives the meters and see compressor/limiter gain reduction.
+- Search, edit and copy site profiles. Backups include background-tab audio focus settings.
+- Debounced profile writes finish in the background even if the popup closes immediately. Invalid extension runtimes exit before audio takeover.
+
 ## Features
 
 - Presets: Night mode (strong compression), Louder dialogue, Podcasts, Headphones, Bass+, Music, Off. After install the preset is Off and nothing is processed until you pick one
@@ -98,3 +106,7 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 ## License
 
 [MIT](LICENSE) © vkardin
+
+### Additional regression checks
+
+Run `node --test --test-concurrency=1 store/tests/v15.test.cjs` with Playwright installed. These tests use real Chromium Web Audio and local media with extension API stubs. `CHROMIUM_PATH` can select an existing Chromium binary. The original `store/tests/run.js` additionally tests the installed extension and requires a full Chromium build with extension support.

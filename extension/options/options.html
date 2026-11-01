@@ -39,6 +39,7 @@
         <label class="btn" for="importFile"><span data-i18n="o_import"></span></label>
         <input type="file" id="importFile" accept="application/json,.json" hidden>
       </div>
+      <button type="button" class="btn" id="undoOptions" data-i18n="p_undo" hidden></button>
       <p class="msg" id="backupMsg" role="status"></p>
     </section>
 
@@ -58,6 +59,7 @@
     <section class="card">
       <h2 data-i18n="o_sites"></h2>
       <p class="muted" data-i18n="o_sites_hint"></p>
+      <label for="siteSearch" data-i18n="o_site_search"></label><input type="search" id="siteSearch">
       <ul class="list" id="sites"></ul>
       <p class="muted" id="sitesEmpty" data-i18n="o_sites_empty"></p>
       <div class="actions"><button type="button" class="btn" id="resetSites" data-i18n="o_reset_sites"></button></div>

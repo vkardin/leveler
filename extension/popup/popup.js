@@ -5,7 +5,6 @@
   const $ = (s) => document.querySelector(s);
   const CACHE_KEY = 'unsupportedHosts';
   const STALE_MS = 2500;                   // ответ фрейма старше этого — фрейма больше нет
-  const SAVE_MS = 400;                     // storage.sync ограничивает частоту записи
   const SITE_URL = 'https://vkardin.github.io/leveler/';
   const NOTICE = { drm: 'n_drm', cors: 'n_cors' };   // причина → пояснение под «Этот сайт не поддерживает…»
 
@@ -81,21 +80,25 @@
     return PR.normalizeProfile((site && all[PR.siteKey(site)]) || all.def || PR.DEFAULT_PROFILE);
   }
 
-  let saveTimer = 0;
+  let previousProfile = null, lastRemember = 0, comparing = false;
+  function remember(force) {
+    if (force || Date.now() - lastRemember > 700) previousProfile = JSON.parse(JSON.stringify(profile));
+    lastRemember = Date.now(); $('#undo').disabled = !previousProfile;
+  }
   function saveProfile(now) {
-    clearTimeout(saveTimer);
     const key = storeKey(), value = JSON.parse(JSON.stringify(profile));
     all[key] = value;
-    const write = () => chrome.storage.sync.set({ [key]: value });
-    if (now) write(); else saveTimer = setTimeout(write, SAVE_MS);
+    chrome.runtime.sendMessage({ type: 'lv:save-profile', key, profile: value, immediate: !!now })
+      .then((r) => { $('#saveError').hidden = !!r && r.ok; }, () => { $('#saveError').hidden = false; });
   }
 
   function sendParams() {
-    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:params', params: profile.params }).catch(() => {});
+    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:params', params: profile.params, audioEnabled: profile.audioEnabled }).catch(() => {});
   }
 
   // изменение параметров ползунком: сразу на странице, в storage — с задержкой
   function changeParams(params) {
+    remember(false);
     profile.params = PR.normalizeParams(params);
     editing = Date.now();
     renderParams();
@@ -107,6 +110,7 @@
   function selectPreset(id) {
     const p = findPreset(id);
     if (!p) return;
+    remember(true);
     profile.preset = id;
     // усиление громкости и стерео не часть пресета: остаются как были
     profile.params = PR.presetParams(p.params, profile.params);
@@ -178,6 +182,9 @@
 
   function renderSettings() {
     els.enabled.checked = settings.enabled;
+    $('#siteEnabled').checked = profile.audioEnabled;
+    $('#compare').textContent = t(comparing ? 'p_processed' : 'p_compare');
+    $('#compare').setAttribute('aria-pressed', String(comparing));
     els.live.checked = settings.liveCatchup;
     document.body.classList.toggle('off', !settings.enabled);
   }
@@ -247,6 +254,8 @@
     if (tabId === null || !any) text = t('st_no_access');
     else if (!found) text = t('st_no_media');
     else if (!settings.enabled) text = t('st_off');
+    else if (comparing) text = t('p_listening_original');
+    else if (!profile.audioEnabled) text = t('p_site_off');
     else if (PR.isNeutral(profile.params)) text = t('st_neutral');
     else if (processed) { cls = 'ok'; text = t('st_processing', processed); }
     else if (reason) { cls = 'warn'; text = t('st_unsupported'); }
@@ -287,6 +296,7 @@
       // сайт мог сменить скорость сам (собственный плеер): показываем фактическую
       els.speedOut.textContent = fmtSpeed(msg.speed);
     }
+    renderSources();
     renderStatus();
   });
 
@@ -299,6 +309,7 @@
   }
 
   function sendSpeed(v) {
+    remember(false);
     profile.speed = LV.clampSpeed(v);
     speedTouched = Date.now();
     renderSpeed();
@@ -406,7 +417,7 @@
   }
 
   els.makeDefault.addEventListener('click', () => {
-    all.def = { preset: profile.preset, params: profile.params, speed: 1 };
+    all.def = { audioEnabled: profile.audioEnabled, preset: profile.preset, params: profile.params, speed: 1 };
     chrome.storage.sync.set({ def: all.def });
     flash(els.siteDone);
   });
@@ -482,12 +493,50 @@
   }
 
   // Индикатор уровня: спрашиваем страницу ~12 раз в секунду, только пока popup открыт.
+  let sourceSignature = '';
+  function renderSources() {
+    const sources = [];
+    for (const [frameId, f] of frames) for (const source of f.s.sources || []) sources.push({ frameId, ...source });
+    const signature = JSON.stringify(sources);
+    if (signature === sourceSignature) return;
+    sourceSignature = signature;
+    const select = $('#meterSource'), previous = select.value;
+    select.replaceChildren(new Option(t('p_source_auto'), ''));
+    for (const source of sources) select.append(new Option(source.label + ' · ' + t(source.playing ? 'p_playing' : 'p_paused') + ' · ' + source.frameId, source.frameId + ':' + source.id));
+    select.value = [...select.options].some((o) => o.value === previous) ? previous : '';
+  }
+  $('#siteEnabled').onchange = () => { remember(true); profile.audioEnabled = $('#siteEnabled').checked; editing = Date.now(); sendParams(); saveProfile(true); renderSettings(); hello(); };
+  function compareLease() {
+    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:compare', original: comparing }).catch(() => {});
+  }
+  $('#compare').onclick = () => { comparing = !comparing; compareLease(); renderSettings(); hello(); };
+  setInterval(() => { if (comparing) compareLease(); }, 400);
+  window.addEventListener('pagehide', () => { comparing = false; compareLease(); });
+  $('#restorePreset').onclick = () => { if (findPreset(profile.preset)) selectPreset(profile.preset); };
+  $('#resetEq').onclick = () => { remember(true); changeParams(Object.assign({}, profile.params, { hp: 0, low: 0, mid: 0, high: 0 })); };
+  $('#resetStereo').onclick = () => { remember(true); changeParams(Object.assign({}, profile.params, { pan: 0, balance: 0, mono: false })); };
+  $('#undo').onclick = () => {
+    if (!previousProfile) return;
+    profile = PR.normalizeProfile(previousProfile); previousProfile = null; $('#undo').disabled = true;
+    editing = speedTouched = Date.now(); renderAll(); sendParams();
+    if (tabId !== null) chrome.tabs.sendMessage(tabId, { type: 'lv:speed', speed: profile.speed }).catch(() => {});
+    saveProfile(true);
+  };
+  // Keep the main controls in the same order across the extension family.
+  document.body.insertBefore($('#presetCard'), $('.quick').nextSibling);
+  $('#levelCard').after($('#speedCard'));
   const meters = $('#meters'), mPre = $('#mPre'), mPost = $('#mPost');
   const shown = { pre: -90, post: -90 };
   const toScale = (db) => Math.max(0, Math.min(1, (db + 60) / 60));   // −60…0 dB
   function pollLevels() {
     if (tabId === null || document.hidden) return;
-    chrome.tabs.sendMessage(tabId, { type: 'lv:levels' }).then((l) => {
+    const selected = $('#meterSource').value.split(':').map(Number);
+    const request = { type: 'lv:levels' };
+    if ($('#meterSource').value) request.id = selected[1];
+    const options = $('#meterSource').value ? { frameId: selected[0] } : {};
+    chrome.tabs.sendMessage(tabId, request, options).then((l) => {
+      $('#reduction').textContent = (l ? Math.abs(l.reduction || 0).toFixed(1) : '0') + ' dB';
+      $('#limiting').textContent = (l ? Math.abs(l.limiting || 0).toFixed(1) : '0') + ' dB';
       meters.classList.toggle('idle', !l);
       for (const k of ['pre', 'post']) {
         const v = l ? l[k] : -90;

@@ -29,6 +29,8 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.63.0
           npx playwright install --with-deps chromium
+      - name: Run Leveler 1.5 regression tests
+        run: node --test --test-concurrency=1 store/tests/v15.test.cjs
       - name: Run store/tests/run.js
         run: node store/tests/run.js
       - uses: actions/upload-artifact@v4

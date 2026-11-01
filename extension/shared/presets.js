@@ -78,11 +78,12 @@
 
   const builtin = (id) => BUILTIN.find((b) => b.id === id) || null;
 
-  const DEFAULT_PROFILE = Object.freeze({ preset: DEFAULT_PRESET, params: builtin(DEFAULT_PRESET).params, speed: 1 });
+  const DEFAULT_PROFILE = Object.freeze({ audioEnabled: true, preset: DEFAULT_PRESET, params: builtin(DEFAULT_PRESET).params, speed: 1 });
 
   function normalizeProfile(pr) {
     pr = pr && typeof pr === 'object' ? pr : {};
     return {
+      audioEnabled: pr.audioEnabled !== false,
       preset: typeof pr.preset === 'string' ? pr.preset.slice(0, 40) : null,
       params: normalizeParams(pr.params || (builtin(pr.preset) || {}).params || DEFAULT_PROFILE.params),
       speed: LV.clampSpeed(num(pr.speed, 1))
@@ -167,6 +168,8 @@
       exported: new Date().toISOString(),
       enabled: all.enabled !== false,
       liveCatchup: all.liveCatchup === true,
+      focusMode: LV.normalize(all).focusMode,
+      focusDuck: LV.normalize(all).focusDuck,
       presets: normalizePresets(all.presets),
       keys: normalizeKeys(all.keys),
       default: normalizeProfile(all.def || DEFAULT_PROFILE),
@@ -181,6 +184,8 @@
     const out = {
       enabled: data.enabled !== false,
       liveCatchup: data.liveCatchup === true,
+      focusMode: LV.normalize(data).focusMode,
+      focusDuck: LV.normalize(data).focusDuck,
       presets: normalizePresets(data.presets),
       keys: normalizeKeys(data.keys),
       def: normalizeProfile(data.default)

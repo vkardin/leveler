@@ -361,5 +361,80 @@
   },
   "o_focus_duck": {
     "message": "Громкость фоновых вкладок"
+  },
+  "p_site_enabled": {
+    "message": "Обрабатывать звук на этом сайте"
+  },
+  "p_compare": {
+    "message": "Послушать оригинал"
+  },
+  "p_processed": {
+    "message": "Вернуть обработанный звук"
+  },
+  "p_compare_hint": {
+    "message": "Временное сравнение в этой вкладке. Настройки сохраняются."
+  },
+  "p_listening_original": {
+    "message": "Сейчас звучит оригинал"
+  },
+  "p_site_off": {
+    "message": "Обработка звука на этом сайте отключена"
+  },
+  "p_save_error": {
+    "message": "Не удалось сохранить настройки. Попробуй ещё раз."
+  },
+  "p_meter_source": {
+    "message": "Источник индикаторов"
+  },
+  "p_source_auto": {
+    "message": "Автоматически · первый играющий источник"
+  },
+  "p_playing": {
+    "message": "Играет"
+  },
+  "p_paused": {
+    "message": "На паузе"
+  },
+  "p_reduction": {
+    "message": "Сжатие компрессором"
+  },
+  "p_limiting": {
+    "message": "Снижение лимитером"
+  },
+  "p_restore_preset": {
+    "message": "Вернуть пресет"
+  },
+  "p_reset_eq": {
+    "message": "Сбросить EQ"
+  },
+  "p_reset_stereo": {
+    "message": "Сбросить стерео"
+  },
+  "p_undo": {
+    "message": "Отменить"
+  },
+  "o_site_search": {
+    "message": "Найти сайт"
+  },
+  "o_edit_site": {
+    "message": "Изменить"
+  },
+  "o_save_site": {
+    "message": "Сохранить профиль"
+  },
+  "o_copy_host": {
+    "message": "Копировать сохранённый профиль на"
+  },
+  "o_copy_site": {
+    "message": "Копировать профиль"
+  },
+  "o_host_invalid": {
+    "message": "Введи другое имя сайта, например example.com"
+  },
+  "o_replace_site": {
+    "message": "Заменить сохранённый профиль для $1?"
+  },
+  "o_import_confirm": {
+    "message": "Заменить пресеты и профили сайтов данными из копии? Действие можно отменить."
   }
 }
