@@ -221,7 +221,8 @@
       const sites = Object.keys(data).filter((k) => k.startsWith('s:')).length;
       msg(t('o_imported', data.presets.length, sites));
     } catch (err) {
-      msg(t(err && err.message === 'too-new' ? 'o_import_new' : 'o_import_bad'), true);
+      const invalid = err instanceof SyntaxError || ['not-leveler', 'too-big'].includes(err && err.message);
+      msg(t(err && err.message === 'too-new' ? 'o_import_new' : invalid ? 'o_import_bad' : 'p_save_error'), true);
     }
   });
 

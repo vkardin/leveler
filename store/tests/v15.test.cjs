@@ -149,6 +149,9 @@ for(const lang of ['en','ru','uk'])test('popup and profile editor: '+lang,async(
   const popup=await context.newPage();await popup.goto(base+'/extension/popup/popup.html?tab=1');
   await popup.waitForFunction(()=>document.querySelector('#volume').value==='175');
   await popup.locator('#resetStereo').click();await popup.locator('#undo').click();
+  await popup.locator('#speedCard summary').click();
+  assert.equal(await popup.locator('#speed').isVisible(),true);
+  await popup.locator('#speedCard summary').click();
   await popup.evaluate(()=>window.scrollTo(0,0));
   await popup.screenshot({path:'/tmp/leveler-popup-'+lang+'.png'});
   await popup.emulateMedia({colorScheme:'dark'});await popup.screenshot({path:'/tmp/leveler-popup-'+lang+'-dark.png',animations:'disabled'});
