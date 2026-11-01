@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/img/logo.svg" width="96" alt="Leveler"></p>
+<p align="center"><img src=".github/assets/project-banner.svg" alt="Leveler by vkardin" width="100%"></p>
 
 <h1 align="center">Leveler</h1>
 
@@ -77,31 +77,6 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 | [`tools/`](tools) | `build.py` packs `leveler-chrome-<version>.zip` and `leveler-firefox-<version>.zip` |
 | [`.github/workflows/`](.github/workflows) | `test.yml` runs the build checks and the automated test; `release.yml` publishes a release with both zips when a new version from `manifest.json` reaches `main` (or on demand: Actions → Release → Run workflow) |
 
-## Also by the author
-
-<a href="https://vkardin.github.io/video-glow/"><img src="docs/img/video-glow.svg" width="56" align="left" alt="Video Glow"></a>
-
-**[Video Glow](https://vkardin.github.io/video-glow/)**: ambient light around any video in the browser, in the colours of the picture, like a TV backlight. Free for Chrome and Firefox. [Website](https://vkardin.github.io/video-glow/) · [GitHub](https://github.com/vkardin/video-glow)
-
-<br clear="left">
-
-<a href="https://vkardin.github.io/snapt/"><img src="docs/img/snapt.svg" width="56" align="left" alt="Snapt"></a>
-
-**[Snapt](https://vkardin.github.io/snapt/)**: a fast, lightweight, open-source screenshot tool for Windows, macOS and Linux. Select an area, add an arrow or a caption, copy it. No accounts, no cloud. [Website](https://vkardin.github.io/snapt/) · [GitHub](https://github.com/vkardin/snapt)
-
-<br clear="left">
-
-<a href="https://vkardin.github.io/floatr/"><img src="docs/img/floatr.svg" width="56" align="left" alt="Floatr"></a>
-
-**[Floatr](https://vkardin.github.io/floatr/)**: pops any web video out into a floating window that stays on top, with the site's subtitles, and remembers the second you stopped at. Bookmarks with notes and Markdown export. Free for Chrome and Firefox. [Website](https://vkardin.github.io/floatr/) · [GitHub](https://github.com/vkardin/floatr)
-
-<br clear="left">
-
-<a href="https://vkardin.github.io/uni-homebot/"><img src="docs/img/uni.svg" width="56" align="left" alt="UNI"></a>
-
-**[UNI](https://vkardin.github.io/uni-homebot/)**: your home server in Telegram: apps in one grid, monitoring, a news digest and server repair in the chat and a mini app. Self-hosted, installs with one command (Russian interface). [Website](https://vkardin.github.io/uni-homebot/) · [GitHub](https://github.com/vkardin/uni-homebot)
-
-<br clear="left">
 
 ## License
 
@@ -110,3 +85,16 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 ### Additional regression checks
 
 Run `node --test --test-concurrency=1 store/tests/v15.test.cjs` with Playwright installed. These tests use real Chromium Web Audio and local media with extension API stubs. `CHROMIUM_PATH` can select an existing Chromium binary. The original `store/tests/run.js` additionally tests the installed extension and requires a full Chromium build with extension support.
+
+<!-- project-family:start -->
+## More tools by vkardin
+
+| Project | Projects |
+| --- | --- |
+| **[Video Glow](https://vkardin.github.io/video-glow/)** | Ambient light around web videos. Soft glow, LED strips and room colour. [GitHub](https://github.com/vkardin/video-glow) |
+| **[Video Drift](https://vkardin.github.io/video-drift/)** | Floating video with subtitles, saved playback positions and timestamped notes. [GitHub](https://github.com/vkardin/video-drift) |
+| **[Snapt](https://vkardin.github.io/snapt/)** | Capture, annotate and export. A Windows, macOS and Linux app, plus a browser extension. [GitHub](https://github.com/vkardin/snapt) |
+| **[UNI](https://vkardin.github.io/uni-homebot/)** | Your home server in Telegram: apps, monitoring, notifications and a Mini App. [GitHub](https://github.com/vkardin/uni-homebot) |
+
+[github.com/vkardin](https://github.com/vkardin) · Independent tools · open source
+<!-- project-family:end -->

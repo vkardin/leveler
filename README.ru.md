@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/img/logo.svg" width="96" alt="Leveler"></p>
+<p align="center"><img src=".github/assets/project-banner.svg" alt="Leveler by vkardin" width="100%"></p>
 
 <h1 align="center">Leveler</h1>
 
@@ -77,32 +77,20 @@ Leveler не собирает данные и ничего никуда не о�
 | [`tools/`](tools) | `build.py` собирает `leveler-chrome-<версия>.zip` и `leveler-firefox-<версия>.zip` |
 | [`.github/workflows/`](.github/workflows) | `test.yml` запускает проверки сборки и автотест; `release.yml` публикует релиз с обоими zip, когда в `main` приходит новая версия из `manifest.json` (или вручную: Actions → Release → Run workflow) |
 
-## Ещё от автора
-
-<a href="https://vkardin.github.io/video-glow/"><img src="docs/img/video-glow.svg" width="56" align="left" alt="Video Glow"></a>
-
-**[Video Glow](https://vkardin.github.io/video-glow/)**: подсветка в цвет картинки вокруг любого видео в браузере, как лента за телевизором. Бесплатно для Chrome и Firefox. [Сайт](https://vkardin.github.io/video-glow/) · [GitHub](https://github.com/vkardin/video-glow)
-
-<br clear="left">
-
-<a href="https://vkardin.github.io/snapt/ru/"><img src="docs/img/snapt.svg" width="56" align="left" alt="Snapt"></a>
-
-**[Snapt](https://vkardin.github.io/snapt/ru/)**: быстрая и лёгкая программа для скриншотов с открытым кодом для Windows, macOS и Linux. Выделите область, добавьте стрелку или подпись и скопируйте. Без аккаунтов и облака. [Сайт](https://vkardin.github.io/snapt/ru/) · [GitHub](https://github.com/vkardin/snapt)
-
-<br clear="left">
-
-<a href="https://vkardin.github.io/floatr/"><img src="docs/img/floatr.svg" width="56" align="left" alt="Floatr"></a>
-
-**[Floatr](https://vkardin.github.io/floatr/)**: выносит любое веб-видео в плавающее окно поверх всех окон вместе с субтитрами сайта и помнит секунду, где вы остановились. Закладки с заметками и экспорт в Markdown. Бесплатно для Chrome и Firefox. [Сайт](https://vkardin.github.io/floatr/) · [GitHub](https://github.com/vkardin/floatr)
-
-<br clear="left">
-
-<a href="https://vkardin.github.io/uni-homebot/"><img src="docs/img/uni.svg" width="56" align="left" alt="UNI"></a>
-
-**[UNI](https://vkardin.github.io/uni-homebot/)**: ваш домашний сервер в Telegram: приложения одной сеткой, мониторинг, сводка новостей и ремонт сервера в чате и в мини-приложении. Свой экземпляр на своём сервере, ставится одной командой. [Сайт](https://vkardin.github.io/uni-homebot/) · [GitHub](https://github.com/vkardin/uni-homebot)
-
-<br clear="left">
 
 ## Лицензия
 
 [MIT](LICENSE) © vkardin
+
+<!-- project-family:start -->
+## Другие инструменты от vkardin
+
+| Project | Проекты |
+| --- | --- |
+| **[Video Glow](https://vkardin.github.io/video-glow/)** | Подсветка вокруг видео в цвет кадра. Мягкое свечение, LED-лента и цвет комнаты. [GitHub](https://github.com/vkardin/video-glow) |
+| **[Video Drift](https://vkardin.github.io/video-drift/)** | Видео поверх других окон, субтитры, сохранение позиции и заметки к моментам. [GitHub](https://github.com/vkardin/video-drift) |
+| **[Snapt](https://vkardin.github.io/snapt/)** | Скриншоты, стрелки и подписи. Приложение для Windows, macOS и Linux и расширение браузера. [GitHub](https://github.com/vkardin/snapt) |
+| **[UNI](https://vkardin.github.io/uni-homebot/)** | Домашний сервер в Telegram: приложения, мониторинг, уведомления и мини-приложение. [GitHub](https://github.com/vkardin/uni-homebot) |
+
+[github.com/vkardin](https://github.com/vkardin) · Независимые инструменты · открытый код
+<!-- project-family:end -->
