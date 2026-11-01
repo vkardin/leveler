@@ -302,6 +302,7 @@ const CHANNELS = (ms) => `(async () => {
       await tab.close();
     }
 
+    await popup.click('#speedCard summary');
     await popup.click('#chips button[data-speed="1.5"]');
     await sleep(300);
     const rate = await p.evaluate(() => {
@@ -487,6 +488,7 @@ const CHANNELS = (ms) => `(async () => {
       && /leveler-backup-\d{4}-\d\d-\d\d\.json/.test(dl.suggestedFilename()), 'экспорт JSON', dl.suggestedFilename());
     backup.presets = [{ id: 'u:test1', name: 'Из файла', params: { ratio: 3, threshold: -20 } }, { id: 'bad', name: 'x' }];
     backup.sites = { 'Example.com': { preset: 'u:test1', speed: 9 }, '<script>': {} };
+    opt.once('dialog', (dialog) => dialog.accept());
     await opt.setInputFiles('#importFile', { name: 'b.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
     await sleep(400);
     sync = await opt.evaluate(() => chrome.storage.sync.get(null));
@@ -506,6 +508,7 @@ const CHANNELS = (ms) => `(async () => {
     await sleep(150);
     prm = await iso2('__leveler.params');
     ok(prm.ratio === 2 && prm.knee === 30, 'пресет «Музыка»', prm);
+    await pz.click('#speedCard summary');
     await pz.click('#chips button[data-speed="1.5"]');
     await sleep(700);
     sync = await pz.evaluate(() => chrome.storage.sync.get(null));
@@ -618,6 +621,7 @@ const CHANNELS = (ms) => `(async () => {
     nt = await notice(pn);
     ok(nt.n.shown && nt.n.text === nt.n.drm && nt.n.nosound, 'popup на Netflix: «звук защищён DRM, скорость работает»', nt.n);
     if (SHOTS) await nt.pp.screenshot({ path: path.join(SHOTS, 'popup-drm.png'), fullPage: true });
+    await nt.pp.click('#speedCard summary');
     await nt.pp.click('#chips button[data-speed="1.5"]');
     await sleep(300);
     ok(await pn.evaluate(() => document.getElementById('v').playbackRate) === 1.5, 'на DRM-сайте скорость меняется');
