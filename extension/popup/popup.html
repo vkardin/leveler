@@ -1,11 +1,12 @@
 <!doctype html>
-<html>
+<html data-family-app="leveler">
 <head>
   <meta charset="utf-8">
   <meta name="color-scheme" content="light dark">
   <title>Leveler</title>
   <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="popup.css">
+<link rel="stylesheet" href="../shared/family-ui.css">
 </head>
 <body>
   <header>
@@ -138,17 +139,19 @@
   <div class="card reset-actions">
     <button class="btn" id="restorePreset" data-i18n="p_restore_preset"></button><button class="btn" id="resetEq" data-i18n="p_reset_eq"></button><button class="btn" id="resetStereo" data-i18n="p_reset_stereo"></button><button class="btn" id="undo" data-i18n="p_undo" disabled></button>
   </div>
-  <div class="actions">
-    <button type="button" class="btn" id="openOptions" data-i18n="p_btn_options"></button>
-    <button type="button" class="btn" id="openSite" data-i18n="p_btn_site"></button>
-    <button type="button" class="btn" id="openDonate" data-i18n="p_btn_donate"></button>
-  </div>
+  <button type="button" class="card settings-entry" id="openOptions"><span data-i18n="p_btn_options"></span><span aria-hidden="true">↗</span></button>
+  <nav class="popup-links">
+    <button type="button" id="openSite" data-i18n="p_btn_site"></button>
+    <span aria-hidden="true">·</span>
+    <button type="button" id="openDonate" data-i18n="p_btn_donate"></button>
+  </nav>
   <footer>
     <span data-i18n="p_note"></span>
     <span id="version"></span>
   </footer>
 
-  <script src="../shared/defaults.js"></script>
+  <script src="../shared/family-ui.js"></script>
+<script src="../shared/defaults.js"></script>
   <script src="../shared/presets.js"></script>
   <script src="../shared/i18n.js"></script>
   <script src="popup.js"></script>

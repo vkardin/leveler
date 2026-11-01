@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.1
+
+- Require valid speed and volume fields in the site profile editor; preserve fractional speeds and integer volume values
+- Serialize profile writes and resets in the background so a delayed or in-flight save cannot undo a newer reset or default profile
+- Apply the same profile write path to individual profile edits, copying, site resets and undo in settings
+- Remove redundant meter-source sorting
+- Add regressions for empty fields, fractional speeds, delayed writes and popup resets
+
 ## 1.5.0
 
 - Temporary Original / Processed comparison in the current tab. Automatically restores processing when the popup closes, without changing saved profiles

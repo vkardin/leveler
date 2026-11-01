@@ -12,8 +12,17 @@
   let cache = {};
   let undoAction = null;
   const action = (fn) => async () => { try { await fn(); } catch { msg(t('p_save_error'), true); } };
+  async function saveStoredProfile(key, profile) {
+    const reply = await chrome.runtime.sendMessage({ type: 'lv:save-profile', key, profile, immediate: true });
+    if (!reply || !reply.ok) throw new Error('profile-save');
+  }
   function undoFor(values) {
-    undoAction = async () => { await chrome.storage.sync.set(values); };
+    undoAction = async () => {
+      for (const [key, value] of Object.entries(values)) {
+        if (key === 'def' || key.startsWith('s:')) await saveStoredProfile(key, value);
+        else await chrome.storage.sync.set({ [key]: value });
+      }
+    };
     $('#undoOptions').hidden = false;
   }
   $('#undoOptions').onclick = action(async () => { if (undoAction) await undoAction(); undoAction = null; $('#undoOptions').hidden = true; });
@@ -59,7 +68,7 @@
   $('#optDefault').addEventListener('change', (e) => {
     const id = e.target.value;
     const p = PR.builtin(id) || PR.normalizePresets(all.presets).find((x) => x.id === id);
-    if (p) { const next = PR.normalizeProfile(all.def || PR.DEFAULT_PROFILE); next.preset = id; next.params = PR.presetParams(p.params, next.params); chrome.storage.sync.set({ def: next }).catch(() => msg(t('p_save_error'), true)); }
+    if (p) { const next = PR.normalizeProfile(all.def || PR.DEFAULT_PROFILE); next.preset = id; next.params = PR.presetParams(p.params, next.params); saveStoredProfile('def', next).catch(() => msg(t('p_save_error'), true)); }
   });
   $('#optStep').addEventListener('change', (e) => {
     chrome.storage.sync.set({ keys: Object.assign(PR.normalizeKeys(all.keys), { step: +e.target.value }) });
@@ -102,7 +111,7 @@
     for (const k of sites.filter((k) => k.slice(2).includes(search))) {
       const pr = PR.normalizeProfile(all[k]);
       const row = item(k.slice(2), presetLabel(pr.preset) + ' · ' + pr.speed + '×', action(async () => {
-        const before = all[k]; undoFor({ [k]: before }); await chrome.storage.sync.remove(k);
+        const before = all[k]; undoFor({ [k]: before }); await saveStoredProfile(k, null);
       }), t('o_reset'));
       const edit = document.createElement('button'); edit.textContent = t('o_edit_site');
       edit.onclick = () => {
@@ -113,17 +122,18 @@
         for (const p of [...PR.BUILTIN, ...PR.normalizePresets(all.presets)]) preset.append(new Option(p.id.startsWith('b:') ? t(p.name) : p.name, p.id));
         if (![...preset.options].some((o) => o.value === pr.preset)) preset.prepend(new Option(t('p_own_settings'), ''));
         preset.value = pr.preset || ''; field(t('p_preset'), preset);
-        const speed = document.createElement('input'); speed.type = 'number'; speed.min = .25; speed.max = 4; speed.step = .05; speed.value = pr.speed; field(t('p_speed'), speed);
-        const volume = document.createElement('input'); volume.type = 'number'; volume.min = 0; volume.max = 400; volume.step = 5; volume.value = pr.params.volume; field(t('p_volume'), volume);
+        const speed = document.createElement('input'); speed.type = 'number'; speed.min = LV.SPEED_MIN; speed.max = LV.SPEED_MAX; speed.step = 'any'; speed.required = true; speed.defaultValue = pr.speed; speed.value = pr.speed; field(t('p_speed'), speed);
+        const volume = document.createElement('input'); volume.type = 'number'; volume.min = 0; volume.max = 400; volume.step = 1; volume.required = true; volume.defaultValue = pr.params.volume; volume.value = pr.params.volume; field(t('p_volume'), volume);
         const enabled = document.createElement('input'); enabled.type = 'checkbox'; enabled.checked = pr.audioEnabled; field(t('p_site_enabled'), enabled);
         const save = document.createElement('button'); save.type = 'submit'; save.className = 'btn primary'; save.textContent = t('o_save_site'); form.append(save);
         form.onsubmit = (e) => {
           e.preventDefault();
+          if (!form.reportValidity()) return;
           action(async () => {
             const next = PR.normalizeProfile(pr), selected = PR.builtin(preset.value) || PR.normalizePresets(all.presets).find((p) => p.id === preset.value);
             if (preset.value !== (pr.preset || '') && selected) { next.params = PR.presetParams(selected.params, pr.params); next.preset = selected.id; }
-            next.params.volume = +volume.value; next.speed = +speed.value; next.audioEnabled = enabled.checked;
-            undoFor({ [k]: all[k] }); await chrome.storage.sync.set({ [k]: PR.normalizeProfile(next) });
+            next.params.volume = volume.valueAsNumber; next.speed = speed.valueAsNumber; next.audioEnabled = enabled.checked;
+            undoFor({ [k]: all[k] }); await saveStoredProfile(k, PR.normalizeProfile(next));
           })();
         };
         const host = document.createElement('input'); host.type = 'text'; host.placeholder = 'example.com'; field(t('o_copy_host'), host);
@@ -134,8 +144,8 @@
           const key = PR.siteKey(target);
           if (all[key] && !confirm(t('o_replace_site', target))) return;
           const previous = all[key];
-          undoAction = () => previous ? chrome.storage.sync.set({ [key]: previous }) : chrome.storage.sync.remove(key); $('#undoOptions').hidden = false;
-          await chrome.storage.sync.set({ [key]: pr });
+          undoAction = () => saveStoredProfile(key, previous || null); $('#undoOptions').hidden = false;
+          await saveStoredProfile(key, pr);
         }); host.oninput = () => host.setCustomValidity(''); form.append(copy);
         row.append(form); preset.focus();
       };
@@ -229,7 +239,7 @@
   $('#resetSites').addEventListener('click', action(async () => {
     const keys = Object.keys(all).filter((k) => k.startsWith('s:'));
     undoFor(Object.fromEntries(keys.map((k) => [k, all[k]])));
-    await chrome.storage.sync.remove(keys);
+    await Promise.all(keys.map((key) => saveStoredProfile(key, null)));
   }));
 
   chrome.storage.onChanged.addListener((changes, area) => {

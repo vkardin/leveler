@@ -45,6 +45,33 @@ test('background keeps the final profile after popup closes and reports failed p
   const bad = worker(data, undefined, () => true);
   assert.equal((await bad.message({ type: 'lv:save-profile', key: 'def', profile: {}, immediate: true })).ok, false);
 });
+test('site reset and new defaults cancel delayed profile saves', async () => {
+  const data = { sync: {}, local: {}, session: {} }, w = worker(data);
+  const oldSite = w.message({ type:'lv:save-profile', key:'s:example.com', profile:{speed:2} });
+  const reset = w.message({ type:'lv:save-profile', key:'s:example.com', profile:null, immediate:true });
+  assert.equal((await reset).ok,true); assert.equal((await oldSite).ok,true);
+  const oldDefault = w.message({ type:'lv:save-profile', key:'def', profile:{speed:2} });
+  const nextDefault = w.message({ type:'lv:save-profile', key:'def', profile:{speed:1,params:{volume:175}}, immediate:true });
+  assert.equal((await nextDefault).ok,true); assert.equal((await oldDefault).ok,true);
+  await new Promise(resolve=>setTimeout(resolve,400));
+  assert.equal(data.sync['s:example.com'],undefined);
+  assert.deepEqual(data.sync.def,{speed:1,params:{volume:175}});
+  assert.equal((await w.message({type:'lv:save-profile',key:'def',profile:null,immediate:true})).ok,false);
+});
+test('site reset wins over an already running storage write', async () => {
+  const data = { sync:{},local:{},session:{} }, w=worker(data);
+  let release, started;
+  const entered=new Promise(resolve=>{started=resolve;}), gate=new Promise(resolve=>{release=resolve;});
+  const original=w.api.storage.sync.set;
+  w.api.storage.sync.set=async values=>{started();await gate;return original(values);};
+  const saving=w.message({type:'lv:save-profile',key:'s:example.com',profile:{speed:2},immediate:true});
+  await entered;
+  const resetting=w.message({type:'lv:save-profile',key:'s:example.com',profile:null,immediate:true});
+  // Let the reset enter the queue while the older write remains in flight.
+  await new Promise(resolve=>setTimeout(resolve,10)); release();
+  assert.equal((await saving).ok,true); assert.equal((await resetting).ok,true);
+  assert.equal(data.sync['s:example.com'],undefined);
+});
 test('missing or invalidated runtime cannot take over existing audio', () => {
   for (const chrome of [undefined, {}, { runtime: {} }, { get runtime() { throw new Error('invalidated'); } }]) {
     const self = { LV: {}, LV_PRESETS: {} };
@@ -171,4 +198,34 @@ for(const lang of ['en','ru','uk'])test('popup and profile editor: '+lang,async(
   assert.equal(data.sync['s:copied.example'].speed,1.75);
   await options.locator('#siteSearch').fill('');await options.locator('#sites li > button').last().click();await options.screenshot({path:'/tmp/leveler-options-'+lang+'.png'});
   assert.deepEqual(errors,[]);
+});
+
+for (const lang of ['en','ru','uk']) test('profile editor rejects blanks and accepts saved fractional speed: '+lang, async(t)=>{
+  const {context,base,data,errors}=await setup(t,lang);
+  data.sync['s:example.com'].speed=1.33; data.sync['s:example.com'].params.volume=123;
+  const page=await context.newPage(); await page.goto(base+'/extension/options/options.html');
+  await page.locator('#siteSearch').fill('example.com');
+  await page.locator('#sites li > button').last().click();
+  const form=page.locator('.site-editor'), speed=form.locator('input[type=number]').nth(0), volume=form.locator('input[type=number]').nth(1);
+  assert.equal(await form.evaluate(el=>el.checkValidity()),true);
+  await speed.fill('');
+  assert.equal(await form.evaluate(el=>{el.requestSubmit();return el.checkValidity();}),false);
+  assert.equal(data.sync['s:example.com'].speed,1.33);
+  await speed.fill('1.33'); await volume.fill('');
+  assert.equal(await form.evaluate(el=>{el.requestSubmit();return el.checkValidity();}),false);
+  assert.equal(data.sync['s:example.com'].params.volume,123);
+  await volume.fill('123'); await form.locator('button[type=submit]').click();
+  await page.waitForFunction(()=>!document.querySelector('.site-editor'));
+  assert.equal(data.sync['s:example.com'].speed,1.33);assert.equal(data.sync['s:example.com'].params.volume,123);
+  assert.deepEqual(errors,[]);
+});
+test('popup reset cancels a slider save instead of recreating the site profile',async(t)=>{
+  const {context,base,data}=await setup(t);
+  const page=await context.newPage();await page.goto(base+'/extension/popup/popup.html?tab=1');
+  await page.waitForFunction(()=>document.querySelector('#scope').textContent==='127.0.0.1');
+  await page.locator('#volume').evaluate(el=>{el.value=175;el.dispatchEvent(new Event('input',{bubbles:true}));});
+  await page.locator('#resetSite').click();
+  await page.waitForFunction(()=>document.querySelector('#volume').value==='100');
+  await new Promise(resolve=>setTimeout(resolve,500));
+  assert.equal(data.sync['s:127.0.0.1'],undefined);
 });
