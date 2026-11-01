@@ -60,10 +60,8 @@
   els.speed.max = LV.SPEED_MAX;
   els.speed.step = LV.SPEED_STEP;
 
-  const fill = (input) => {
-    const p = (input.value - input.min) / (input.max - input.min) * 100;
-    input.style.setProperty('--p', p + '%');
-  };
+  const fill = self.VkUI.fillRange;
+
   const fmtSpeed = (v) => (Math.round(v * 100) / 100) + '×';
   const minus = (s) => String(s).replace('-', '−');
   const fmtDb = (v) => minus(Math.round(v)) + ' dB';
