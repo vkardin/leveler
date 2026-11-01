@@ -87,6 +87,8 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 Run `node --test --test-concurrency=1 store/tests/v15.test.cjs` with Playwright installed. These tests use real Chromium Web Audio and local media with extension API stubs. `CHROMIUM_PATH` can select an existing Chromium binary. The original `store/tests/run.js` additionally tests the installed extension and requires a full Chromium build with extension support.
 
 <!-- project-family:start -->
+
+[**vkardin / tools — all projects ↗**](https://vkardin.github.io/video-glow/projects/)
 ## More tools by vkardin
 
 | Project | Projects |

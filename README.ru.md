@@ -83,9 +83,11 @@ Leveler не собирает данные и ничего никуда не о�
 [MIT](LICENSE) © vkardin
 
 <!-- project-family:start -->
+
+[**vkardin / tools — каталог всех проектов ↗**](https://vkardin.github.io/video-glow/projects/)
 ## Другие инструменты от vkardin
 
-| Project | Проекты |
+| Проект | Описание |
 | --- | --- |
 | **[Video Glow](https://vkardin.github.io/video-glow/)** | Подсветка вокруг видео в цвет кадра. Мягкое свечение, LED-лента и цвет комнаты. [GitHub](https://github.com/vkardin/video-glow) |
 | **[Video Drift](https://vkardin.github.io/video-drift/)** | Видео поверх других окон, субтитры, сохранение позиции и заметки к моментам. [GitHub](https://github.com/vkardin/video-drift) |
