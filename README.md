@@ -88,7 +88,7 @@ Run `node --test --test-concurrency=1 store/tests/v15.test.cjs` with Playwright 
 
 <!-- project-family:start -->
 
-[**vkardin / tools — all projects ↗**](https://vkardin.github.io/video-glow/projects/)
+[**vkardin / tools — all projects ↗**](https://vkardin.github.io/)
 ## More tools by vkardin
 
 | Project | Projects |

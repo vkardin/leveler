@@ -84,7 +84,7 @@ Leveler не собирает данные и ничего никуда не о�
 
 <!-- project-family:start -->
 
-[**vkardin / tools — каталог всех проектов ↗**](https://vkardin.github.io/video-glow/projects/)
+[**vkardin / tools — каталог всех проектов ↗**](https://vkardin.github.io/)
 ## Другие инструменты от vkardin
 
 | Проект | Описание |
