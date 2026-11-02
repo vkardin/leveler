@@ -4,7 +4,7 @@
   --field: #1d1d20; --accent: #3ddc97; --on-accent: #06140d; --warn: #f2c66d; --topbar: rgba(10,10,11,.82); --hover-line: #3a3a3f;
   --r: 16px;
   --font: "Inter", "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -144,15 +144,7 @@ section.block.first { border-top: 0; padding-top: 32px; }
 .fb-status:empty { display: none; }
 
 /* Светлая тема по системным настройкам */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f6f6f3; --card: #ffffff; --line: #e3e2dd;
-    --text: #141416; --text-2: #34343a; --muted: #6b6a70;
-    --field: #ecebe7; --accent: #12a66a; --on-accent: #ffffff; --warn: #9a6400;
-    --topbar: rgba(246,246,243,.85); --hover-line: #c9c8c2;
-  }
-  .fb-status.ok { color: #12a66a; }
-}
+
 
 /* Демонстрация до/после */
 .demo { margin: 56px auto 0; max-width: 960px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; text-align: left; }
