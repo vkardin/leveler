@@ -78,7 +78,9 @@
   const chains = shared.chains;            // элемент → цепочка; один элемент — одна цепочка
   const blocked = new WeakMap();           // элемент → причина, по которой его не трогаем
   const media = new Set();                 // все найденные <video>/<audio> этого фрейма
-  const mediaEvents = new AbortController();
+  // всё, что снимается разом при передаче работы новому экземпляру
+  const lifetime = new AbortController();
+  const signal = lifetime.signal;
   const waiting = new Set();               // ждут, пока AudioContext проснётся
 
   const isMedia = (el) => el instanceof HTMLMediaElement;
@@ -90,14 +92,14 @@
     if (media.has(el)) return;
     media.add(el);
     mediaIds.set(el, nextMediaId++);
-    el.addEventListener('encrypted', () => markBlocked(el, 'drm'), { signal: mediaEvents.signal });
-    el.addEventListener('loadstart', () => onSourceChange(el), { signal: mediaEvents.signal });
-    el.addEventListener('pause', () => stopProbe(chains.get(el)), { signal: mediaEvents.signal });
+    el.addEventListener('encrypted', () => markBlocked(el, 'drm'), { signal });
+    el.addEventListener('loadstart', () => onSourceChange(el), { signal });
+    el.addEventListener('pause', () => stopProbe(chains.get(el)), { signal });
     // сам элемент, а не document: удалённый из DOM элемент тоже ставится на паузу
-    for (const t of ['pause', 'ended', 'volumechange', 'emptied', 'loadedmetadata']) el.addEventListener(t, onFocusEvent, { signal: mediaEvents.signal });
-    el.addEventListener('durationchange', () => onDuration(el), { signal: mediaEvents.signal });
-    el.addEventListener('waiting', () => onStall(el), { signal: mediaEvents.signal });
-    el.addEventListener('seeking', () => { const s = lives.get(el); if (s) s.samples = []; }, { signal: mediaEvents.signal });
+    for (const t of ['pause', 'ended', 'volumechange', 'emptied', 'loadedmetadata']) el.addEventListener(t, onFocusEvent, { signal });
+    el.addEventListener('durationchange', () => onDuration(el), { signal });
+    el.addEventListener('waiting', () => onStall(el), { signal });
+    el.addEventListener('seeking', () => { const s = lives.get(el); if (s) s.samples = []; }, { signal });
     if (speed !== 1) applySpeed(el, false);
   }
 
@@ -213,11 +215,17 @@
     waiting.clear();
   }
 
+  // AudioContext общий для всех экземпляров: каждый слушает его сам и снимает слушателя при уходе
+  function watchCtx() {
+    ctx.addEventListener('statechange', () => flushWaiting(), { signal });
+  }
+  if (ctx) watchCtx();
+
   function ensureCtx() {
     if (ctx) return true;
     try {
       ctx = shared.ctx = new AudioContext({ latencyHint: 'interactive' });
-      ctx.addEventListener('statechange', () => flushWaiting());
+      watchCtx();
       return true;
     } catch (e) {
       ctx = null;
@@ -864,8 +872,10 @@
     clearTimeout(compareTimer); compareOriginal = false;
     // после обновления фоновый скрипт начинает с чистого листа: приглушение не должно остаться
     unduckAll();
-    mediaEvents.abort();
+    lifetime.abort();
+    waiting.clear();
     clearTimeout(speedSaveTimer);
+    clearTimeout(overlayTimer);
     for (const el of media) stopProbe(chains.get(el));
     stopLive();
     if (overlay) overlay.host.remove();
