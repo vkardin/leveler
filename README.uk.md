@@ -93,6 +93,8 @@ Leveler не збирає дані й нічого нікуди не надси�
 | **[Video Drift](https://vkardin.github.io/video-drift/)** | Відео поверх інших вікон, субтитри, збереження позиції й нотатки до моментів. [GitHub](https://github.com/vkardin/video-drift) |
 | **[Snapt](https://vkardin.github.io/snapt/)** | Знімки екрана, стрілки й підписи. Застосунок для Windows, macOS та Linux і розширення браузера. [GitHub](https://github.com/vkardin/snapt) |
 | **[UNI](https://vkardin.github.io/uni-homebot/)** | Домашній сервер у Telegram: застосунки, моніторинг, сповіщення й мінізастосунок. [GitHub](https://github.com/vkardin/uni-homebot) |
+| **[Коли Є](https://vkardin.github.io/koly/uk/)** | Графіки відключень світла для всіх областей України: статус зараз, зворотний відлік, сьогодні й завтра. Віджет для Windows. [GitHub](https://github.com/vkardin/koly) |
+| **[Tukk](https://vkardin.github.io/tukk/uk/)** | Жести телефоном для щоденних дій: струсити для ліхтарика, перевернути для тиші. Android, у розробці. [GitHub](https://github.com/vkardin/tukk) |
 
 [github.com/vkardin](https://github.com/vkardin) · Незалежні інструменти · відкритий код
 <!-- project-family:end -->
