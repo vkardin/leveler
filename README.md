@@ -72,7 +72,7 @@ Leveler collects no data and sends nothing anywhere: the sound is processed on y
 | Folder | What is inside |
 |---|---|
 | [`extension/`](extension) | Extension source (load via `chrome://extensions` → Developer mode → Load unpacked) |
-| [`docs/`](docs) | Website, served by GitHub Pages |
+| [`docs/`](docs) | Maintenance notes and README screenshots. The website lives in [vkardin.github.io](https://github.com/vkardin/vkardin.github.io/tree/main/leveler) |
 | [`store/`](store) | Store texts, screenshots, privacy policy, test and screenshot scripts |
 | [`tools/`](tools) | `build.py` packs `leveler-chrome-<version>.zip` and `leveler-firefox-<version>.zip` |
 | [`.github/workflows/`](.github/workflows) | `test.yml` runs the build checks and the automated test; `release.yml` publishes a release with both zips when a new version from `manifest.json` reaches `main` (or on demand: Actions → Release → Run workflow) |

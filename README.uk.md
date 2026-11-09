@@ -72,7 +72,7 @@ Leveler не збирає дані й нічого нікуди не надси�
 | Папка | Що всередині |
 |---|---|
 | [`extension/`](extension) | Вихідний код розширення (завантаження через `chrome://extensions` → Режим розробника → Завантажити розпаковане) |
-| [`docs/`](docs) | Сайт для GitHub Pages |
+| [`docs/`](docs) | Нотатки з підтримки та знімки для README. Сайт живе у [vkardin.github.io](https://github.com/vkardin/vkardin.github.io/tree/main/leveler) |
 | [`store/`](store) | Тексти для магазинів, скриншоти, політика конфіденційності, скрипти тестів і скриншотів |
 | [`tools/`](tools) | `build.py` збирає `leveler-chrome-<версія>.zip` і `leveler-firefox-<версія>.zip` |
 | [`.github/workflows/`](.github/workflows) | `test.yml` запускає перевірки збирання й автотест; `release.yml` публікує реліз з обома zip, коли в `main` надходить нова версія з `manifest.json` (або вручну: Actions → Release → Run workflow) |
