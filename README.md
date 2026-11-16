@@ -91,15 +91,15 @@ Run `node --test --test-concurrency=1 store/tests/v15.test.cjs` with Playwright 
 [**vkardin / tools — all projects ↗**](https://vkardin.github.io/)
 ## More tools by vkardin
 
-| Project | Projects |
+| Project | Description |
 | --- | --- |
 | **[Video Glow](https://vkardin.github.io/video-glow/)** | Ambient light around web videos. Soft glow, LED strips and room colour. [GitHub](https://github.com/vkardin/video-glow) |
-| **[Video Drift](https://vkardin.github.io/video-drift/)** | Floating video with subtitles, saved playback positions and timestamped notes. [GitHub](https://github.com/vkardin/video-drift) |
 | **[Snapt](https://vkardin.github.io/snapt/)** | Capture, annotate and export. A Windows, macOS and Linux app, plus a browser extension. [GitHub](https://github.com/vkardin/snapt) |
-| **[UNI](https://vkardin.github.io/uni-homebot/)** | Your home server in Telegram: apps, monitoring, notifications and a Mini App. [GitHub](https://github.com/vkardin/uni-homebot) |
+| **[Video Drift](https://vkardin.github.io/video-drift/)** | Floating video with subtitles, saved playback positions and timestamped notes. [GitHub](https://github.com/vkardin/video-drift) |
 | **[Коли Є](https://vkardin.github.io/koly/)** | Power outage schedules for every region of Ukraine: status now, a countdown, today and tomorrow. Windows widget. [GitHub](https://github.com/vkardin/koly) |
 | **[BlackoutMode](https://vkardin.github.io/blackoutmode/)** | Keeps a laptop alive through power outages: cuts the draw, counts the time left on battery and power bank. Windows. [GitHub](https://github.com/vkardin/blackoutmode) |
-| **[Tukk](https://vkardin.github.io/tukk/)** | Phone gestures for everyday actions: shake for the flashlight, flip for silence. Android, in development. [GitHub](https://github.com/vkardin/tukk) |
+| **[Tukk](https://vkardin.github.io/tukk/)** | Phone gestures for everyday actions: shake for the flashlight, flip for silence. Android. [GitHub](https://github.com/vkardin/tukk) |
+| **[UNI](https://vkardin.github.io/uni-homebot/)** | Your home server in Telegram: apps, monitoring, notifications and a Mini App. [GitHub](https://github.com/vkardin/uni-homebot) |
 
 [github.com/vkardin](https://github.com/vkardin) · Independent tools · open source
 <!-- project-family:end -->
